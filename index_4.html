@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Homepage Mockup — v15</title>
+<style>
+  :root {
+    --bg: #F5F5FA; --card: #FFFFFF; --accent: #3B4FC2; --accent-2: #6478D6;
+    --text: #3A3A3C; --muted: #6E6E86; --eyebrow: #8A8AA3; --border: #DCDCF0; --soft: #EDEEFA;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+  a { text-decoration: none; color: inherit; }
+
+  .meta-bar { background: #2A2A3D; color: #E8E8F5; padding: 12px 24px; font-size: 13px; position: sticky; top: 0; z-index: 200; }
+  .meta-bar b { color: #fff; }
+
+  /* ---------- header: centered banner with decorative motif + v5 four-item nav ---------- */
+  .c-topline { background: #2E3A8C; color: #D6DBF7; font-size: 12.5px; padding: 6px 32px; text-align: center; }
+  .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); padding: 46px 32px 40px; color: white; overflow: hidden; }
+  .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; }
+  .c-banner-decor svg { width: 100%; height: 100%; display: block; }
+  .c-banner-inner { position: relative; text-align: center; }
+  .c-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #E3E6FB; margin-bottom: 8px; }
+  .c-name { font-size: 32px; font-weight: 800; letter-spacing: -0.01em; }
+  .c-title { font-size: 14px; color: #E3E6FB; margin-top: 6px; }
+
+  .nav { background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-wrap: wrap; }
+  .nav-links { display: flex; flex-wrap: wrap; }
+  .nav-item { position: relative; }
+  .nav-link { display: inline-block; padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+  .nav-link.current { color: var(--accent); border-bottom: 3px solid var(--accent); }
+  .nav-item:hover .nav-link:not(.current) { color: var(--accent); border-bottom: 3px solid var(--border); }
+
+  .nav-search { position: relative; padding: 10px 0; }
+  .search-box { border: 1px solid var(--border); border-radius: 18px; padding: 8px 34px 8px 14px; font-family: inherit; font-size: 13.5px; width: 200px; background: var(--bg); transition: width 0.2s; }
+  .search-box:focus { outline: 2px solid var(--accent-2); outline-offset: 1px; width: 260px; background: var(--card); }
+  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; border: none; background: var(--soft); color: var(--muted); font-size: 12px; line-height: 1; cursor: pointer; display: none; align-items: center; justify-content: center; }
+  .search-clear.visible { display: flex; }
+  .search-results { position: absolute; top: 100%; right: 0; margin-top: 6px; width: 320px; display: flex; flex-direction: column; gap: 6px; z-index: 60; }
+  .search-results:empty { display: none; }
+  .search-results .r { font-size: 13.5px; padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; box-shadow: 0 6px 16px rgba(60,60,90,0.12); }
+  .search-results .r:hover { border-color: var(--accent-2); background: var(--soft); }
+  .search-results .r b { color: var(--accent); }
+
+  .mobile-search { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .mobile-search .search-box { width: 100%; }
+  .mobile-search .search-results { position: static; width: auto; margin-top: 8px; }
+
+  /* ---------- page layout system (v5): full-width default, two-column w/ sidebar opt-in ---------- */
+  .page-shell { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; padding: 28px 32px 80px; }
+  .page-shell.no-sidebar { grid-template-columns: 1fr; }
+  .page-shell.no-sidebar .sidebar-col { display: none; }
+  .main-col { min-width: 0; }
+  .sidebar-card { background: var(--card); border-radius: 20px; padding: 26px 22px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); position: sticky; top: 20px; text-align: center; }
+  .sidebar-photo { width: 84px; height: 84px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 28px; font-weight: 700; margin: 0 auto 14px; }
+  .sidebar-card h3 { margin: 0 0 10px; font-size: 16px; }
+  .sidebar-card p { font-size: 13px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; text-align: left; }
+  .sidebar-card .file-link { display: inline-flex; }
+
+  .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 18px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .breadcrumb span.crumb { cursor: pointer; }
+  .breadcrumb span.crumb:hover { color: var(--accent); text-decoration: underline; }
+  .breadcrumb span.sep { color: var(--eyebrow); }
+  .breadcrumb span.current-crumb { color: var(--text); font-weight: 600; }
+
+  .page-eyebrow { text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 600; }
+  .page-title { font-size: 26px; font-weight: 700; margin: 4px 0 24px; }
+  .home-title { font-size: 27px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .home-subtitle { font-size: 14.5px; color: var(--muted); margin: 0 0 28px; }
+
+  .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .tile { background: var(--card); border-radius: 18px; padding: 22px 16px; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
+  .tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .tile .icon-badge { width: 46px; height: 46px; margin: 0 auto 10px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; }
+  .tile .icon-badge svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tile .label { font-size: 14.5px; font-weight: 600; }
+  .tile .count { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .item-card { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .item-eyebrow { text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 600; }
+  .item-title { font-size: 15.5px; font-weight: 600; margin: 6px 0 4px; }
+  .item-tag { font-size: 12px; color: var(--muted); }
+  .item-pill { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--accent-2); background: var(--soft); padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
+  .filetype-badge { display: inline-block; font-size: 10px; font-weight: 700; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 7px; margin-top: 6px; margin-right: 4px; letter-spacing: 0.03em; }
+
+  /* ---------- v6: "recently updated" badge (30-day window; visual only, never affects order) ---------- */
+  .recent-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: #2E8B57; background: #E6F4EC; padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
+  .recent-badge .dot-ico { width: 6px; height: 6px; border-radius: 50%; background: #2E8B57; display: inline-block; flex-shrink: 0; }
+
+  /* ---------- Applets: distinct compact card (v4, unchanged) ---------- */
+  .applet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .applet-card {
+    background: var(--card); border-radius: 16px; padding: 14px; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s;
+    border: 1px solid transparent;
+  }
+  .applet-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); border-color: var(--border); }
+  .ac-eyebrow { text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 700; margin-bottom: 3px; }
+  .ac-title { font-size: 14.5px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
+  .ac-body { display: flex; gap: 12px; align-items: flex-start; }
+  .ac-tile {
+    width: 62px; height: 62px; flex-shrink: 0; border-radius: 10px;
+    background: linear-gradient(160deg, #F5F5FA, #EDEEFA); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;
+  }
+  .ac-tile svg { width: 82%; height: 82%; }
+  .ac-desc { font-size: 12px; color: var(--muted); line-height: 1.45; }
+  .ac-desc .course-tag { display: block; font-size: 11px; color: var(--accent-2); font-weight: 600; margin-top: 6px; }
+
+  .curve-path { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; }
+  .axis-line { stroke: var(--eyebrow); stroke-width: 1.6; }
+  .dot { fill: var(--accent); }
+  .ring { fill: none; stroke: var(--accent); opacity: 0; }
+  .ac-tile .dot { animation: travel 2.6s ease-in-out infinite; animation-play-state: paused; }
+  @keyframes travel { 0% { offset-distance: 0%; } 50% { offset-distance: 100%; } 100% { offset-distance: 0%; } }
+  .ac-tile .ring1 { animation: ripple 2.6s ease-in-out infinite; animation-play-state: paused; }
+  .ac-tile .ring2 { animation: ripple 2.6s ease-in-out infinite; animation-delay: 0.15s; animation-play-state: paused; }
+  .applet-card:hover .dot, .applet-card:hover .ring1, .applet-card:hover .ring2 { animation-play-state: running; }
+  @keyframes ripple {
+    0%, 45% { opacity: 0; r: 2.5; }
+    55% { opacity: 0.55; r: 4; }
+    75% { opacity: 0; r: 9; }
+    100% { opacity: 0; r: 9; }
+  }
+
+  /* ---------- v5: grouped/sticky-header + jump-link pattern (Applets, Lecture Videos, Course Materials) ---------- */
+  .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
+  .jump-link:hover { color: var(--accent); }
+  .group-header {
+    font-size: 14px; font-weight: 700; color: var(--text); background: var(--bg);
+    padding: 10px 4px; margin: 26px 0 12px; border-bottom: 2px solid var(--border);
+    position: sticky; top: 0; z-index: 5; scroll-margin-top: 10px;
+  }
+  .group-header:first-of-type { margin-top: 0; }
+  .result-count { font-size: 12.5px; color: var(--eyebrow); margin-bottom: 6px; }
+  .empty-group-state { font-size: 13px; color: var(--muted); font-style: italic; padding: 4px 4px 6px; }
+
+  /* ---------- v6: dev-only "show empty courses" preview toggle ---------- */
+  .dev-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--eyebrow); margin-bottom: 16px; cursor: pointer; user-select: none; background: #FBF6E8; border: 1px dashed #D8C98A; padding: 6px 12px; border-radius: 10px; }
+  .dev-toggle input { cursor: pointer; }
+  .dev-toggle .dev-tag { font-weight: 700; color: #9C7C1E; text-transform: uppercase; font-size: 10px; letter-spacing: 0.04em; }
+
+  .course-directory-card {
+    background: var(--card); border-radius: 16px; padding: 18px 20px; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s;
+    scroll-margin-top: 10px;
+  }
+  .course-directory-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .cd-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .cd-blurb { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; max-width: 640px; }
+  .cd-counts { font-size: 12px; color: var(--accent-2); font-weight: 600; }
+
+  /* ---------- mobile hamburger nav ---------- */
+  .hamburger { display: none; position: absolute; right: 20px; top: 18px; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+  .mobile-menu { display: none; background: var(--card); border-bottom: 1px solid var(--border); }
+  .mobile-menu.open { display: block; }
+  .mobile-menu a, .mobile-menu .mobile-link { display: block; padding: 13px 20px; font-size: 14.5px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); cursor: pointer; }
+  @media (max-width: 780px) {
+    .nav { display: none; }
+    .hamburger { display: inline-block; }
+    .nav-search { display: none; }
+  }
+  @media (max-width: 900px) {
+    .page-shell { grid-template-columns: 1fr; }
+    .sidebar-card { position: static; text-align: center; }
+  }
+
+  .explainer-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 32px; }
+  .explainer-card { background: var(--card); border-radius: 16px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
+  .explainer-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .explainer-card .icon-badge { width: 42px; height: 42px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .explainer-card .icon-badge svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+  .explainer-card .label { font-size: 14.5px; font-weight: 700; margin-bottom: 3px; }
+  .explainer-card .desc { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+
+  .whatsnew { margin-top: 8px; }
+  .whatsnew h2 { font-size: 16px; margin-bottom: 12px; }
+  .whatsnew-list { display: flex; flex-direction: column; gap: 8px; }
+  .whatsnew-item { display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: 14px; padding: 12px 16px; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
+  .whatsnew-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .whatsnew-item .icon-badge { width: 34px; height: 34px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .whatsnew-item .icon-badge svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 1.7; }
+  .whatsnew-item .wn-title { font-size: 13.5px; font-weight: 600; }
+  .whatsnew-item .wn-meta { font-size: 12px; color: var(--muted); }
+  .whatsnew-item .wn-date { margin-left: auto; font-size: 11.5px; color: var(--eyebrow); white-space: nowrap; }
+
+  .course-info { background: var(--card); border-radius: 20px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); }
+  .course-info p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
+  .course-info .topics { font-size: 13px; color: var(--text); }
+  .course-info .topics b { color: var(--accent); }
+
+  .detail-card { background: var(--card); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); }
+  .detail-title { font-size: 22px; font-weight: 700; margin: 6px 0 6px; }
+  .detail-desc { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 14px 0 20px; max-width: 640px; }
+  .detail-links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .file-link { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); color: var(--accent); font-weight: 600; font-size: 13.5px; padding: 10px 16px; border-radius: 12px; transition: background 0.15s; }
+  .file-link:hover { background: var(--border); }
+  .related-block h2 { font-size: 16px; margin-bottom: 12px; }
+  .related-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
+
+  .site-footer { background: #2A2A3D; color: #B9B9D6; padding: 32px; margin-top: 40px; }
+  .footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 12.5px; padding: 0 32px; }
+  .footer-inner .f-name { color: white; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .footer-inner a { color: #B9B9D6; }
+  .footer-inner .f-col { max-width: 340px; }
+  .footer-inner .f-license a { color: #D6DBF7; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="meta-bar">
+  <b>Prototype v15:</b> corrects two things from v14 that went out without approval &mdash; the
+  Course Materials directory no longer lists each course's name twice (a separate sticky header plus
+  the tile's own title); jump-links now scroll straight to the tile. The homepage heading is back to
+  <b>"Teaching Materials Hub"</b> as a plain, functional page label &mdash; distinct from the site's
+  formal name, <b>Professor Kyle Knee's Course Materials Site</b>, which lives in the footer credit
+  and browser tab. Everything else carried over unchanged from v14 (course-group order, section-number
+  sort + 30-day "Updated" badges, the dev-only empty-course toggle, and the CC BY-NC footer license).
+</div>
+
+<div class="c-topline">
+  <span>Harper College — Mathematics Department</span>
+</div>
+<div class="c-banner">
+  <div class="c-banner-decor" aria-hidden="true">
+    <svg viewBox="0 0 1200 220" preserveAspectRatio="none">
+      <path d="M0 170 C 200 40, 340 210, 560 90 S 900 20, 1200 130" fill="none" stroke="white" stroke-width="2.5"/>
+      <path d="M0 90 C 260 190, 420 10, 640 120 S 980 200, 1200 60" fill="none" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    </svg>
+  </div>
+  <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+  <div class="c-banner-inner">
+    <div class="c-eyebrow">Professor</div>
+    <div class="c-name">Kyle Knee</div>
+    <div class="c-title">Mathematics, Harper College</div>
+  </div>
+</div>
+<div class="nav">
+  <div class="nav-links">
+    <div class="nav-item"><div class="nav-link" id="nav-home" onclick="goHome()">Home</div></div>
+    <div class="nav-item"><div class="nav-link" id="nav-coursematerials" onclick="goToCourseMaterials()">Course Materials</div></div>
+    <div class="nav-item"><div class="nav-link" id="nav-applets" onclick="enterType('Applet')">Applets</div></div>
+    <div class="nav-item"><div class="nav-link" id="nav-videos" onclick="enterType('LectureVideo')">Lecture Videos</div></div>
+  </div>
+  <div class="nav-search">
+    <input class="search-box" id="search-input" placeholder="Search..." oninput="doSearch(this.value)">
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+    <div class="search-results" id="search-results"></div>
+  </div>
+</div>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-search">
+    <input class="search-box" id="search-input-mobile" placeholder="Search..." oninput="doSearch(this.value, true)">
+    <div class="search-results" id="search-results-mobile"></div>
+  </div>
+  <div class="mobile-link" onclick="goHome(); closeMobileMenu();">Home</div>
+  <div class="mobile-link" onclick="goToCourseMaterials(); closeMobileMenu();">Course Materials</div>
+  <div class="mobile-link" onclick="enterType('Applet'); closeMobileMenu();">Applets</div>
+  <div class="mobile-link" onclick="enterType('LectureVideo'); closeMobileMenu();">Lecture Videos</div>
+</div>
+
+<div class="page-shell">
+  <div class="main-col" id="page"></div>
+  <div class="sidebar-col">
+    <div class="sidebar-card" id="sidebar-card"></div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-inner">
+    <div class="f-col">
+      <div class="f-name">Kyle Knee</div>
+      <div>Mathematics Department, Harper College</div>
+      <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>
+    </div>
+    <div class="f-col f-license">
+      <div>Unless otherwise noted, materials on this site are licensed under a
+        <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</a>
+        © 2026 Kyle Knee. You may share and adapt these materials for non-commercial educational use, provided appropriate credit is given.</div>
+      <div style="margin-top:8px;">Site last updated: <span id="footer-updated"></span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const items = [
+    { id: 'g-c1-11', course: 'Calc 1', type: 'LectureGuideNotes', sections: ['1.1'], sectionLabel: 'Limits & Continuity',
+      title: '1.1 Limits & Continuity — Notes', desc: 'Notes covering the formal definition of a limit, one-sided limits, and continuity at a point.',
+      guideFile: null, notesFile: '#', updated: '2026-02-01' },
+    { id: 'w-c1-11-std', course: 'Calc 1', type: 'Worksheet', subtype: 'Standard', sections: ['1.1'], sectionLabel: 'Limits & Continuity',
+      title: '1.1 Limits Worksheet', desc: 'Practice evaluating limits graphically and algebraically.',
+      worksheetFile: '#', solutionsFile: '#', hasSolutions: false, updated: '2026-01-15' },
+
+    { id: 'g-c1-23', course: 'Calc 1', type: 'LectureGuideNotes', sections: ['2.3'], sectionLabel: 'Related Rates',
+      title: '2.3 Related Rates — Guide & Notes', desc: 'Guide and notes for setting up and solving related rates problems.',
+      guideFile: '#', notesFile: '#', updated: '2026-07-10' },
+    { id: 'w-c1-23-std', course: 'Calc 1', type: 'Worksheet', subtype: 'Standard', sections: ['2.3'], sectionLabel: 'Related Rates',
+      title: '2.3 Related Rates Worksheet', desc: 'Standard practice set on related rates word problems.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-02-10' },
+    { id: 'w-c1-23-ble', course: 'Calc 1', type: 'Worksheet', subtype: 'Blended', sections: ['2.3'], sectionLabel: 'Related Rates',
+      title: '2.3 Related Rates Worksheet (Blended/Honors)', desc: 'Extended related rates practice with additional multi-step problems.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-07-05' },
+    { id: 'v-c1-23', course: 'Calc 1', type: 'LectureVideo', sections: ['2.3'], sectionLabel: 'Related Rates',
+      title: '2.3 Related Rates — Lecture Videos', desc: 'Recorded walkthroughs of related rates setup and solved examples.',
+      playlistUrl: '#', updated: '2026-04-22' },
+
+    { id: 'g-c2-34', course: 'Calc 2', type: 'LectureGuideNotes', sections: ['3.4'], sectionLabel: 'Series Convergence',
+      title: '3.4 Series Convergence — Guide & Notes', desc: 'Guide and notes covering convergence tests for infinite series.',
+      guideFile: '#', notesFile: '#', updated: '2026-06-18' },
+    { id: 'w-c2-34-std', course: 'Calc 2', type: 'Worksheet', subtype: 'Standard', sections: ['3.4'], sectionLabel: 'Series Convergence',
+      title: '3.4 Series Convergence Worksheet', desc: 'Practice applying the ratio, root, and comparison tests.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-06-25' },
+    { id: 'v-c2-34', course: 'Calc 2', type: 'LectureVideo', sections: ['3.4'], sectionLabel: 'Series Convergence',
+      title: '3.4 Series Convergence — Lecture Videos', desc: 'Recorded lecture covering convergence tests with worked examples.',
+      playlistUrl: '#', updated: '2026-07-16' },
+
+    { id: 'g-c3-52', course: 'Calc 3', type: 'LectureGuideNotes', sections: ['5.2'], sectionLabel: 'Triple Integrals',
+      title: '5.2 Triple Integrals — Guide & Notes', desc: 'Guide and notes on setting up triple integrals in rectangular coordinates.',
+      guideFile: '#', notesFile: '#', updated: '2026-05-02' },
+    { id: 'w-c3-52-std', course: 'Calc 3', type: 'Worksheet', subtype: 'Standard', sections: ['5.2'], sectionLabel: 'Triple Integrals',
+      title: '5.2 Triple Integrals Worksheet', desc: 'Standard practice setting up and evaluating triple integrals.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-01-12' },
+    { id: 'w-c3-52-ble', course: 'Calc 3', type: 'Worksheet', subtype: 'Blended', sections: ['5.2'], sectionLabel: 'Triple Integrals',
+      title: '5.2 Triple Integrals Worksheet (Blended/Honors)', desc: 'Extended practice including cylindrical and spherical setups.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-03-28' },
+    { id: 'v-c3-52', course: 'Calc 3', type: 'LectureVideo', sections: ['5.2'], sectionLabel: 'Triple Integrals',
+      title: '5.2 Triple Integrals — Lecture Videos', desc: 'Recorded walkthroughs of triple integral setup and evaluation.',
+      playlistUrl: '#', updated: '2026-03-01' },
+
+    { id: 'g-c3-41', course: 'Calc 3', type: 'LectureGuideNotes', sections: ['4.1'], sectionLabel: 'Quadric Surfaces',
+      title: '4.1 Quadric Surfaces — Guide', desc: 'Guide to identifying and sketching quadric surfaces from their equations.',
+      guideFile: '#', notesFile: null, updated: '2026-05-20' },
+    { id: 'a-c3-41', course: 'Calc 3', type: 'Applet', sections: ['4.1'],
+      title: 'Quadric Surfaces Explorer', desc: 'Interactive tool for rotating and slicing quadric surfaces to see their cross-sections.',
+      curve: 'M14,52 C34,14 56,14 74,32 S 100,52 118,22', launchUrl: '#', updated: '2026-07-14' },
+
+    { id: 'g-pc-12', course: 'Precalc', type: 'LectureGuideNotes', sections: ['1.2'], sectionLabel: 'The Unit Circle',
+      title: '1.2 The Unit Circle — Guide & Notes', desc: 'Guide and notes on unit circle values and their use in trigonometric functions.',
+      guideFile: '#', notesFile: '#', updated: '2026-03-05' },
+    { id: 'a-pc-12', course: 'Precalc', type: 'Applet', sections: ['1.2'],
+      title: 'Unit Circle Explorer', desc: 'Drag a point around the unit circle to see corresponding sine and cosine values update live.',
+      curve: 'M14,32 C30,10 60,10 74,32 S 105,55 118,32', launchUrl: '#', updated: '2026-04-11' },
+
+    { id: 'g-st-61', course: 'Statistics', type: 'LectureGuideNotes', sections: ['6.1'], sectionLabel: 'Hypothesis Testing',
+      title: '6.1 Hypothesis Testing — Notes', desc: 'Notes introducing null/alternative hypotheses, p-values, and significance levels.',
+      guideFile: null, notesFile: '#', updated: '2026-02-20' },
+    { id: 'w-st-61-std', course: 'Statistics', type: 'Worksheet', subtype: 'Standard', sections: ['6.1'], sectionLabel: 'Hypothesis Testing',
+      title: '6.1 Hypothesis Testing Worksheet', desc: 'Practice setting up and interpreting hypothesis tests.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-02-14' },
+
+    { id: 'g-la-31', course: 'Linear Algebra', type: 'LectureGuideNotes', sections: ['3.1'], sectionLabel: 'Eigenvalues & Eigenvectors',
+      title: '3.1 Eigenvalues & Eigenvectors — Guide & Notes', desc: 'Guide and notes on computing eigenvalues and eigenvectors of a matrix.',
+      guideFile: '#', notesFile: '#', updated: '2026-01-30' },
+    { id: 'a-la-31', course: 'Linear Algebra', type: 'Applet', sections: ['3.1', '3.2'],
+      title: 'Eigenvalues & Eigenvectors Explorer', desc: 'Visualize how a matrix transforms vectors and highlights its eigenvectors.',
+      curve: 'M14,45 C40,50 55,15 74,20 S 105,45 118,15', launchUrl: '#', updated: '2026-05-20' },
+
+    { id: 'w-dm-21-std', course: 'Discrete Math', type: 'Worksheet', subtype: 'Standard', sections: ['2.1'], sectionLabel: 'Logic & Proofs',
+      title: '2.1 Logic & Proofs Worksheet', desc: 'Practice with truth tables, logical equivalences, and basic proof techniques.',
+      worksheetFile: '#', solutionsFile: '#', updated: '2026-01-05' },
+  ];
+
+  const fileTypeLabel = { Applet: "Interactive", Worksheet: "PDF", LectureGuideNotes: "PDF", LectureVideo: "Video" };
+
+  const typeDescription = {
+    Applet: "Interactive tools you can drag, adjust, and explore.",
+    Worksheet: "Practice problems, in both Standard and Blended/Honors versions.",
+    LectureGuideNotes: "Written guides and notes covering key concepts.",
+    LectureVideo: "Recorded walkthroughs of important topics."
+  };
+
+  const bioText = "Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.";
+
+  // Placeholder — real channel description/link pending, see spec Open Threads.
+  const videosSidebarText = "All of Kyle's recorded lecture walkthroughs live on one YouTube channel, organized into a playlist per course. Section-level links throughout this site jump straight to the relevant playlist — visit the full channel to browse everything in one place.";
+  const youtubeChannelUrl = "#";
+
+  const courseInfo = {
+    "Calc 1": { blurb: "First-semester calculus: limits, derivatives, and an introduction to integrals, with an emphasis on graphical and real-world interpretation.", topics: "Limits & continuity, derivative rules, related rates, optimization, intro to integration", audience: "Students starting calculus for the first time — no calculus background assumed." },
+    "Calc 2": { blurb: "Techniques of integration, sequences and series, and an introduction to parametric and polar curves.", topics: "Integration techniques, applications of integrals, sequences & series, parametric/polar", audience: "Students who've completed Calc 1 or the equivalent." },
+    "Calc 3": { blurb: "Multivariable calculus — vectors, partial derivatives, multiple integrals, and vector calculus.", topics: "Vectors & 3D space, partial derivatives, multiple integrals, vector fields", audience: "Students who've completed Calc 2." },
+    "Precalc": { blurb: "Foundational algebra and trigonometry needed before starting calculus.", topics: "Functions, polynomials, trig identities, exponential/log functions", audience: "Students preparing for Calc 1." },
+    "Statistics": { blurb: "Introductory statistics: descriptive stats, probability, and inferential methods.", topics: "Descriptive statistics, probability, distributions, hypothesis testing, confidence intervals", audience: "Students from any major needing an intro stats course." },
+    "Linear Algebra": { blurb: "Vectors, matrices, and linear transformations, with an eye toward applications.", topics: "Matrix operations, vector spaces, eigenvalues/eigenvectors, linear transformations", audience: "Students who've completed Calc 2 or by instructor permission." },
+    "Discrete Math": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
+  };
+
+  // v6: course-group display order changed to a curriculum-logical sequence.
+  const courseOrder = ["Precalc", "Calc 1", "Calc 2", "Calc 3", "Linear Algebra", "Discrete Math", "Statistics"];
+  const typeOrder = ["Applet", "Worksheet", "LectureGuideNotes", "LectureVideo"];
+  const typeLabel = { Applet: "Applets", Worksheet: "Worksheets", LectureGuideNotes: "Lecture Guides/Notes", LectureVideo: "Lecture Videos" };
+
+  const typeIconSVG = {
+    Applet: `<svg viewBox="-1 -1 27 26">
+      <line x1="4" y1="21" x2="4" y2="3"/><line x1="4" y1="21" x2="4" y2="23" stroke-width="1.3"/>
+      <line x1="2" y1="19" x2="22" y2="19"/><line x1="4" y1="19" x2="2" y2="19" stroke-width="1.3"/>
+      <g transform="translate(1,-1.5)">
+        <path d="M4.5 17.5C6 11 8 8.5 9.5 8.5S13 11 13.5 13.5 16 18.5 17.5 18.5 20 15 21 9.5"/>
+        <circle cx="21" cy="9.5" r="1.05" fill="var(--accent)" stroke="none"/>
+        <circle cx="21" cy="9.5" r="2.4" opacity="0.45"/>
+        <circle cx="21" cy="9.5" r="3.8" opacity="0.22"/>
+      </g></svg>`,
+    Worksheet: `<svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M16 3v3h3"/><line x1="8" y1="9" x2="15" y2="9"/><line x1="8" y1="12" x2="12" y2="12"/><path d="M9 15l5-5 2 2-5 5-2.5 0.5z"/></svg>`,
+    LectureGuideNotes: `<svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="7" x2="7" y2="7" stroke-width="2.4"/><line x1="4" y1="11" x2="7" y2="11" stroke-width="2.4"/><line x1="4" y1="15" x2="7" y2="15" stroke-width="2.4"/><line x1="10" y1="7" x2="17" y2="7"/><line x1="10" y1="11" x2="17" y2="11"/><line x1="10" y1="15" x2="15" y2="15"/></svg>`,
+    LectureVideo: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8l5 2.5L10 13z" fill="var(--accent)" stroke="none"/><path d="M8 20h8M12 17v3"/></svg>`
+  };
+  const folderIcon = `<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>`;
+
+  let state = { level: 'home' };
+
+  // v6: dev-only "show all courses, including empty ones" preview toggle.
+  // Applies to Course Materials, Applets, and Lecture Videos pages only. This is a build-time
+  // aid so Kyle can see the full 7-course shape of the site while content is still being added —
+  // it must be removed (or gated off) before the site goes live. See spec v6 Open Threads.
+  let devShowEmptyCourses = false;
+  function toggleShowEmptyCourses(checked) {
+    devShowEmptyCourses = checked;
+    render();
+  }
+  function devToggleHTML() {
+    return `<label class="dev-toggle">
+      <input type="checkbox" ${devShowEmptyCourses ? 'checked' : ''} onchange="toggleShowEmptyCourses(this.checked)">
+      <span class="dev-tag">Dev preview</span> Show all courses, including empty ones (remove before launch)
+    </label>`;
+  }
+
+  // v6: items within a course group are ordered by section number, ascending — never by recency.
+  function sectionCompare(a, b) {
+    const pa = ((a.sections && a.sections[0]) || '').split('.').map(Number);
+    const pb = ((b.sections && b.sections[0]) || '').split('.').map(Number);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const na = pa[i] || 0, nb = pb[i] || 0;
+      if (na !== nb) return na - nb;
+    }
+    return 0;
+  }
+
+  // v6: "recently updated" badge — purely visual, 30-day window, never affects ordering.
+  const RECENT_WINDOW_DAYS = 30;
+  function isRecentlyUpdated(dateStr) {
+    const updated = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    const diffDays = (now - updated) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= RECENT_WINDOW_DAYS;
+  }
+  function recentBadgeHTML(dateStr) {
+    return isRecentlyUpdated(dateStr)
+      ? `<span class="recent-badge" title="Updated ${formatDate(dateStr)}"><span class="dot-ico"></span>Updated</span>`
+      : '';
+  }
+
+  function toggleMobileMenu() {
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+  function closeMobileMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
+  }
+
+  function clearNav() { document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('current')); }
+  function setCurrentNav(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('current');
+  }
+
+  function updateNavHighlight() {
+    clearNav();
+    if (state.level === 'home') { setCurrentNav('nav-home'); return; }
+    if (state.level === 'appletsBrowse') { setCurrentNav('nav-applets'); return; }
+    if (state.level === 'videosBrowse') { setCurrentNav('nav-videos'); return; }
+    if (state.level === 'courseMaterials') { setCurrentNav('nav-coursematerials'); return; }
+    if (['tier2', 'tier3', 'tier4'].includes(state.level) && state.entry === 'course') { setCurrentNav('nav-coursematerials'); return; }
+    if (state.level === 'detail') { setCurrentNav('nav-coursematerials'); return; }
+  }
+
+  function goHome() {
+    state = { level: 'home' };
+    render();
+  }
+
+  function goToCourseMaterials() {
+    state = { level: 'courseMaterials' };
+    render();
+  }
+
+  function enterCourse(course) {
+    state = { level: 'tier2', entry: 'course', course };
+    render();
+  }
+
+  function enterType(type) {
+    if (type === 'Applet') {
+      state = { level: 'appletsBrowse' };
+    } else if (type === 'LectureVideo') {
+      state = { level: 'videosBrowse' };
+    } else {
+      state = { level: 'tier2', entry: 'type', type };
+    }
+    render();
+  }
+
+  function openTier3(entry, courseVal, typeVal) {
+    state = { level: 'tier3', entry, course: courseVal, type: typeVal };
+    render();
+  }
+
+  function openWorksheetSubtype(entry, courseVal, subtype) {
+    state = { level: 'tier4', entry, course: courseVal, type: 'Worksheet', subtype };
+    render();
+  }
+
+  function openDetail(id) {
+    const item = items.find(i => i.id === id);
+    if (item && item.type === 'Applet') {
+      launchApplet(id);
+      return;
+    }
+    state = { level: 'detail', id };
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    render();
+  }
+
+  function launchApplet(id) {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    window.open(item.launchUrl || '#', '_blank', 'noopener');
+  }
+
+  function relatedItems(item) {
+    const targetSections = item.sections || [];
+    return items.filter(i => {
+      if (i.id === item.id) return false;
+      if (i.course !== item.course) return false;
+      const iSections = i.sections || [];
+      return iSections.some(s => targetSections.includes(s));
+    });
+  }
+
+  function slug(course) { return course.replace(/\s+/g, ''); }
+  function jumpTo(course) {
+    const el = document.getElementById('grp-' + slug(course));
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function jumpRowHTML(courseList) {
+    return `<div class="jump-row">${courseList.map(c => `<span class="jump-link" onclick="jumpTo('${c}')">${c}</span>`).join('')}</div>`;
+  }
+
+  function crumbHTML() {
+    if (state.level === 'home') return '';
+    const parts = [`<span class="crumb" onclick="goHome()">Home</span>`];
+
+    if (state.level === 'courseMaterials') {
+      parts.push(`<span class="sep">/</span><span class="current-crumb">Course Materials</span>`);
+    }
+
+    if (state.level === 'appletsBrowse') {
+      parts.push(`<span class="sep">/</span><span class="current-crumb">Applets</span>`);
+    }
+
+    if (state.level === 'videosBrowse') {
+      parts.push(`<span class="sep">/</span><span class="current-crumb">Lecture Videos</span>`);
+    }
+
+    if (state.level === 'tier2') {
+      if (state.entry === 'course') {
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${state.course}</span>`);
+      } else {
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${typeLabel[state.type]}</span>`);
+      }
+    }
+
+    if (state.level === 'tier3' || state.level === 'tier4') {
+      if (state.entry === 'course') {
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterCourse('${state.course}')">${state.course}</span>`);
+        parts.push(`<span class="sep">/</span>${state.level === 'tier4' ? `<span class="crumb" onclick="openTier3('course','${state.course}','${state.type}')">${typeLabel[state.type]}</span>` : `<span class="current-crumb">${typeLabel[state.type]}</span>`}`);
+      } else {
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterType('${state.type}')">${typeLabel[state.type]}</span>`);
+        parts.push(`<span class="sep">/</span>${state.level === 'tier4' ? `<span class="crumb" onclick="openTier3('type','${state.course}','${state.type}')">${state.course}</span>` : `<span class="current-crumb">${state.course}</span>`}`);
+      }
+      if (state.level === 'tier4') {
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${state.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</span>`);
+      }
+    }
+
+    if (state.level === 'detail') {
+      const item = items.find(i => i.id === state.id);
+      if (item) {
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterCourse('${item.course}')">${item.course}</span>`);
+        if (item.type === 'Worksheet') {
+          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openTier3('course','${item.course}','Worksheet')">Worksheets</span>`);
+          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openWorksheetSubtype('course','${item.course}','${item.subtype}')">${item.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</span>`);
+        } else {
+          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openTier3('course','${item.course}','${item.type}')">${typeLabel[item.type]}</span>`);
+        }
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${item.title}</span>`);
+      }
+    }
+
+    return `<div class="breadcrumb">${parts.join('')}</div>`;
+  }
+
+  function tileSVG(a) {
+    const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
+    return `<svg viewBox="0 0 130 66">
+      <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
+      <line class="axis-line" x1="4" y1="58" x2="126" y2="58"/>
+      <path class="curve-path" d="${curve}"/>
+      <circle class="ring ring1" cx="118" cy="26" r="2.5"/>
+      <circle class="ring ring2" cx="118" cy="26" r="2.5"/>
+      <circle class="dot" r="3" style="offset-path: path('${curve}');"/>
+    </svg>`;
+  }
+
+  function appletCardHTML(a) {
+    return `<div class="applet-card" onclick="launchApplet('${a.id}')">
+      <div class="ac-eyebrow">Applet</div>
+      <div class="ac-title">${a.title}</div>
+      <div class="ac-body">
+        <div class="ac-tile">${tileSVG(a)}</div>
+        <div class="ac-desc">${a.desc}<span class="course-tag">${a.course}</span>${recentBadgeHTML(a.updated)}</div>
+      </div>
+    </div>`;
+  }
+
+  function renderSidebar() {
+    const card = document.getElementById('sidebar-card');
+    if (state.level === 'home') {
+      card.innerHTML = `<div class="sidebar-photo">KK</div><h3>Kyle Knee</h3><p>${bioText}</p>`;
+    } else if (state.level === 'videosBrowse') {
+      card.innerHTML = `
+        <div class="sidebar-photo">▶</div>
+        <h3>Lecture Videos on YouTube</h3>
+        <p>${videosSidebarText}</p>
+        <a class="file-link" href="${youtubeChannelUrl}" target="_blank" rel="noopener">Visit full channel</a>
+      `;
+    }
+  }
+
+  function render() {
+    updateNavHighlight();
+
+    const page = document.getElementById('page');
+    const shell = document.querySelector('.page-shell');
+    const sidebarPages = ['home', 'videosBrowse'];
+    if (sidebarPages.includes(state.level)) {
+      shell.classList.remove('no-sidebar');
+      renderSidebar();
+    } else {
+      shell.classList.add('no-sidebar');
+    }
+
+    if (state.level === 'home') {
+      const recent = [...items].sort((a, b) => new Date(b.updated) - new Date(a.updated)).slice(0, 5);
+      const whatsNewHTML = recent.map(i => `
+        <div class="whatsnew-item" onclick="openDetail('${i.id}')">
+          <div class="icon-badge">${typeIconSVG[i.type]}</div>
+          <div>
+            <div class="wn-title">${i.title}</div>
+            <div class="wn-meta">${i.course} · ${typeLabel[i.type]}</div>
+          </div>
+          <div class="wn-date">${formatDate(i.updated)}</div>
+        </div>`).join('');
+
+      const explainerHTML = typeOrder.map(t => `
+        <div class="explainer-card" onclick="enterType('${t}')">
+          <div class="icon-badge">${typeIconSVG[t]}</div>
+          <div>
+            <div class="label">${typeLabel[t]}</div>
+            <div class="desc">${typeDescription[t]}</div>
+          </div>
+        </div>`).join('');
+
+      page.innerHTML = `
+        <div class="home-title">Teaching Materials Hub</div>
+        <div class="home-subtitle">Applets, notes, and worksheets for every course — browse by course under Course Materials, or jump straight to Applets or Lecture Videos above.</div>
+        <div class="explainer-row">${explainerHTML}</div>
+        <div class="whatsnew">
+          <h2>What's New</h2>
+          <div class="whatsnew-list">${whatsNewHTML}</div>
+        </div>
+      `;
+      return;
+    }
+
+    // v14: Course Materials directory — grouped/jump pattern + dev "show empty courses" toggle.
+    if (state.level === 'courseMaterials') {
+      const coursesPresent = devShowEmptyCourses
+        ? courseOrder.slice()
+        : courseOrder.filter(c => items.some(i => i.course === c));
+      const body = coursesPresent.map(c => {
+        const info = courseInfo[c] || {};
+        const counts = typeOrder
+          .map(t => {
+            const n = items.filter(i => i.course === c && i.type === t).length;
+            return n ? `${typeLabel[t]}: ${n}` : null;
+          })
+          .filter(Boolean)
+          .join(' · ');
+        return `
+          <div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
+            <div class="cd-title">${c}</div>
+            <div class="cd-blurb">${info.blurb || ''}</div>
+            <div class="cd-counts">${counts || 'No items yet'}</div>
+          </div>`;
+      }).join('');
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">Course Materials</div>
+        ${devToggleHTML()}
+        ${jumpRowHTML(coursesPresent)}
+        <div style="display:flex; flex-direction:column; gap:14px;">${body}</div>
+      `;
+      return;
+    }
+
+    // v14: Applets — grouped by course, sticky headers, jump-links, section-number order,
+    // recency badges, dev "show empty courses" toggle.
+    if (state.level === 'appletsBrowse') {
+      const allApplets = items.filter(i => i.type === 'Applet');
+      const coursesPresent = devShowEmptyCourses
+        ? courseOrder.slice()
+        : courseOrder.filter(c => allApplets.some(a => a.course === c));
+      const body = coursesPresent.map(c => {
+        const inCourse = allApplets.filter(a => a.course === c).sort(sectionCompare);
+        const groupBody = inCourse.length
+          ? `<div class="applet-grid">${inCourse.map(appletCardHTML).join('')}</div>`
+          : `<div class="empty-group-state">No applets for this course yet.</div>`;
+        return `<div class="group-header" id="grp-${slug(c)}">${c}</div>${groupBody}`;
+      }).join('');
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">All Applets</div>
+        ${devToggleHTML()}
+        ${jumpRowHTML(coursesPresent)}
+        <div class="result-count">${allApplets.length} applet${allApplets.length === 1 ? '' : 's'} across ${courseOrder.filter(c => allApplets.some(a => a.course === c)).length} courses</div>
+        ${body || `<div class="empty-state">No applets yet.</div>`}
+      `;
+      return;
+    }
+
+    // v14: Lecture Videos — same grouped pattern, generic item card, section-number order,
+    // recency badges, dev "show empty courses" toggle.
+    if (state.level === 'videosBrowse') {
+      const allVideos = items.filter(i => i.type === 'LectureVideo');
+      const coursesPresent = devShowEmptyCourses
+        ? courseOrder.slice()
+        : courseOrder.filter(c => allVideos.some(a => a.course === c));
+      const body = coursesPresent.map(c => {
+        const inCourse = allVideos.filter(a => a.course === c).sort(sectionCompare);
+        const groupBody = inCourse.length
+          ? `<div class="grid">${inCourse.map(cardHTML).join('')}</div>`
+          : `<div class="empty-group-state">No lecture videos for this course yet.</div>`;
+        return `<div class="group-header" id="grp-${slug(c)}">${c}</div>${groupBody}`;
+      }).join('');
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">Lecture Videos</div>
+        ${devToggleHTML()}
+        ${jumpRowHTML(coursesPresent)}
+        <div class="result-count">${allVideos.length} video section${allVideos.length === 1 ? '' : 's'} across ${courseOrder.filter(c => allVideos.some(a => a.course === c)).length} courses</div>
+        ${body || `<div class="empty-state">No lecture videos yet.</div>`}
+      `;
+      return;
+    }
+
+    if (state.level === 'tier2') {
+      let tilesHTML = '';
+      let infoHTML = '';
+      if (state.entry === 'course') {
+        const info = courseInfo[state.course];
+        if (info) {
+          infoHTML = `
+            <div class="course-info">
+              <p>${info.blurb}</p>
+              <div class="topics"><b>Topics:</b> ${info.topics}</div>
+              <div class="topics" style="margin-top:4px;"><b>Who it's for:</b> ${info.audience}</div>
+            </div>`;
+        }
+        const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
+        tilesHTML = availableTypes.map(t => {
+          const count = items.filter(i => i.course === state.course && i.type === t).length;
+          return `<div class="tile" onclick="openTier3('course','${state.course}','${t}')">
+            <div class="icon-badge">${typeIconSVG[t]}</div>
+            <div class="label">${typeLabel[t]}</div>
+            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
+          </div>`;
+        }).join('');
+      } else {
+        const availableCourses = courseOrder.filter(c => items.some(i => i.course === c && i.type === state.type));
+        tilesHTML = availableCourses.map(c => {
+          const count = items.filter(i => i.course === c && i.type === state.type).length;
+          return `<div class="tile" onclick="openTier3('type','${c}','${state.type}')">
+            <div class="icon-badge">${folderIcon}</div>
+            <div class="label">${c}</div>
+            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
+          </div>`;
+        }).join('');
+      }
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>
+        ${infoHTML}
+        <div class="tile-grid">${tilesHTML}</div>
+      `;
+      return;
+    }
+
+    if (state.level === 'tier3') {
+      if (state.type === 'Worksheet') {
+        const hasStandard = items.some(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Standard');
+        const hasBlended = items.some(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Blended');
+        let tiles = '';
+        if (hasStandard) {
+          const count = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Standard').length;
+          tiles += `<div class="tile" onclick="openWorksheetSubtype('${state.entry}','${state.course}','Standard')">
+            <div class="icon-badge">${folderIcon}</div><div class="label">Standard</div><div class="count">${count} item${count === 1 ? '' : 's'}</div></div>`;
+        }
+        if (hasBlended) {
+          const count = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Blended').length;
+          tiles += `<div class="tile" onclick="openWorksheetSubtype('${state.entry}','${state.course}','Blended')">
+            <div class="icon-badge">${folderIcon}</div><div class="label">Blended/Honors</div><div class="count">${count} item${count === 1 ? '' : 's'}</div></div>`;
+        }
+        page.innerHTML = `
+          ${crumbHTML()}
+          <div class="page-title" style="margin-top:0;">${state.course} — Worksheets</div>
+          <div class="tile-grid">${tiles}</div>
+        `;
+        return;
+      }
+
+      const matches = items.filter(i => i.course === state.course && i.type === state.type).sort(sectionCompare);
+      const bodyHTML = state.type === 'Applet'
+        ? (matches.length ? `<div class="applet-grid">${matches.map(appletCardHTML).join('')}</div>` : `<div class="empty-state">No applets for this course yet.</div>`)
+        : `<div class="grid">${matches.map(cardHTML).join('')}</div>`;
+
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">${state.course} — ${typeLabel[state.type]}</div>
+        ${bodyHTML}
+      `;
+      return;
+    }
+
+    if (state.level === 'tier4') {
+      const matches = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === state.subtype).sort(sectionCompare);
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">${state.course} — Worksheets — ${state.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</div>
+        <div class="grid">${matches.map(cardHTML).join('')}</div>
+      `;
+      return;
+    }
+
+    if (state.level === 'detail') {
+      const item = items.find(i => i.id === state.id);
+      if (!item) { goHome(); return; }
+      if (item.type === 'Applet') { launchApplet(item.id); goHome(); return; }
+
+      let linksHTML = '';
+      if (item.type === 'Worksheet') {
+        linksHTML = `<a class="file-link" href="${item.worksheetFile}">Worksheet (PDF)</a>`
+          + (item.hasSolutions !== false ? `<a class="file-link" href="${item.solutionsFile}">Solutions (PDF)</a>` : '');
+      } else if (item.type === 'LectureGuideNotes') {
+        linksHTML = (item.guideFile ? `<a class="file-link" href="${item.guideFile}">Lecture Guide (PDF)</a>` : '')
+          + (item.notesFile ? `<a class="file-link" href="${item.notesFile}">Lecture Notes (PDF)</a>` : '');
+      } else if (item.type === 'LectureVideo') {
+        linksHTML = `<a class="file-link" href="${item.playlistUrl}" target="_blank" rel="noopener">Watch on YouTube (playlist)</a>`;
+      }
+
+      const related = relatedItems(item);
+      const relatedHTML = related.length ? `
+        <div class="related-block">
+          <h2>Related materials</h2>
+          <div class="related-list">${related.map(relatedRowHTML).join('')}</div>
+        </div>` : '';
+
+      const sections = item.sections || [];
+      const sectionText = sections.length ? (sections.length > 1 ? 'Sections ' : 'Section ') + sections.join(', ') : '';
+
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="detail-card">
+          <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
+          <div class="detail-title">${item.title}</div>
+          <div class="item-tag">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
+          <p class="detail-desc">${item.desc}</p>
+          <div class="detail-links">${linksHTML}</div>
+        </div>
+        ${relatedHTML}
+      `;
+      return;
+    }
+  }
+
+  function cardHTML(i) {
+    return `<div class="item-card" onclick="openDetail('${i.id}')">
+      <div class="item-eyebrow">${typeLabel[i.type]}</div>
+      <div class="item-title">${i.title}</div>
+      <div class="item-tag">${i.course}</div>
+      <div>
+        <span class="filetype-badge">${fileTypeLabel[i.type]}</span>
+        ${i.subtype === 'Blended' ? `<span class="item-pill">Blended/Honors</span>` : ''}
+        ${recentBadgeHTML(i.updated)}
+      </div>
+    </div>`;
+  }
+
+  function relatedRowHTML(i) {
+    return `<div class="whatsnew-item" onclick="openDetail('${i.id}')">
+      <div class="icon-badge">${typeIconSVG[i.type]}</div>
+      <div>
+        <div class="wn-title">${i.title}</div>
+        <div class="wn-meta">${i.course} · ${typeLabel[i.type]}${i.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
+      </div>
+    </div>`;
+  }
+
+  function formatDate(d) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function doSearch(q, isMobile) {
+    const boxId = isMobile ? 'search-results-mobile' : 'search-results';
+    const box = document.getElementById(boxId);
+    if (!isMobile) {
+      document.getElementById('search-clear').classList.toggle('visible', q.length > 0);
+    }
+    if (!q) { box.innerHTML = ''; return; }
+    const matches = items.filter(i => (i.title + ' ' + i.course).toLowerCase().includes(q.toLowerCase()));
+    box.innerHTML = matches.slice(0, 6).map((i, idx) =>
+      `<div class="r" onclick="goToSearchResult(${idx}, ${!!isMobile})"><b>${i.title}</b> — ${i.course}, ${typeLabel[i.type]}${i.subtype === 'Blended' ? ' (Blended/Honors)' : ''}</div>`
+    ).join('') || `<div class="r" style="cursor:default;"><span style="color:var(--eyebrow); font-style:italic;">No matches.</span></div>`;
+    window._lastSearchMatches = matches;
+  }
+
+  function goToSearchResult(idx, isMobile) {
+    const i = window._lastSearchMatches[idx];
+    if (!i) return;
+    openDetail(i.id);
+    if (isMobile) {
+      document.getElementById('search-input-mobile').value = '';
+      document.getElementById('search-results-mobile').innerHTML = '';
+      closeMobileMenu();
+    } else {
+      clearSearch();
+    }
+  }
+
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('search-results').innerHTML = '';
+    document.getElementById('search-clear').classList.remove('visible');
+  }
+
+  document.getElementById('footer-updated').textContent =
+    formatDate([...items].sort((a, b) => new Date(b.updated) - new Date(a.updated))[0].updated);
+
+  goHome();
+</script>
+
+</body>
+</html>
