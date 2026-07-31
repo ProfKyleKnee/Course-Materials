@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Homepage Mockup — v15</title>
+<title>Teaching Materials Hub — v18</title>
 <style>
   :root {
     --bg: #F5F5FA; --card: #FFFFFF; --accent: #3B4FC2; --accent-2: #6478D6;
@@ -16,7 +16,6 @@
   .meta-bar { background: #2A2A3D; color: #E8E8F5; padding: 12px 24px; font-size: 13px; position: sticky; top: 0; z-index: 200; }
   .meta-bar b { color: #fff; }
 
-  /* ---------- header: centered banner with decorative motif + v5 four-item nav ---------- */
   .c-topline { background: #2E3A8C; color: #D6DBF7; font-size: 12.5px; padding: 6px 32px; text-align: center; }
   .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); padding: 46px 32px 40px; color: white; overflow: hidden; }
   .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; }
@@ -48,16 +47,22 @@
   .mobile-search .search-box { width: 100%; }
   .mobile-search .search-results { position: static; width: auto; margin-top: 8px; }
 
-  /* ---------- page layout system (v5): full-width default, two-column w/ sidebar opt-in ---------- */
   .page-shell { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; padding: 28px 32px 80px; }
   .page-shell.no-sidebar { grid-template-columns: 1fr; }
   .page-shell.no-sidebar .sidebar-col { display: none; }
   .main-col { min-width: 0; }
-  .sidebar-card { background: var(--card); border-radius: 20px; padding: 26px 22px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); position: sticky; top: 20px; text-align: center; }
+  .sidebar-card { background: var(--card); border-radius: 20px; padding: 26px 22px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); position: sticky; top: 28px; text-align: left; }
+  .sidebar-card.bio-card { text-align: center; } /* v18: home's bio card keeps its original centered layout */
   .sidebar-photo { width: 84px; height: 84px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 28px; font-weight: 700; margin: 0 auto 14px; }
   .sidebar-card h3 { margin: 0 0 10px; font-size: 16px; }
   .sidebar-card p { font-size: 13px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; text-align: left; }
   .sidebar-card .file-link { display: inline-flex; }
+
+  /* ---------- v18: type sidebars use an inline icon+heading row instead of the stacked bio-photo layout ---------- */
+  .sidebar-header-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .sidebar-icon-inline { width: 42px; height: 42px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .sidebar-icon-inline svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+  .sidebar-header-row h3 { margin: 0; }
 
   .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 18px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .breadcrumb span.crumb { cursor: pointer; }
@@ -65,8 +70,16 @@
   .breadcrumb span.sep { color: var(--eyebrow); }
   .breadcrumb span.current-crumb { color: var(--text); font-weight: 600; }
 
-  .page-eyebrow { text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 600; }
   .page-title { font-size: 26px; font-weight: 700; margin: 4px 0 24px; }
+
+  /* ---------- v18: inline type icon next to the title, used only on single-material-type pages
+     (Tier 3 course+type pages and the top-level typeBrowse pages) ---------- */
+  .title-block { margin: 4px 0 24px; }
+  .title-row { display: flex; align-items: center; gap: 12px; }
+  .title-row .page-title { margin: 0; }
+  .title-icon-badge { width: 44px; height: 44px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .title-icon-badge svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+  .page-tagline { font-size: 13.5px; color: var(--muted); margin: 8px 0 0 56px; }
   .home-title { font-size: 27px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 4px; }
   .home-subtitle { font-size: 14.5px; color: var(--muted); margin: 0 0 28px; }
 
@@ -78,8 +91,22 @@
   .tile .label { font-size: 14.5px; font-weight: 600; }
   .tile .count { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
+  /* ---------- v16: tier 2 pill-box rows (locked in) ---------- */
+  .pillbox-list { display: flex; flex-direction: column; gap: 14px; }
+  .pillbox-row { display: flex; align-items: center; gap: 16px; background: var(--card); border-radius: 16px; padding: 18px 20px; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
+  .pillbox-row:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .pillbox-row .icon-badge { width: 50px; height: 50px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pillbox-row .icon-badge svg { width: 26px; height: 26px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+  .pillbox-row .pb-label { font-size: 16px; font-weight: 700; }
+  .pillbox-row .pb-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .pillbox-row .pb-count { margin-left: auto; font-size: 12.5px; color: var(--accent-2); font-weight: 700; white-space: nowrap; }
+
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-  .item-card { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+  .item-card { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; border-top: 4px solid var(--unit-color, transparent); }
+
+  /* ---------- v18: per-unit accent bar (Tier 3 pages only — courseCarouselsHTML never sets
+     --unit-color, so this is a no-op transparent border everywhere else) ---------- */
+  .unit-carousel-header .carousel-title { border-left: 4px solid var(--unit-color, transparent); padding-left: 10px; }
   .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
   .item-eyebrow { text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 600; }
   .item-title { font-size: 15.5px; font-weight: 600; margin: 6px 0 4px; }
@@ -87,18 +114,16 @@
   .item-pill { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--accent-2); background: var(--soft); padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
   .filetype-badge { display: inline-block; font-size: 10px; font-weight: 700; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 7px; margin-top: 6px; margin-right: 4px; letter-spacing: 0.03em; }
 
-  /* ---------- v6: "recently updated" badge (30-day window; visual only, never affects order) ---------- */
   .recent-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: #2E8B57; background: #E6F4EC; padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
   .recent-badge .dot-ico { width: 6px; height: 6px; border-radius: 50%; background: #2E8B57; display: inline-block; flex-shrink: 0; }
 
-  /* ---------- Applets: distinct compact card (v4, unchanged) ---------- */
   .applet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
   .applet-card {
     background: var(--card); border-radius: 16px; padding: 14px; cursor: pointer;
     box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s;
-    border: 1px solid transparent;
+    border: 1px solid transparent; border-top: 4px solid var(--unit-color, transparent);
   }
-  .applet-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); border-color: var(--border); }
+  .applet-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); border-left-color: var(--border); border-right-color: var(--border); border-bottom-color: var(--border); }
   .ac-eyebrow { text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 700; margin-bottom: 3px; }
   .ac-title { font-size: 14.5px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
   .ac-body { display: flex; gap: 12px; align-items: flex-start; }
@@ -127,10 +152,11 @@
     100% { opacity: 0; r: 9; }
   }
 
-  /* ---------- v5: grouped/sticky-header + jump-link pattern (Applets, Lecture Videos, Course Materials) ---------- */
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
   .jump-link:hover { color: var(--accent); }
+  /* ---------- v16: unit chip row doubles as filter/isolate tabs (was scroll-only jump-links) ---------- */
+  .jump-link.chip-active { background: var(--accent); color: #fff; border-bottom: none; border-radius: 14px; padding: 5px 12px; }
   .group-header {
     font-size: 14px; font-weight: 700; color: var(--text); background: var(--bg);
     padding: 10px 4px; margin: 26px 0 12px; border-bottom: 2px solid var(--border);
@@ -140,7 +166,28 @@
   .result-count { font-size: 12.5px; color: var(--eyebrow); margin-bottom: 6px; }
   .empty-group-state { font-size: 13px; color: var(--muted); font-style: italic; padding: 4px 4px 6px; }
 
-  /* ---------- v6: dev-only "show empty courses" preview toggle ---------- */
+  /* ---------- v16: carousel rows (top-level course carousels + tier-3 unit carousels) ---------- */
+  .carousel-block { margin-bottom: 30px; scroll-margin-top: 10px; }
+  .carousel-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .carousel-title { font-size: 15.5px; font-weight: 700; cursor: pointer; }
+  .carousel-title:hover { color: var(--accent); text-decoration: underline; }
+  .carousel-seeall { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; white-space: nowrap; }
+  .carousel-seeall:hover { color: var(--accent); }
+  .carousel-wrap { position: relative; }
+  .carousel-track { display: flex; gap: 14px; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x proximity; padding: 2px 2px 8px; scrollbar-width: none; }
+  .carousel-track::-webkit-scrollbar { display: none; }
+  .carousel-track > * { scroll-snap-align: start; }
+  .carousel-track .item-card { width: 208px; flex: 0 0 208px; }
+  .carousel-track .applet-card { width: 258px; flex: 0 0 258px; }
+  .carousel-arrow {
+    position: absolute; top: 0; bottom: 8px; width: 40px; display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer; opacity: 0; transition: opacity 0.15s; z-index: 4;
+  }
+  .carousel-arrow.left { left: -6px; background: linear-gradient(270deg, rgba(245,245,250,0), var(--bg) 65%); justify-content: flex-start; }
+  .carousel-arrow.right { right: -6px; background: linear-gradient(90deg, rgba(245,245,250,0), var(--bg) 65%); justify-content: flex-end; }
+  .carousel-arrow svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .carousel-wrap:hover .carousel-arrow { opacity: 1; }
+
   .dev-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--eyebrow); margin-bottom: 16px; cursor: pointer; user-select: none; background: #FBF6E8; border: 1px dashed #D8C98A; padding: 6px 12px; border-radius: 10px; }
   .dev-toggle input { cursor: pointer; }
   .dev-toggle .dev-tag { font-weight: 700; color: #9C7C1E; text-transform: uppercase; font-size: 10px; letter-spacing: 0.04em; }
@@ -155,7 +202,6 @@
   .cd-blurb { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; max-width: 640px; }
   .cd-counts { font-size: 12px; color: var(--accent-2); font-weight: 600; }
 
-  /* ---------- mobile hamburger nav ---------- */
   .hamburger { display: none; position: absolute; right: 20px; top: 18px; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
   .mobile-menu { display: none; background: var(--card); border-bottom: 1px solid var(--border); }
   .mobile-menu.open { display: block; }
@@ -200,6 +246,25 @@
   .detail-links { display: flex; flex-wrap: wrap; gap: 10px; }
   .file-link { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); color: var(--accent); font-weight: 600; font-size: 13.5px; padding: 10px 16px; border-radius: 12px; transition: background 0.15s; }
   .file-link:hover { background: var(--border); }
+
+  /* ---------- v17: disabled/placeholder file links + tooltip ---------- */
+  .file-link.disabled { background: var(--bg); color: var(--eyebrow); cursor: not-allowed; border: 1px dashed var(--border); }
+  .file-link.disabled:hover { background: var(--bg); }
+  .tooltip-wrap { position: relative; display: inline-flex; }
+  .tooltip-bubble {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: #2A2A3D; color: #fff; font-size: 11.5px; font-weight: 600; padding: 6px 10px;
+    border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    z-index: 20;
+  }
+  .tooltip-bubble::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: #2A2A3D;
+  }
+  .tooltip-wrap:hover .tooltip-bubble { opacity: 1; }
+
+  /* ---------- v17: type-icon sizing when reused inside the sidebar photo circle ---------- */
+  .sidebar-photo svg { width: 32px; height: 32px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
   .related-block h2 { font-size: 16px; margin-bottom: 12px; }
   .related-list { display: flex; flex-direction: column; gap: 8px; }
 
@@ -216,13 +281,14 @@
 <body>
 
 <div class="meta-bar">
-  <b>Prototype v15:</b> corrects two things from v14 that went out without approval &mdash; the
-  Course Materials directory no longer lists each course's name twice (a separate sticky header plus
-  the tile's own title); jump-links now scroll straight to the tile. The homepage heading is back to
-  <b>"Teaching Materials Hub"</b> as a plain, functional page label &mdash; distinct from the site's
-  formal name, <b>Professor Kyle Knee's Course Materials Site</b>, which lives in the footer credit
-  and browser tab. Everything else carried over unchanged from v14 (course-group order, section-number
-  sort + 30-day "Updated" badges, the dev-only empty-course toggle, and the CC BY-NC footer license).
+  <b>Mockup v18 — result of the tier 3 "plainness" design round:</b> single-type pages (Worksheets,
+  Lecture Guides/Notes, Lecture Videos, Applets, at both the top-level browse page and the
+  course-specific page) now show a type icon inline with the page title. A per-unit accent color bar
+  now runs along the top of each card on unit-grouped pages (Tier 3), with the unit's carousel header
+  echoing the same color. The Worksheets/Guides-Notes/Videos sidebar now also appears on their
+  course-specific pages, not just the top-level browse page, and its icon sits inline with the
+  heading instead of stacked above it. Applets (no sidebar) keeps a one-line tagline under its title;
+  the other three drop the tagline since the sidebar already covers that ground.
 </div>
 
 <div class="c-topline">
@@ -368,6 +434,66 @@
       worksheetFile: '#', solutionsFile: '#', updated: '2026-01-05' },
   ];
 
+  // ---------- v16: dummy data — 10 items per unit per material type, 5 units, Calc 1 & Calc 3 (~400 items) ----------
+  const dummyUnitDefs = {
+    'Calc 1': [
+      { unit: 1, label: 'Squeeze Theorem & Asymptotes' },
+      { unit: 2, label: 'Definition of the Derivative' },
+      { unit: 3, label: 'Chain Rule & Implicit Differentiation' },
+      { unit: 4, label: 'Applications of Derivatives' },
+      { unit: 5, label: 'Intro to Integration' },
+    ],
+    'Calc 3': [
+      { unit: 1, label: 'Vectors in 3D Space' },
+      { unit: 2, label: 'Partial Derivatives' },
+      { unit: 3, label: 'Directional Derivatives & Gradients' },
+      { unit: 6, label: 'Line Integrals' },
+      { unit: 7, label: 'Surface Integrals' },
+    ]
+  };
+  const subtopicSuffixes = ['Part A', 'Part B', 'Part C', 'Part D', 'Part E', 'Part F', 'Part G', 'Part H', 'Part I', 'Part J'];
+
+  function buildDummyItems() {
+    const out = [];
+    const dates = ['2026-01-08', '2026-02-12', '2026-03-05', '2026-04-18', '2026-05-22', '2026-06-14', '2026-07-20', '2026-07-25', '2026-01-30', '2026-06-01'];
+    let dateIdx = 0;
+    const nextDate = () => dates[(dateIdx++) % dates.length];
+
+    Object.keys(dummyUnitDefs).forEach(course => {
+      const cs = course === 'Calc 1' ? 'c1' : 'c3';
+      dummyUnitDefs[course].forEach(block => {
+        for (let n = 1; n <= 10; n++) {
+          const sec = `${block.unit}.${n}`;
+          const secId = `${block.unit}-${n}`;
+          const suffix = subtopicSuffixes[n - 1];
+          const subtype = (n % 2 === 0) ? 'Blended' : 'Standard';
+          out.push({ id: `d-${cs}-${secId}-ws`, course, type: 'Worksheet', subtype,
+            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
+            title: `${sec} ${block.label} Worksheet${subtype === 'Blended' ? ' (Blended/Honors)' : ''}`,
+            desc: `Practice set covering ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
+            worksheetFile: '#', solutionsFile: '#', updated: nextDate() });
+          out.push({ id: `d-${cs}-${secId}-lgn`, course, type: 'LectureGuideNotes',
+            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
+            title: `${sec} ${block.label} — Guide & Notes (${suffix})`,
+            desc: `Guide and notes covering ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
+            guideFile: '#', notesFile: '#', updated: nextDate() });
+          out.push({ id: `d-${cs}-${secId}-vid`, course, type: 'LectureVideo',
+            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
+            title: `${sec} ${block.label} — Lecture Video (${suffix})`,
+            desc: `Recorded walkthrough of ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
+            playlistUrl: '#', updated: nextDate() });
+          out.push({ id: `d-${cs}-${secId}-app`, course, type: 'Applet',
+            sections: [sec],
+            title: `${block.label} Explorer (${suffix})`,
+            desc: `Interactive exploration tool for ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
+            curve: 'M14,50 C34,20 56,45 74,25 S 100,45 118,20', launchUrl: '#', updated: nextDate() });
+        }
+      });
+    });
+    return out;
+  }
+  items.push(...buildDummyItems());
+
   const fileTypeLabel = { Applet: "Interactive", Worksheet: "PDF", LectureGuideNotes: "PDF", LectureVideo: "Video" };
 
   const typeDescription = {
@@ -379,9 +505,14 @@
 
   const bioText = "Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.";
 
-  // Placeholder — real channel description/link pending, see spec Open Threads.
   const videosSidebarText = "All of Kyle's recorded lecture walkthroughs live on one YouTube channel, organized into a playlist per course. Section-level links throughout this site jump straight to the relevant playlist — visit the full channel to browse everything in one place.";
   const youtubeChannelUrl = "#";
+
+  // ---------- v17: sidebar copy for the Worksheets and Lecture Guides/Notes browse pages ----------
+  const worksheetsOrgText = "Worksheets are grouped by course and unit. Blended/Honors versions are marked with a badge and appear alongside the Standard version for the same section.";
+  const worksheetsUseText = "Worksheets are meant for independent practice after each section, with problems ranging from foundational to more challenging. Blended/Honors worksheets go a step further with deeper, more complex problems — these are intended for in-class group work under teacher supervision, rather than independent practice.";
+  const guidesOrgText = "Lecture guides and notes are grouped by course and unit.";
+  const guidesUseText = "The Lecture Guide is the skeleton version brought to class — theorems to notate rather than copy, problems to work through rather than read, diagrams to label as the lesson unfolds. It's the version taught from directly, marked up live so students can do the same on their own copy. The Lecture Notes are a completed version of that same guide, sometimes containing additional details beyond what's covered in class. The goal is to keep focus on understanding the ideas in the moment rather than transcribing — the guide provides structure during class, the notes provide the finished record.";
 
   const courseInfo = {
     "Calc 1": { blurb: "First-semester calculus: limits, derivatives, and an introduction to integrals, with an emphasis on graphical and real-world interpretation.", topics: "Limits & continuity, derivative rules, related rates, optimization, intro to integration", audience: "Students starting calculus for the first time — no calculus background assumed." },
@@ -393,7 +524,6 @@
     "Discrete Math": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
   };
 
-  // v6: course-group display order changed to a curriculum-logical sequence.
   const courseOrder = ["Precalc", "Calc 1", "Calc 2", "Calc 3", "Linear Algebra", "Discrete Math", "Statistics"];
   const typeOrder = ["Applet", "Worksheet", "LectureGuideNotes", "LectureVideo"];
   const typeLabel = { Applet: "Applets", Worksheet: "Worksheets", LectureGuideNotes: "Lecture Guides/Notes", LectureVideo: "Lecture Videos" };
@@ -413,26 +543,43 @@
     LectureVideo: `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8l5 2.5L10 13z" fill="var(--accent)" stroke="none"/><path d="M8 20h8M12 17v3"/></svg>`
   };
   const folderIcon = `<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>`;
+  const chevronLeftSVG = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`;
+  const chevronRightSVG = `<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
 
   let state = { level: 'home' };
-
-  // v6: dev-only "show all courses, including empty ones" preview toggle.
-  // Applies to Course Materials, Applets, and Lecture Videos pages only. This is a build-time
-  // aid so Kyle can see the full 7-course shape of the site while content is still being added —
-  // it must be removed (or gated off) before the site goes live. See spec v6 Open Threads.
   let devShowEmptyCourses = false;
-  function toggleShowEmptyCourses(checked) {
-    devShowEmptyCourses = checked;
+
+  // ---------- v16: History API — proper back/forward support ----------
+  function statePath(s) {
+    if (!s) return '/';
+    if (s.level === 'home') return '/';
+    if (s.level === 'courseMaterials') return '/course-materials';
+    if (s.level === 'typeBrowse') {
+      const friendlySlug = { Applet: 'applets', LectureVideo: 'lecture-videos', Worksheet: 'worksheets', LectureGuideNotes: 'lecture-guides-notes' };
+      return '/' + (friendlySlug[s.type] || s.type.toLowerCase());
+    }
+    if (s.level === 'tier2') return s.entry === 'course' ? `/course-materials/${slug(s.course)}` : `/type/${s.type}`;
+    if (s.level === 'tier3') {
+      let base = s.entry === 'course' ? `/course-materials/${slug(s.course)}/${s.type}` : `/type/${s.type}/${slug(s.course)}`;
+      if (s.isolatedUnit) base += `/unit-${s.isolatedUnit}`;
+      return base;
+    }
+    if (s.level === 'detail') return `/item/${s.id}`;
+    return '/';
+  }
+  function navigate(newState, push) {
+    if (push === undefined) push = true;
+    state = newState;
+    if (push) {
+      try { history.pushState(state, '', '#' + statePath(state)); } catch (e) { /* ignore in restricted contexts */ }
+    }
     render();
   }
-  function devToggleHTML() {
-    return `<label class="dev-toggle">
-      <input type="checkbox" ${devShowEmptyCourses ? 'checked' : ''} onchange="toggleShowEmptyCourses(this.checked)">
-      <span class="dev-tag">Dev preview</span> Show all courses, including empty ones (remove before launch)
-    </label>`;
-  }
+  window.addEventListener('popstate', function (e) {
+    state = e.state || { level: 'home' };
+    render();
+  });
 
-  // v6: items within a course group are ordered by section number, ascending — never by recency.
   function sectionCompare(a, b) {
     const pa = ((a.sections && a.sections[0]) || '').split('.').map(Number);
     const pb = ((b.sections && b.sections[0]) || '').split('.').map(Number);
@@ -444,7 +591,11 @@
     return 0;
   }
 
-  // v6: "recently updated" badge — purely visual, 30-day window, never affects ordering.
+  function unitOf(item) {
+    const s = (item.sections && item.sections[0]) || '0';
+    return s.split('.')[0] || '0';
+  }
+
   const RECENT_WINDOW_DAYS = 30;
   function isRecentlyUpdated(dateStr) {
     const updated = new Date(dateStr + 'T00:00:00');
@@ -458,80 +609,70 @@
       : '';
   }
 
-  function toggleMobileMenu() {
-    document.getElementById('mobile-menu').classList.toggle('open');
-  }
-  function closeMobileMenu() {
-    document.getElementById('mobile-menu').classList.remove('open');
-  }
+  function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('open'); }
+  function closeMobileMenu() { document.getElementById('mobile-menu').classList.remove('open'); }
 
   function clearNav() { document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('current')); }
-  function setCurrentNav(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('current');
-  }
+  function setCurrentNav(id) { const el = document.getElementById(id); if (el) el.classList.add('current'); }
 
   function updateNavHighlight() {
     clearNav();
     if (state.level === 'home') { setCurrentNav('nav-home'); return; }
-    if (state.level === 'appletsBrowse') { setCurrentNav('nav-applets'); return; }
-    if (state.level === 'videosBrowse') { setCurrentNav('nav-videos'); return; }
+    if (state.level === 'typeBrowse' && state.type === 'Applet') { setCurrentNav('nav-applets'); return; }
+    if (state.level === 'typeBrowse' && state.type === 'LectureVideo') { setCurrentNav('nav-videos'); return; }
     if (state.level === 'courseMaterials') { setCurrentNav('nav-coursematerials'); return; }
-    if (['tier2', 'tier3', 'tier4'].includes(state.level) && state.entry === 'course') { setCurrentNav('nav-coursematerials'); return; }
+    if (['tier2', 'tier3'].includes(state.level) && state.entry === 'course') { setCurrentNav('nav-coursematerials'); return; }
     if (state.level === 'detail') { setCurrentNav('nav-coursematerials'); return; }
   }
 
-  function goHome() {
-    state = { level: 'home' };
-    render();
-  }
+  function goHome() { navigate({ level: 'home' }); }
+  function goToCourseMaterials() { navigate({ level: 'courseMaterials' }); }
+  function enterCourse(course) { navigate({ level: 'tier2', entry: 'course', course }); }
 
-  function goToCourseMaterials() {
-    state = { level: 'courseMaterials' };
-    render();
-  }
-
-  function enterCourse(course) {
-    state = { level: 'tier2', entry: 'course', course };
-    render();
-  }
-
+  // ---------- v17: all four material types now open the same course-carousel browse page ----------
+  // (previously Worksheet/LectureGuideNotes routed to the old tier2 folder-tile page instead)
   function enterType(type) {
-    if (type === 'Applet') {
-      state = { level: 'appletsBrowse' };
-    } else if (type === 'LectureVideo') {
-      state = { level: 'videosBrowse' };
-    } else {
-      state = { level: 'tier2', entry: 'type', type };
-    }
-    render();
+    navigate({ level: 'typeBrowse', type });
   }
 
   function openTier3(entry, courseVal, typeVal) {
-    state = { level: 'tier3', entry, course: courseVal, type: typeVal };
-    render();
+    navigate({ level: 'tier3', entry, course: courseVal, type: typeVal, isolatedUnit: null });
   }
 
-  function openWorksheetSubtype(entry, courseVal, subtype) {
-    state = { level: 'tier4', entry, course: courseVal, type: 'Worksheet', subtype };
-    render();
+  function isolateUnit(u) {
+    navigate(Object.assign({}, state, { isolatedUnit: u }));
   }
 
   function openDetail(id) {
     const item = items.find(i => i.id === id);
-    if (item && item.type === 'Applet') {
-      launchApplet(id);
-      return;
-    }
-    state = { level: 'detail', id };
+    if (item && item.type === 'Applet') { launchApplet(id); return; }
     window.scrollTo({ top: 0, behavior: 'instant' });
-    render();
+    navigate({ level: 'detail', id });
   }
 
+  // ---------- v17: placeholder URLs (still just '#' throughout the dummy dataset) no longer
+  // do anything when clicked — no more falling through to a blank tab or the homepage ----------
   function launchApplet(id) {
     const item = items.find(i => i.id === id);
     if (!item) return;
-    window.open(item.launchUrl || '#', '_blank', 'noopener');
+    if (!item.launchUrl || item.launchUrl === '#') return; // no-op: applet not yet linked
+    window.open(item.launchUrl, '_blank', 'noopener');
+  }
+
+  // Renders a file/playlist link. Real URLs render as a normal working link.
+  // Placeholder URLs ('#' or empty) render as a grayed-out, inert control with a tooltip
+  // instead of a live link — so clicking genuinely does nothing rather than misbehaving.
+  function fileLinkHTML(url, label, opts) {
+    opts = opts || {};
+    const isPlaceholder = !url || url === '#';
+    if (isPlaceholder) {
+      return `<span class="tooltip-wrap">
+        <span class="file-link disabled" aria-disabled="true">${label}</span>
+        <span class="tooltip-bubble">${opts.tooltip || 'File not yet uploaded'}</span>
+      </span>`;
+    }
+    const targetAttr = opts.newTab ? ` target="_blank" rel="noopener"` : '';
+    return `<a class="file-link" href="${url}"${targetAttr}>${label}</a>`;
   }
 
   function relatedItems(item) {
@@ -553,6 +694,39 @@
     return `<div class="jump-row">${courseList.map(c => `<span class="jump-link" onclick="jumpTo('${c}')">${c}</span>`).join('')}</div>`;
   }
 
+  function scrollCarousel(id, dir) {
+    const el = document.getElementById(id);
+    if (el) el.scrollBy({ left: dir * 460, behavior: 'smooth' });
+  }
+  function arrowBtnHTML(rowId, dir) {
+    const cls = dir < 0 ? 'left' : 'right';
+    const icon = dir < 0 ? chevronLeftSVG : chevronRightSVG;
+    return `<button class="carousel-arrow ${cls}" onclick="scrollCarousel('${rowId}', ${dir})" aria-label="Scroll ${cls}">${icon}</button>`;
+  }
+
+  // ---------- v18: shared title-block markup for single-material-type pages (typeBrowse + tier3).
+  // Applets (no sidebar) keeps a one-line tagline here; the other three drop it since their sidebar
+  // already covers the same ground. ----------
+  const appletTagline = "Interactive tools to drag, adjust, and explore.";
+  function titleBlockHTML(type, titleText) {
+    const tagline = type === 'Applet' ? `<div class="page-tagline">${appletTagline}</div>` : '';
+    return `<div class="title-block">
+      <div class="title-row">
+        <div class="title-icon-badge">${typeIconSVG[type]}</div>
+        <div class="page-title">${titleText}</div>
+      </div>
+      ${tagline}
+    </div>`;
+  }
+
+  // ---------- v18: cycling accent palette for per-unit card/header color on Tier 3 pages ----------
+  const unitAccentPalette = ['#6478D6', '#3F9C82', '#B8862F', '#B15FA8', '#4A90A4'];
+  function unitColorMap(units) {
+    const map = {};
+    units.forEach((u, idx) => { map[u] = unitAccentPalette[idx % unitAccentPalette.length]; });
+    return map;
+  }
+
   function crumbHTML() {
     if (state.level === 'home') return '';
     const parts = [`<span class="crumb" onclick="goHome()">Home</span>`];
@@ -560,15 +734,10 @@
     if (state.level === 'courseMaterials') {
       parts.push(`<span class="sep">/</span><span class="current-crumb">Course Materials</span>`);
     }
-
-    if (state.level === 'appletsBrowse') {
-      parts.push(`<span class="sep">/</span><span class="current-crumb">Applets</span>`);
+    if (state.level === 'typeBrowse') {
+      const label = state.type === 'Applet' ? 'Applets' : typeLabel[state.type];
+      parts.push(`<span class="sep">/</span><span class="current-crumb">${label}</span>`);
     }
-
-    if (state.level === 'videosBrowse') {
-      parts.push(`<span class="sep">/</span><span class="current-crumb">Lecture Videos</span>`);
-    }
-
     if (state.level === 'tier2') {
       if (state.entry === 'course') {
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
@@ -577,36 +746,28 @@
         parts.push(`<span class="sep">/</span><span class="current-crumb">${typeLabel[state.type]}</span>`);
       }
     }
-
-    if (state.level === 'tier3' || state.level === 'tier4') {
+    if (state.level === 'tier3') {
       if (state.entry === 'course') {
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterCourse('${state.course}')">${state.course}</span>`);
-        parts.push(`<span class="sep">/</span>${state.level === 'tier4' ? `<span class="crumb" onclick="openTier3('course','${state.course}','${state.type}')">${typeLabel[state.type]}</span>` : `<span class="current-crumb">${typeLabel[state.type]}</span>`}`);
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${typeLabel[state.type]}</span>`);
       } else {
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterType('${state.type}')">${typeLabel[state.type]}</span>`);
-        parts.push(`<span class="sep">/</span>${state.level === 'tier4' ? `<span class="crumb" onclick="openTier3('type','${state.course}','${state.type}')">${state.course}</span>` : `<span class="current-crumb">${state.course}</span>`}`);
+        parts.push(`<span class="sep">/</span><span class="current-crumb">${state.course}</span>`);
       }
-      if (state.level === 'tier4') {
-        parts.push(`<span class="sep">/</span><span class="current-crumb">${state.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</span>`);
+      if (state.isolatedUnit) {
+        parts.push(`<span class="sep">/</span><span class="current-crumb">Unit ${state.isolatedUnit}</span>`);
       }
     }
-
     if (state.level === 'detail') {
       const item = items.find(i => i.id === state.id);
       if (item) {
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
         parts.push(`<span class="sep">/</span><span class="crumb" onclick="enterCourse('${item.course}')">${item.course}</span>`);
-        if (item.type === 'Worksheet') {
-          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openTier3('course','${item.course}','Worksheet')">Worksheets</span>`);
-          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openWorksheetSubtype('course','${item.course}','${item.subtype}')">${item.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</span>`);
-        } else {
-          parts.push(`<span class="sep">/</span><span class="crumb" onclick="openTier3('course','${item.course}','${item.type}')">${typeLabel[item.type]}</span>`);
-        }
+        parts.push(`<span class="sep">/</span><span class="crumb" onclick="openTier3('course','${item.course}','${item.type}')">${typeLabel[item.type]}</span>`);
         parts.push(`<span class="sep">/</span><span class="current-crumb">${item.title}</span>`);
       }
     }
-
     return `<div class="breadcrumb">${parts.join('')}</div>`;
   }
 
@@ -622,8 +783,11 @@
     </svg>`;
   }
 
-  function appletCardHTML(a) {
-    return `<div class="applet-card" onclick="launchApplet('${a.id}')">
+  // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
+  // courseCarouselsHTML calls these with no second argument, so top-level pages get no accent bar ----------
+  function appletCardHTML(a, unitColor) {
+    const styleAttr = unitColor ? ` style="--unit-color:${unitColor};"` : '';
+    return `<div class="applet-card"${styleAttr} onclick="launchApplet('${a.id}')">
       <div class="ac-eyebrow">Applet</div>
       <div class="ac-title">${a.title}</div>
       <div class="ac-body">
@@ -633,278 +797,9 @@
     </div>`;
   }
 
-  function renderSidebar() {
-    const card = document.getElementById('sidebar-card');
-    if (state.level === 'home') {
-      card.innerHTML = `<div class="sidebar-photo">KK</div><h3>Kyle Knee</h3><p>${bioText}</p>`;
-    } else if (state.level === 'videosBrowse') {
-      card.innerHTML = `
-        <div class="sidebar-photo">▶</div>
-        <h3>Lecture Videos on YouTube</h3>
-        <p>${videosSidebarText}</p>
-        <a class="file-link" href="${youtubeChannelUrl}" target="_blank" rel="noopener">Visit full channel</a>
-      `;
-    }
-  }
-
-  function render() {
-    updateNavHighlight();
-
-    const page = document.getElementById('page');
-    const shell = document.querySelector('.page-shell');
-    const sidebarPages = ['home', 'videosBrowse'];
-    if (sidebarPages.includes(state.level)) {
-      shell.classList.remove('no-sidebar');
-      renderSidebar();
-    } else {
-      shell.classList.add('no-sidebar');
-    }
-
-    if (state.level === 'home') {
-      const recent = [...items].sort((a, b) => new Date(b.updated) - new Date(a.updated)).slice(0, 5);
-      const whatsNewHTML = recent.map(i => `
-        <div class="whatsnew-item" onclick="openDetail('${i.id}')">
-          <div class="icon-badge">${typeIconSVG[i.type]}</div>
-          <div>
-            <div class="wn-title">${i.title}</div>
-            <div class="wn-meta">${i.course} · ${typeLabel[i.type]}</div>
-          </div>
-          <div class="wn-date">${formatDate(i.updated)}</div>
-        </div>`).join('');
-
-      const explainerHTML = typeOrder.map(t => `
-        <div class="explainer-card" onclick="enterType('${t}')">
-          <div class="icon-badge">${typeIconSVG[t]}</div>
-          <div>
-            <div class="label">${typeLabel[t]}</div>
-            <div class="desc">${typeDescription[t]}</div>
-          </div>
-        </div>`).join('');
-
-      page.innerHTML = `
-        <div class="home-title">Teaching Materials Hub</div>
-        <div class="home-subtitle">Applets, notes, and worksheets for every course — browse by course under Course Materials, or jump straight to Applets or Lecture Videos above.</div>
-        <div class="explainer-row">${explainerHTML}</div>
-        <div class="whatsnew">
-          <h2>What's New</h2>
-          <div class="whatsnew-list">${whatsNewHTML}</div>
-        </div>
-      `;
-      return;
-    }
-
-    // v14: Course Materials directory — grouped/jump pattern + dev "show empty courses" toggle.
-    if (state.level === 'courseMaterials') {
-      const coursesPresent = devShowEmptyCourses
-        ? courseOrder.slice()
-        : courseOrder.filter(c => items.some(i => i.course === c));
-      const body = coursesPresent.map(c => {
-        const info = courseInfo[c] || {};
-        const counts = typeOrder
-          .map(t => {
-            const n = items.filter(i => i.course === c && i.type === t).length;
-            return n ? `${typeLabel[t]}: ${n}` : null;
-          })
-          .filter(Boolean)
-          .join(' · ');
-        return `
-          <div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
-            <div class="cd-title">${c}</div>
-            <div class="cd-blurb">${info.blurb || ''}</div>
-            <div class="cd-counts">${counts || 'No items yet'}</div>
-          </div>`;
-      }).join('');
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">Course Materials</div>
-        ${devToggleHTML()}
-        ${jumpRowHTML(coursesPresent)}
-        <div style="display:flex; flex-direction:column; gap:14px;">${body}</div>
-      `;
-      return;
-    }
-
-    // v14: Applets — grouped by course, sticky headers, jump-links, section-number order,
-    // recency badges, dev "show empty courses" toggle.
-    if (state.level === 'appletsBrowse') {
-      const allApplets = items.filter(i => i.type === 'Applet');
-      const coursesPresent = devShowEmptyCourses
-        ? courseOrder.slice()
-        : courseOrder.filter(c => allApplets.some(a => a.course === c));
-      const body = coursesPresent.map(c => {
-        const inCourse = allApplets.filter(a => a.course === c).sort(sectionCompare);
-        const groupBody = inCourse.length
-          ? `<div class="applet-grid">${inCourse.map(appletCardHTML).join('')}</div>`
-          : `<div class="empty-group-state">No applets for this course yet.</div>`;
-        return `<div class="group-header" id="grp-${slug(c)}">${c}</div>${groupBody}`;
-      }).join('');
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">All Applets</div>
-        ${devToggleHTML()}
-        ${jumpRowHTML(coursesPresent)}
-        <div class="result-count">${allApplets.length} applet${allApplets.length === 1 ? '' : 's'} across ${courseOrder.filter(c => allApplets.some(a => a.course === c)).length} courses</div>
-        ${body || `<div class="empty-state">No applets yet.</div>`}
-      `;
-      return;
-    }
-
-    // v14: Lecture Videos — same grouped pattern, generic item card, section-number order,
-    // recency badges, dev "show empty courses" toggle.
-    if (state.level === 'videosBrowse') {
-      const allVideos = items.filter(i => i.type === 'LectureVideo');
-      const coursesPresent = devShowEmptyCourses
-        ? courseOrder.slice()
-        : courseOrder.filter(c => allVideos.some(a => a.course === c));
-      const body = coursesPresent.map(c => {
-        const inCourse = allVideos.filter(a => a.course === c).sort(sectionCompare);
-        const groupBody = inCourse.length
-          ? `<div class="grid">${inCourse.map(cardHTML).join('')}</div>`
-          : `<div class="empty-group-state">No lecture videos for this course yet.</div>`;
-        return `<div class="group-header" id="grp-${slug(c)}">${c}</div>${groupBody}`;
-      }).join('');
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">Lecture Videos</div>
-        ${devToggleHTML()}
-        ${jumpRowHTML(coursesPresent)}
-        <div class="result-count">${allVideos.length} video section${allVideos.length === 1 ? '' : 's'} across ${courseOrder.filter(c => allVideos.some(a => a.course === c)).length} courses</div>
-        ${body || `<div class="empty-state">No lecture videos yet.</div>`}
-      `;
-      return;
-    }
-
-    if (state.level === 'tier2') {
-      let tilesHTML = '';
-      let infoHTML = '';
-      if (state.entry === 'course') {
-        const info = courseInfo[state.course];
-        if (info) {
-          infoHTML = `
-            <div class="course-info">
-              <p>${info.blurb}</p>
-              <div class="topics"><b>Topics:</b> ${info.topics}</div>
-              <div class="topics" style="margin-top:4px;"><b>Who it's for:</b> ${info.audience}</div>
-            </div>`;
-        }
-        const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
-        tilesHTML = availableTypes.map(t => {
-          const count = items.filter(i => i.course === state.course && i.type === t).length;
-          return `<div class="tile" onclick="openTier3('course','${state.course}','${t}')">
-            <div class="icon-badge">${typeIconSVG[t]}</div>
-            <div class="label">${typeLabel[t]}</div>
-            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
-          </div>`;
-        }).join('');
-      } else {
-        const availableCourses = courseOrder.filter(c => items.some(i => i.course === c && i.type === state.type));
-        tilesHTML = availableCourses.map(c => {
-          const count = items.filter(i => i.course === c && i.type === state.type).length;
-          return `<div class="tile" onclick="openTier3('type','${c}','${state.type}')">
-            <div class="icon-badge">${folderIcon}</div>
-            <div class="label">${c}</div>
-            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
-          </div>`;
-        }).join('');
-      }
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>
-        ${infoHTML}
-        <div class="tile-grid">${tilesHTML}</div>
-      `;
-      return;
-    }
-
-    if (state.level === 'tier3') {
-      if (state.type === 'Worksheet') {
-        const hasStandard = items.some(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Standard');
-        const hasBlended = items.some(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Blended');
-        let tiles = '';
-        if (hasStandard) {
-          const count = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Standard').length;
-          tiles += `<div class="tile" onclick="openWorksheetSubtype('${state.entry}','${state.course}','Standard')">
-            <div class="icon-badge">${folderIcon}</div><div class="label">Standard</div><div class="count">${count} item${count === 1 ? '' : 's'}</div></div>`;
-        }
-        if (hasBlended) {
-          const count = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === 'Blended').length;
-          tiles += `<div class="tile" onclick="openWorksheetSubtype('${state.entry}','${state.course}','Blended')">
-            <div class="icon-badge">${folderIcon}</div><div class="label">Blended/Honors</div><div class="count">${count} item${count === 1 ? '' : 's'}</div></div>`;
-        }
-        page.innerHTML = `
-          ${crumbHTML()}
-          <div class="page-title" style="margin-top:0;">${state.course} — Worksheets</div>
-          <div class="tile-grid">${tiles}</div>
-        `;
-        return;
-      }
-
-      const matches = items.filter(i => i.course === state.course && i.type === state.type).sort(sectionCompare);
-      const bodyHTML = state.type === 'Applet'
-        ? (matches.length ? `<div class="applet-grid">${matches.map(appletCardHTML).join('')}</div>` : `<div class="empty-state">No applets for this course yet.</div>`)
-        : `<div class="grid">${matches.map(cardHTML).join('')}</div>`;
-
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">${state.course} — ${typeLabel[state.type]}</div>
-        ${bodyHTML}
-      `;
-      return;
-    }
-
-    if (state.level === 'tier4') {
-      const matches = items.filter(i => i.course === state.course && i.type === 'Worksheet' && i.subtype === state.subtype).sort(sectionCompare);
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">${state.course} — Worksheets — ${state.subtype === 'Blended' ? 'Blended/Honors' : 'Standard'}</div>
-        <div class="grid">${matches.map(cardHTML).join('')}</div>
-      `;
-      return;
-    }
-
-    if (state.level === 'detail') {
-      const item = items.find(i => i.id === state.id);
-      if (!item) { goHome(); return; }
-      if (item.type === 'Applet') { launchApplet(item.id); goHome(); return; }
-
-      let linksHTML = '';
-      if (item.type === 'Worksheet') {
-        linksHTML = `<a class="file-link" href="${item.worksheetFile}">Worksheet (PDF)</a>`
-          + (item.hasSolutions !== false ? `<a class="file-link" href="${item.solutionsFile}">Solutions (PDF)</a>` : '');
-      } else if (item.type === 'LectureGuideNotes') {
-        linksHTML = (item.guideFile ? `<a class="file-link" href="${item.guideFile}">Lecture Guide (PDF)</a>` : '')
-          + (item.notesFile ? `<a class="file-link" href="${item.notesFile}">Lecture Notes (PDF)</a>` : '');
-      } else if (item.type === 'LectureVideo') {
-        linksHTML = `<a class="file-link" href="${item.playlistUrl}" target="_blank" rel="noopener">Watch on YouTube (playlist)</a>`;
-      }
-
-      const related = relatedItems(item);
-      const relatedHTML = related.length ? `
-        <div class="related-block">
-          <h2>Related materials</h2>
-          <div class="related-list">${related.map(relatedRowHTML).join('')}</div>
-        </div>` : '';
-
-      const sections = item.sections || [];
-      const sectionText = sections.length ? (sections.length > 1 ? 'Sections ' : 'Section ') + sections.join(', ') : '';
-
-      page.innerHTML = `
-        ${crumbHTML()}
-        <div class="detail-card">
-          <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
-          <div class="detail-title">${item.title}</div>
-          <div class="item-tag">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
-          <p class="detail-desc">${item.desc}</p>
-          <div class="detail-links">${linksHTML}</div>
-        </div>
-        ${relatedHTML}
-      `;
-      return;
-    }
-  }
-
-  function cardHTML(i) {
-    return `<div class="item-card" onclick="openDetail('${i.id}')">
+  function cardHTML(i, unitColor) {
+    const styleAttr = unitColor ? ` style="--unit-color:${unitColor};"` : '';
+    return `<div class="item-card"${styleAttr} onclick="openDetail('${i.id}')">
       <div class="item-eyebrow">${typeLabel[i.type]}</div>
       <div class="item-title">${i.title}</div>
       <div class="item-tag">${i.course}</div>
@@ -926,6 +821,302 @@
     </div>`;
   }
 
+  // ---------- v18: sidebar content is now shared between the top-level typeBrowse page and the
+  // course-specific tier3 page for the same type — same copy either way, since it's type-level,
+  // not course-level, information. Icon now sits inline with the heading instead of stacked above it. ----------
+  const sidebarTypes = ['LectureVideo', 'Worksheet', 'LectureGuideNotes'];
+
+  function sidebarContentForType(type) {
+    if (type === 'LectureVideo') {
+      return `
+        <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.LectureVideo}</div><h3>Lecture Videos on YouTube</h3></div>
+        <p>${videosSidebarText}</p>
+        ${fileLinkHTML(youtubeChannelUrl, 'Visit full channel', { newTab: true, tooltip: 'Channel link not yet added' })}
+      `;
+    }
+    if (type === 'Worksheet') {
+      return `
+        <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.Worksheet}</div><h3>Worksheets</h3></div>
+        <p>${worksheetsOrgText}</p>
+        <p>${worksheetsUseText}</p>
+      `;
+    }
+    if (type === 'LectureGuideNotes') {
+      return `
+        <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.LectureGuideNotes}</div><h3>Lecture Guides/Notes</h3></div>
+        <p>${guidesOrgText}</p>
+        <p>${guidesUseText}</p>
+      `;
+    }
+    return '';
+  }
+
+  function renderSidebar() {
+    const card = document.getElementById('sidebar-card');
+    if (state.level === 'home') {
+      card.className = 'sidebar-card bio-card';
+      card.innerHTML = `<div class="sidebar-photo">KK</div><h3>Kyle Knee</h3><p>${bioText}</p>`;
+      return;
+    }
+    card.className = 'sidebar-card';
+    if (state.level === 'typeBrowse' || state.level === 'tier3') {
+      card.innerHTML = sidebarContentForType(state.type);
+    }
+  }
+
+  // ---------- v16: top-level course carousels (Applets / Lecture Videos overview pages) ----------
+  function courseCarouselsHTML(typeVal) {
+    const all = items.filter(i => i.type === typeVal);
+    const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+    const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
+    return coursesPresent.map(c => {
+      const inCourse = all.filter(a => a.course === c).sort(sectionCompare);
+      if (!inCourse.length) {
+        return `<div class="carousel-block" id="grp-${slug(c)}">
+          <div class="carousel-header"><div class="carousel-title" style="cursor:default;color:var(--muted);">${c}</div></div>
+          <div class="empty-group-state">No ${typeLabel[typeVal].toLowerCase()} for this course yet.</div>
+        </div>`;
+      }
+      const rowId = `car-${typeVal}-${slug(c)}`;
+      return `
+        <div class="carousel-block" id="grp-${slug(c)}">
+          <div class="carousel-header">
+            <div class="carousel-title" onclick="openTier3('type','${c}','${typeVal}')">${c}</div>
+            <div class="carousel-seeall" onclick="openTier3('type','${c}','${typeVal}')">See all (${inCourse.length}) →</div>
+          </div>
+          <div class="carousel-wrap">
+            ${arrowBtnHTML(rowId, -1)}
+            <div class="carousel-track" id="${rowId}">${inCourse.map(a => cardFn(a)).join('')}</div>
+            ${arrowBtnHTML(rowId, 1)}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ---------- v16/v18: tier 3 — unit chip filter row + unit carousels, with isolate-to-full-grid.
+  // v18 adds a per-unit accent color, cycling through unitAccentPalette by unit position. ----------
+  function tier3BodyHTML(matches, course, typeVal) {
+    if (!matches.length) return `<div class="empty-state">No items for this course/type yet.</div>`;
+    const units = [...new Set(matches.map(unitOf))].sort((a, b) => Number(a) - Number(b));
+    const colorMap = unitColorMap(units);
+    const isolated = state.isolatedUnit;
+    const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
+    const gridClass = typeVal === 'Applet' ? 'applet-grid' : 'grid';
+
+    const chipsHTML = `<div class="jump-row">
+      <span class="jump-link ${!isolated ? 'chip-active' : ''}" onclick="isolateUnit(null)">All Units</span>
+      ${units.map(u => `<span class="jump-link ${isolated === u ? 'chip-active' : ''}" onclick="isolateUnit('${u}')">Unit ${u}</span>`).join('')}
+    </div>`;
+
+    if (isolated) {
+      const inUnit = matches.filter(i => unitOf(i) === isolated);
+      const color = colorMap[isolated];
+      return `${chipsHTML}
+        <div class="result-count">${inUnit.length} item${inUnit.length === 1 ? '' : 's'} in Unit ${isolated}</div>
+        <div class="${gridClass}">${inUnit.map(i => cardFn(i, color)).join('')}</div>`;
+    }
+
+    const slugId = `${slug(course)}-${typeVal}`;
+    const rows = units.map(u => {
+      const inUnit = matches.filter(i => unitOf(i) === u);
+      const rowId = `car-unit-${slugId}-${u}`;
+      const color = colorMap[u];
+      return `
+        <div class="carousel-block unit-carousel-header" id="grp-unit-${u}" style="--unit-color:${color};">
+          <div class="carousel-header">
+            <div class="carousel-title" onclick="isolateUnit('${u}')">Unit ${u}</div>
+            ${inUnit.length > 1 ? `<div class="carousel-seeall" onclick="isolateUnit('${u}')">See all (${inUnit.length}) →</div>` : ''}
+          </div>
+          <div class="carousel-wrap">
+            ${arrowBtnHTML(rowId, -1)}
+            <div class="carousel-track" id="${rowId}">${inUnit.map(i => cardFn(i, color)).join('')}</div>
+            ${arrowBtnHTML(rowId, 1)}
+          </div>
+        </div>`;
+    }).join('');
+    return chipsHTML + rows;
+  }
+
+  function devToggleHTML() {
+    return `<label class="dev-toggle">
+      <input type="checkbox" ${devShowEmptyCourses ? 'checked' : ''} onchange="toggleShowEmptyCourses(this.checked)">
+      <span class="dev-tag">Dev preview</span> Show all courses, including empty ones (remove before launch)
+    </label>`;
+  }
+  function toggleShowEmptyCourses(checked) { devShowEmptyCourses = checked; render(); }
+
+  function render() {
+    updateNavHighlight();
+
+    const page = document.getElementById('page');
+    const shell = document.querySelector('.page-shell');
+    // v18: sidebar now applies on both the top-level typeBrowse page AND the course-specific tier3
+    // page, for the same three types; Applets stays sidebar-less on both.
+    const showSidebar = state.level === 'home'
+      || (state.level === 'typeBrowse' && sidebarTypes.includes(state.type))
+      || (state.level === 'tier3' && sidebarTypes.includes(state.type));
+    if (showSidebar) { shell.classList.remove('no-sidebar'); renderSidebar(); }
+    else { shell.classList.add('no-sidebar'); }
+
+    if (state.level === 'home') {
+      const recent = [...items].sort((a, b) => new Date(b.updated) - new Date(a.updated)).slice(0, 5);
+      const whatsNewHTML = recent.map(i => `
+        <div class="whatsnew-item" onclick="openDetail('${i.id}')">
+          <div class="icon-badge">${typeIconSVG[i.type]}</div>
+          <div><div class="wn-title">${i.title}</div><div class="wn-meta">${i.course} · ${typeLabel[i.type]}</div></div>
+          <div class="wn-date">${formatDate(i.updated)}</div>
+        </div>`).join('');
+      const explainerHTML = typeOrder.map(t => `
+        <div class="explainer-card" onclick="enterType('${t}')">
+          <div class="icon-badge">${typeIconSVG[t]}</div>
+          <div><div class="label">${typeLabel[t]}</div><div class="desc">${typeDescription[t]}</div></div>
+        </div>`).join('');
+      page.innerHTML = `
+        <div class="home-title">Teaching Materials Hub</div>
+        <div class="home-subtitle">Applets, notes, and worksheets for every course — browse by course under Course Materials, or jump straight to Applets or Lecture Videos above.</div>
+        <div class="explainer-row">${explainerHTML}</div>
+        <div class="whatsnew"><h2>What's New</h2><div class="whatsnew-list">${whatsNewHTML}</div></div>
+      `;
+      return;
+    }
+
+    if (state.level === 'courseMaterials') {
+      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => items.some(i => i.course === c));
+      const body = coursesPresent.map(c => {
+        const info = courseInfo[c] || {};
+        const counts = typeOrder.map(t => {
+          const n = items.filter(i => i.course === c && i.type === t).length;
+          return n ? `${typeLabel[t]}: ${n}` : null;
+        }).filter(Boolean).join(' · ');
+        return `<div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
+          <div class="cd-title">${c}</div>
+          <div class="cd-blurb">${info.blurb || ''}</div>
+          <div class="cd-counts">${counts || 'No items yet'}</div>
+        </div>`;
+      }).join('');
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">Course Materials</div>
+        ${devToggleHTML()}
+        ${jumpRowHTML(coursesPresent)}
+        <div style="display:flex; flex-direction:column; gap:14px;">${body}</div>
+      `;
+      return;
+    }
+
+    // ---------- v17: unified browse-by-type page (replaces appletsBrowse/videosBrowse + the old tier2
+    // folder-tile route for Worksheet/LectureGuideNotes) — same course-carousel pattern for all four types ----------
+    if (state.level === 'typeBrowse') {
+      const t = state.type;
+      const all = items.filter(i => i.type === t);
+      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+      const pageTitle = t === 'Applet' ? 'All Applets' : typeLabel[t];
+      const unitLabel = t === 'Applet' ? 'applet' : (t === 'LectureVideo' ? 'video section' : 'item');
+      const countText = `${all.length} ${unitLabel}${all.length === 1 ? '' : 's'} across ${courseOrder.filter(c => all.some(a => a.course === c)).length} courses`;
+      page.innerHTML = `
+        ${crumbHTML()}
+        ${titleBlockHTML(t, pageTitle)}
+        ${devToggleHTML()}
+        ${jumpRowHTML(coursesPresent)}
+        <div class="result-count">${countText}</div>
+        ${courseCarouselsHTML(t)}
+      `;
+      return;
+    }
+
+    if (state.level === 'tier2') {
+      let tilesHTML = '';
+      let infoHTML = '';
+      if (state.entry === 'course') {
+        const info = courseInfo[state.course];
+        if (info) {
+          infoHTML = `<div class="course-info">
+            <p>${info.blurb}</p>
+            <div class="topics"><b>Topics:</b> ${info.topics}</div>
+            <div class="topics" style="margin-top:4px;"><b>Who it's for:</b> ${info.audience}</div>
+          </div>`;
+        }
+        const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
+        tilesHTML = `<div class="pillbox-list">${availableTypes.map(t => {
+          const count = items.filter(i => i.course === state.course && i.type === t).length;
+          return `<div class="pillbox-row" onclick="openTier3('course','${state.course}','${t}')">
+            <div class="icon-badge">${typeIconSVG[t]}</div>
+            <div><div class="pb-label">${typeLabel[t]}</div><div class="pb-desc">${typeDescription[t]}</div></div>
+            <div class="pb-count">${count} item${count === 1 ? '' : 's'}</div>
+          </div>`;
+        }).join('')}</div>`;
+      } else {
+        // v17: this branch (course tiles reached "by type") is no longer reachable through normal
+        // navigation — enterType() now always sends users to the typeBrowse course-carousel page
+        // instead. Left in place rather than deleted in case a future entry point wants it back.
+        const availableCourses = courseOrder.filter(c => items.some(i => i.course === c && i.type === state.type));
+        tilesHTML = `<div class="tile-grid">${availableCourses.map(c => {
+          const count = items.filter(i => i.course === c && i.type === state.type).length;
+          return `<div class="tile" onclick="openTier3('type','${c}','${state.type}')">
+            <div class="icon-badge">${folderIcon}</div>
+            <div class="label">${c}</div>
+            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
+          </div>`;
+        }).join('')}</div>`;
+      }
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>
+        ${infoHTML}
+        ${tilesHTML}
+      `;
+      return;
+    }
+
+    if (state.level === 'tier3') {
+      const matches = items.filter(i => i.course === state.course && i.type === state.type).sort(sectionCompare);
+      const titleSuffix = (state.type === 'Worksheet') ? 'Worksheets (Standard & Blended/Honors)' : typeLabel[state.type];
+      page.innerHTML = `
+        ${crumbHTML()}
+        ${titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`)}
+        ${tier3BodyHTML(matches, state.course, state.type)}
+      `;
+      return;
+    }
+
+    if (state.level === 'detail') {
+      const item = items.find(i => i.id === state.id);
+      if (!item) { goHome(); return; }
+      if (item.type === 'Applet') { launchApplet(item.id); goHome(); return; }
+
+      let linksHTML = '';
+      if (item.type === 'Worksheet') {
+        linksHTML = fileLinkHTML(item.worksheetFile, 'Worksheet (PDF)')
+          + (item.hasSolutions !== false ? fileLinkHTML(item.solutionsFile, 'Solutions (PDF)') : '');
+      } else if (item.type === 'LectureGuideNotes') {
+        linksHTML = (item.guideFile ? fileLinkHTML(item.guideFile, 'Lecture Guide (PDF)') : '')
+          + (item.notesFile ? fileLinkHTML(item.notesFile, 'Lecture Notes (PDF)') : '');
+      } else if (item.type === 'LectureVideo') {
+        linksHTML = fileLinkHTML(item.playlistUrl, 'Watch on YouTube (playlist)', { newTab: true, tooltip: 'Playlist not yet linked' });
+      }
+
+      const related = relatedItems(item);
+      const relatedHTML = related.length ? `
+        <div class="related-block"><h2>Related materials</h2><div class="related-list">${related.map(relatedRowHTML).join('')}</div></div>` : '';
+
+      const sections = item.sections || [];
+      const sectionText = sections.length ? (sections.length > 1 ? 'Sections ' : 'Section ') + sections.join(', ') : '';
+
+      page.innerHTML = `
+        ${crumbHTML()}
+        <div class="detail-card">
+          <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
+          <div class="detail-title">${item.title}</div>
+          <div class="item-tag">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
+          <p class="detail-desc">${item.desc}</p>
+          <div class="detail-links">${linksHTML}</div>
+        </div>
+        ${relatedHTML}
+      `;
+      return;
+    }
+  }
+
   function formatDate(d) {
     return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
@@ -933,9 +1124,7 @@
   function doSearch(q, isMobile) {
     const boxId = isMobile ? 'search-results-mobile' : 'search-results';
     const box = document.getElementById(boxId);
-    if (!isMobile) {
-      document.getElementById('search-clear').classList.toggle('visible', q.length > 0);
-    }
+    if (!isMobile) document.getElementById('search-clear').classList.toggle('visible', q.length > 0);
     if (!q) { box.innerHTML = ''; return; }
     const matches = items.filter(i => (i.title + ' ' + i.course).toLowerCase().includes(q.toLowerCase()));
     box.innerHTML = matches.slice(0, 6).map((i, idx) =>
@@ -952,9 +1141,7 @@
       document.getElementById('search-input-mobile').value = '';
       document.getElementById('search-results-mobile').innerHTML = '';
       closeMobileMenu();
-    } else {
-      clearSearch();
-    }
+    } else { clearSearch(); }
   }
 
   function clearSearch() {
@@ -966,7 +1153,10 @@
   document.getElementById('footer-updated').textContent =
     formatDate([...items].sort((a, b) => new Date(b.updated) - new Date(a.updated))[0].updated);
 
-  goHome();
+  // ---------- initial load: set up history without creating a duplicate first entry ----------
+  state = { level: 'home' };
+  try { history.replaceState(state, '', '#/'); } catch (e) { /* ignore */ }
+  render();
 </script>
 
 </body>
