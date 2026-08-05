@@ -1,0 +1,169 @@
+  :root {
+    --decor: #5063C9;
+  }
+  svg { stroke: var(--accent); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- hero: full width, soft curve wash, pale background ---------- */
+  .hero-full { position: relative; width: 100%; overflow: hidden; background: linear-gradient(160deg, #F5F6FC, #E4E7FA 55%, #D2D8F5); }
+  .hero-bg-layer { position: absolute; inset: -40px; filter: blur(30px); opacity: 0.55; }
+  .hero-bg-layer svg { stroke: var(--decor); }
+  .hero-inner-wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: 29px 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; flex-wrap: wrap; }
+  /* The five stats need ~555px to sit on one line, so this stays comfortably above that.
+     The gap is set explicitly rather than left to space-between's leftovers, because the bio
+     card now grows to absorb whatever room is going spare. */
+  .hero-text { max-width: 620px; padding-top: 10px; }
+  .hero-text .h-title { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 14px; color: var(--accent); }
+  .hero-text .h-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); }
+  .hero-text .h-desc b { color: var(--accent); }
+
+  /* ---------- hero stats: one line, always. nowrap rather than relying on the row happening
+     to fit — at the old gap it overshot the text column by 3px and silently broke in two ---------- */
+  .hero-stats-row { display: flex; flex-wrap: nowrap; gap: 20px 24px; margin-top: 16px; }
+  .hero-stat { min-width: 64px; }
+  .hero-stat-num { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .hero-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; white-space: nowrap; }
+
+  /* ---------- bio card: floats via shadow/contrast, sits in normal flow so it's fully contained in the hero ---------- */
+  /* Grows into whatever the text column leaves, so the full bio fits without the card going
+     tall and narrow. The low flex-basis is deliberate — it only governs when the card gives up
+     and wraps below the text on mid-size screens, not how wide it gets on roomy ones. */
+  .bio-card-wide { flex: 1 1 360px; display: flex; align-items: center; gap: 20px; background: var(--card); border-radius: 18px; padding: 18px 24px; box-shadow: 0 6px 18px rgba(60,60,90,0.14); text-align: left; z-index: 5; }
+  .bio-card-wide .sidebar-photo { width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; font-weight: 700; margin: 0; }
+  .bio-card-wide h3 { margin: 0 0 2px; font-size: 15px; }
+  .bio-card-wide .role { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .bio-card-wide p { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0; }
+  /* Laptop widths: trim the gap and the text column so the two stay side by side a while
+     longer. Without this the bio card drops below the text as early as ~1150px and the hero
+     balloons to ~410px tall. 580px still clears the ~555px the stats row needs. */
+  @media (max-width: 1180px) {
+    .hero-inner-wrap { gap: 32px; }
+    .hero-text { max-width: 580px; }
+  }
+  @media (max-width: 900px) {
+    .bio-card-wide { flex: 1 1 100%; flex-direction: column; text-align: center; }
+    .hero-stats-row { flex-wrap: wrap; }
+  }
+
+  /* ---------- hero ripple accent (always animating decoration, not gated by hover) ---------- */
+  @keyframes ripple-pulse {
+    0% { r: 3; opacity: 0.65; }
+    70% { r: 15; opacity: 0; }
+    100% { r: 15; opacity: 0; }
+  }
+  .ripple-dot { fill: var(--decor); }
+  /* baked-in "already rippled" glow around the static Applets dot — always visible, not hover-gated */
+  .ripple-halo { fill: var(--decor); opacity: 0.16; }
+  .ripple-halo-outer { opacity: 0.08; }
+  .ripple-ring { fill: none; stroke: var(--decor); stroke-width: 1.4; animation: ripple-pulse 2.6s ease-out infinite; transform-origin: center; }
+  .ripple-ring.delay1 { animation-delay: 0.65s; }
+  .ripple-ring.delay2 { animation-delay: 1.3s; }
+  .hero-ripple-accent { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* ---------- material/course spotlight sections ---------- */
+  .type-sections { padding: 10px 32px 50px; }
+  .section-label { font-size: 13px; font-weight: 700; color: var(--eyebrow); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 6px; max-width: 1240px; margin-left: auto; margin-right: auto; }
+  .spotlight { display: flex; align-items: center; gap: 36px; padding: 34px 0; max-width: 1240px; margin: 0 auto; }
+  .spotlight.reverse { flex-direction: row-reverse; }
+  .spotlight-media { position: relative; width: 260px; height: 180px; flex-shrink: 0; border-radius: 18px; background: linear-gradient(160deg, var(--soft), #E4E6F8); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .spotlight-media svg { width: 52%; height: 52%; stroke: var(--accent); }
+  /* ---------- circular badge variant, used by the Applets spotlight ---------- */
+  .spotlight-media-circle { width: 190px; height: 190px; border-radius: 50%; }
+  /* An SVG clips to its own viewBox by default, which sliced ~7px off the right of the
+     static ripple halo (cx=21 r=7 reaches x=28; the viewBox ends at 26) and cut the animated
+     ring far worse. Letting it paint outside hands the clipping job to the round badge above,
+     which is large enough to contain even the ring at full radius — so nothing gets cut. */
+  .spotlight-media-circle svg { overflow: visible; }
+  .spotlight-body { flex: 1; min-width: 0; }
+  .spotlight-eyebrow { font-size: 11.5px; font-weight: 700; color: var(--eyebrow); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px; }
+  .spotlight-title { display: block; font-size: 22px; font-weight: 700; margin: 0 0 11px; color: var(--text); cursor: pointer; }
+  .spotlight-title:hover { color: var(--accent); text-decoration: underline; }
+  .spotlight-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0 0 18px; max-width: 620px; }
+  .spotlight-btn { display: inline-block; border: 1.5px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 13px; padding: 10px 22px; border-radius: 4px; cursor: pointer; }
+  .spotlight-btn:hover { background: var(--accent); color: #fff; }
+  .section-divider { height: 1px; background: var(--border); max-width: 1240px; margin: 0 auto; }
+
+  /* ---------- Applets spotlight: ripple only animates while the whole card is hovered,
+     otherwise just the static dot ---------- */
+  .spotlight-media .ripple-ring { animation: none; opacity: 0; }
+  .spotlight:hover .ripple-ring { animation: ripple-pulse 2.6s ease-out infinite; }
+  .spotlight:hover .ripple-ring.delay1 { animation-delay: 0.65s; }
+  .spotlight:hover .ripple-ring.delay2 { animation-delay: 1.3s; }
+
+  /* ---------- Browse-by-Course spotlight: a real 3-card stack that shuffles the front card to
+     the back on hover (driven by js/home.js), revealing the card underneath with its own symbol.
+     Position classes control layout/paint order; js/home.js swaps which element holds which
+     class (and updates the symbol of whichever card just arrived at the back) on each tick. ---------- */
+  /* The swing-out below carries the card well past the right edge of the 24-unit viewBox, and
+     an SVG clips to its viewBox by default — which lopped off most of the card at the top of
+     the swing. .spotlight-media is far wider than the SVG box and has its own overflow:hidden,
+     so it takes over as the (much roomier) boundary. */
+  .course-stack-svg { overflow: visible; }
+  .course-card { transition: transform 0.45s ease; transform-origin: 13px 9.75px; }
+  .course-card rect { transition: fill 0.3s ease, stroke-width 0.3s ease; }
+  .course-card text { transition: opacity 0.3s ease; }
+  .course-card.pos-front { transform: none; }
+  .course-card.pos-mid { transform: translate(-3.5px, 2.5px) rotate(-7deg); }
+  .course-card.pos-back { transform: translate(-7px, 5px) rotate(-15deg); }
+
+  /* The card leaving the front swings out to the right *in front of* the stack, then "moves
+     back" — receding behind the other two and scaling down a touch — before wiping left into
+     the back slot. js/home.js flips the paint order at the 46% beat so the swing reads as the
+     top card moving, not something shuffling around behind it. */
+  /* Per-keyframe timing functions matter more than the shape here. The default ease-in-out
+     applies to each segment separately, so the card decelerates to a full stop at every
+     keyframe — which turned the "moves back" beat into a ~250ms dead spot mid-swing. The card
+     is travelling leftward continuously from the peak all the way to the back slot, so only
+     the peak (a genuine direction reversal) and the final landing should come to rest. */
+  @keyframes course-card-cycle {
+    0%   { transform: none; animation-timing-function: ease-in-out; }
+    34%  { transform: translate(13px, -3.5px) rotate(14deg); animation-timing-function: ease-in; }
+    48%  { transform: translate(7px, -2px) rotate(9deg) scale(0.94); animation-timing-function: ease-out; }
+    100% { transform: translate(-7px, 5px) rotate(-15deg) scale(1); }
+  }
+  .course-card.cycling { animation: course-card-cycle 0.9s ease-in-out; }
+  /* keep it painted like the front card for as long as it's still on top of the stack */
+  .course-card.cycling.on-top rect { fill: #fff; stroke-width: 1.3; }
+  .course-card.cycling.on-top text { opacity: 1; }
+  .course-card.pos-front rect { fill: white; stroke-width: 1.3; }
+  .course-card.pos-mid rect, .course-card.pos-back rect { fill: var(--soft); stroke-width: 1.1; }
+  .course-card.pos-front text { opacity: 1; }
+  .course-card.pos-mid text, .course-card.pos-back text { opacity: 0.55; }
+
+  /* ---------- Lecture Videos spotlight: play icon gives way to a sketched scribble + progress
+     bar (mimicking a playing video) on hover, then flashes back to the play icon before looping ---------- */
+  @keyframes video-play-cycle {
+    0%, 8%   { opacity: 1; }
+    12%, 90% { opacity: 0; }
+    94%, 100% { opacity: 1; }
+  }
+  @keyframes video-scribble-cycle {
+    0%, 10%  { opacity: 0; stroke-dashoffset: 44; }
+    14%      { opacity: 1; }
+    45%, 85% { opacity: 1; stroke-dashoffset: 0; }
+    90%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  }
+  @keyframes video-track-cycle {
+    0%, 12%  { opacity: 0; }
+    16%, 85% { opacity: 1; }
+    90%, 100% { opacity: 0; }
+  }
+  @keyframes video-bar-cycle {
+    0%, 12%  { opacity: 0; width: 0; }
+    16%      { opacity: 1; width: 0; }
+    82%, 85% { opacity: 1; width: 15; }
+    90%, 100% { opacity: 0; width: 0; }
+  }
+  .video-play { opacity: 1; }
+  .video-scribble { opacity: 0; stroke-dasharray: 44; stroke-dashoffset: 44; }
+  .video-progress-track, .video-progress-bar { opacity: 0; }
+  .spotlight:hover .video-play { animation: video-play-cycle 4s ease-in-out infinite; }
+  .spotlight:hover .video-scribble { animation: video-scribble-cycle 4s ease-in-out infinite; }
+  .spotlight:hover .video-progress-track { animation: video-track-cycle 4s ease-in-out infinite; }
+  .spotlight:hover .video-progress-bar { animation: video-bar-cycle 4s ease-in-out infinite; }
+
+  .site-footer { margin-top: 10px; }
+
+  @media (max-width: 780px) {
+    .spotlight, .spotlight.reverse { flex-direction: column; text-align: center; }
+    .spotlight-desc { margin-left: auto; margin-right: auto; }
+  }
