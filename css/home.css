@@ -1,5 +1,9 @@
   :root {
     --decor: #5063C9;
+    /* Hero vertical breathing room, applied top and bottom. 29px was the original; 63px makes
+       the hero 25% taller (275px -> 343px at desktop), which is the level that was picked.
+       Kept as a variable so the one number that controls it is easy to find and change. */
+    --hero-pad-y: 63px;
   }
   svg { stroke: var(--accent); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -7,7 +11,7 @@
   .hero-full { position: relative; width: 100%; overflow: hidden; background: linear-gradient(160deg, #F5F6FC, #E4E7FA 55%, #D2D8F5); }
   .hero-bg-layer { position: absolute; inset: -40px; filter: blur(30px); opacity: 0.55; }
   .hero-bg-layer svg { stroke: var(--decor); }
-  .hero-inner-wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: 29px 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; flex-wrap: wrap; }
+  .hero-inner-wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: var(--hero-pad-y) 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; flex-wrap: wrap; }
   /* The five stats need ~555px to sit on one line, so this stays comfortably above that.
      The gap is set explicitly rather than left to space-between's leftovers, because the bio
      card now grows to absorb whatever room is going spare. */
@@ -42,6 +46,9 @@
   @media (max-width: 900px) {
     .bio-card-wide { flex: 1 1 100%; flex-direction: column; text-align: center; }
     .hero-stats-row { flex-wrap: wrap; }
+    /* the stacked hero already runs well past 500px tall here, so it keeps the original
+       spacing and sits out the height increase entirely */
+    .hero-inner-wrap { padding-top: 29px; padding-bottom: 29px; }
   }
 
   /* ---------- hero ripple accent (always animating decoration, not gated by hover) ---------- */
