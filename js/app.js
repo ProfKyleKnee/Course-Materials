@@ -1,139 +1,5 @@
-  const items = [
-    { id: 'g-c1-11', course: 'Calc 1', type: 'LectureGuideNotes', sections: ['1.1'], sectionLabel: 'Limits & Continuity',
-      title: '1.1 Limits & Continuity — Notes', desc: 'Notes covering the formal definition of a limit, one-sided limits, and continuity at a point.',
-      guideFile: null, notesFile: '#', updated: '2026-02-01' },
-    { id: 'w-c1-11-std', course: 'Calc 1', type: 'Worksheet', subtype: 'Standard', sections: ['1.1'], sectionLabel: 'Limits & Continuity',
-      title: '1.1 Limits Worksheet', desc: 'Practice evaluating limits graphically and algebraically.',
-      worksheetFile: '#', solutionsFile: '#', hasSolutions: false, updated: '2026-01-15' },
-
-    { id: 'g-c1-23', course: 'Calc 1', type: 'LectureGuideNotes', sections: ['2.3'], sectionLabel: 'Related Rates',
-      title: '2.3 Related Rates — Guide & Notes', desc: 'Guide and notes for setting up and solving related rates problems.',
-      guideFile: '#', notesFile: '#', updated: '2026-07-10' },
-    { id: 'w-c1-23-std', course: 'Calc 1', type: 'Worksheet', subtype: 'Standard', sections: ['2.3'], sectionLabel: 'Related Rates',
-      title: '2.3 Related Rates Worksheet', desc: 'Standard practice set on related rates word problems.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-02-10' },
-    { id: 'w-c1-23-ble', course: 'Calc 1', type: 'Worksheet', subtype: 'Blended', sections: ['2.3'], sectionLabel: 'Related Rates',
-      title: '2.3 Related Rates Worksheet (Blended/Honors)', desc: 'Extended related rates practice with additional multi-step problems.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-07-05' },
-    { id: 'v-c1-23', course: 'Calc 1', type: 'LectureVideo', sections: ['2.3'], sectionLabel: 'Related Rates',
-      title: '2.3 Related Rates — Lecture Videos', desc: 'Recorded walkthroughs of related rates setup and solved examples.',
-      playlistUrl: '#', updated: '2026-04-22' },
-
-    { id: 'g-c2-34', course: 'Calc 2', type: 'LectureGuideNotes', sections: ['3.4'], sectionLabel: 'Series Convergence',
-      title: '3.4 Series Convergence — Guide & Notes', desc: 'Guide and notes covering convergence tests for infinite series.',
-      guideFile: '#', notesFile: '#', updated: '2026-06-18' },
-    { id: 'w-c2-34-std', course: 'Calc 2', type: 'Worksheet', subtype: 'Standard', sections: ['3.4'], sectionLabel: 'Series Convergence',
-      title: '3.4 Series Convergence Worksheet', desc: 'Practice applying the ratio, root, and comparison tests.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-06-25' },
-    { id: 'v-c2-34', course: 'Calc 2', type: 'LectureVideo', sections: ['3.4'], sectionLabel: 'Series Convergence',
-      title: '3.4 Series Convergence — Lecture Videos', desc: 'Recorded lecture covering convergence tests with worked examples.',
-      playlistUrl: '#', updated: '2026-07-16' },
-
-    { id: 'g-c3-52', course: 'Calc 3', type: 'LectureGuideNotes', sections: ['5.2'], sectionLabel: 'Triple Integrals',
-      title: '5.2 Triple Integrals — Guide & Notes', desc: 'Guide and notes on setting up triple integrals in rectangular coordinates.',
-      guideFile: '#', notesFile: '#', updated: '2026-05-02' },
-    { id: 'w-c3-52-std', course: 'Calc 3', type: 'Worksheet', subtype: 'Standard', sections: ['5.2'], sectionLabel: 'Triple Integrals',
-      title: '5.2 Triple Integrals Worksheet', desc: 'Standard practice setting up and evaluating triple integrals.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-01-12' },
-    { id: 'w-c3-52-ble', course: 'Calc 3', type: 'Worksheet', subtype: 'Blended', sections: ['5.2'], sectionLabel: 'Triple Integrals',
-      title: '5.2 Triple Integrals Worksheet (Blended/Honors)', desc: 'Extended practice including cylindrical and spherical setups.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-03-28' },
-    { id: 'v-c3-52', course: 'Calc 3', type: 'LectureVideo', sections: ['5.2'], sectionLabel: 'Triple Integrals',
-      title: '5.2 Triple Integrals — Lecture Videos', desc: 'Recorded walkthroughs of triple integral setup and evaluation.',
-      playlistUrl: '#', updated: '2026-03-01' },
-
-    { id: 'g-c3-41', course: 'Calc 3', type: 'LectureGuideNotes', sections: ['4.1'], sectionLabel: 'Quadric Surfaces',
-      title: '4.1 Quadric Surfaces — Guide', desc: 'Guide to identifying and sketching quadric surfaces from their equations.',
-      guideFile: '#', notesFile: null, updated: '2026-05-20' },
-    { id: 'a-c3-41', course: 'Calc 3', type: 'Applet', sections: ['4.1'],
-      title: 'Quadric Surfaces Explorer', desc: 'Interactive tool for rotating and slicing quadric surfaces to see their cross-sections.',
-      curve: 'M14,52 C34,14 56,14 74,32 S 100,52 118,22', launchUrl: '#', updated: '2026-07-14' },
-
-    { id: 'g-pc-12', course: 'Precalc', type: 'LectureGuideNotes', sections: ['1.2'], sectionLabel: 'The Unit Circle',
-      title: '1.2 The Unit Circle — Guide & Notes', desc: 'Guide and notes on unit circle values and their use in trigonometric functions.',
-      guideFile: '#', notesFile: '#', updated: '2026-03-05' },
-    { id: 'a-pc-12', course: 'Precalc', type: 'Applet', sections: ['1.2'],
-      title: 'Unit Circle Explorer', desc: 'Drag a point around the unit circle to see corresponding sine and cosine values update live.',
-      curve: 'M14,32 C30,10 60,10 74,32 S 105,55 118,32', launchUrl: '#', updated: '2026-04-11' },
-
-    { id: 'g-st-61', course: 'Statistics', type: 'LectureGuideNotes', sections: ['6.1'], sectionLabel: 'Hypothesis Testing',
-      title: '6.1 Hypothesis Testing — Notes', desc: 'Notes introducing null/alternative hypotheses, p-values, and significance levels.',
-      guideFile: null, notesFile: '#', updated: '2026-02-20' },
-    { id: 'w-st-61-std', course: 'Statistics', type: 'Worksheet', subtype: 'Standard', sections: ['6.1'], sectionLabel: 'Hypothesis Testing',
-      title: '6.1 Hypothesis Testing Worksheet', desc: 'Practice setting up and interpreting hypothesis tests.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-02-14' },
-
-    { id: 'g-la-31', course: 'Linear Algebra', type: 'LectureGuideNotes', sections: ['3.1'], sectionLabel: 'Eigenvalues & Eigenvectors',
-      title: '3.1 Eigenvalues & Eigenvectors — Guide & Notes', desc: 'Guide and notes on computing eigenvalues and eigenvectors of a matrix.',
-      guideFile: '#', notesFile: '#', updated: '2026-01-30' },
-    { id: 'a-la-31', course: 'Linear Algebra', type: 'Applet', sections: ['3.1', '3.2'],
-      title: 'Eigenvalues & Eigenvectors Explorer', desc: 'Visualize how a matrix transforms vectors and highlights its eigenvectors.',
-      curve: 'M14,45 C40,50 55,15 74,20 S 105,45 118,15', launchUrl: '#', updated: '2026-05-20' },
-
-    { id: 'w-dm-21-std', course: 'Discrete Math', type: 'Worksheet', subtype: 'Standard', sections: ['2.1'], sectionLabel: 'Logic & Proofs',
-      title: '2.1 Logic & Proofs Worksheet', desc: 'Practice with truth tables, logical equivalences, and basic proof techniques.',
-      worksheetFile: '#', solutionsFile: '#', updated: '2026-01-05' },
-  ];
-
-  // ---------- v16: dummy data — 10 items per unit per material type, 5 units, Calc 1 & Calc 3 (~400 items) ----------
-  const dummyUnitDefs = {
-    'Calc 1': [
-      { unit: 1, label: 'Squeeze Theorem & Asymptotes' },
-      { unit: 2, label: 'Definition of the Derivative' },
-      { unit: 3, label: 'Chain Rule & Implicit Differentiation' },
-      { unit: 4, label: 'Applications of Derivatives' },
-      { unit: 5, label: 'Intro to Integration' },
-    ],
-    'Calc 3': [
-      { unit: 1, label: 'Vectors in 3D Space' },
-      { unit: 2, label: 'Partial Derivatives' },
-      { unit: 3, label: 'Directional Derivatives & Gradients' },
-      { unit: 6, label: 'Line Integrals' },
-      { unit: 7, label: 'Surface Integrals' },
-    ]
-  };
-  const subtopicSuffixes = ['Part A', 'Part B', 'Part C', 'Part D', 'Part E', 'Part F', 'Part G', 'Part H', 'Part I', 'Part J'];
-
-  function buildDummyItems() {
-    const out = [];
-    const dates = ['2026-01-08', '2026-02-12', '2026-03-05', '2026-04-18', '2026-05-22', '2026-06-14', '2026-07-20', '2026-07-25', '2026-01-30', '2026-06-01'];
-    let dateIdx = 0;
-    const nextDate = () => dates[(dateIdx++) % dates.length];
-
-    Object.keys(dummyUnitDefs).forEach(course => {
-      const cs = course === 'Calc 1' ? 'c1' : 'c3';
-      dummyUnitDefs[course].forEach(block => {
-        for (let n = 1; n <= 10; n++) {
-          const sec = `${block.unit}.${n}`;
-          const secId = `${block.unit}-${n}`;
-          const suffix = subtopicSuffixes[n - 1];
-          const subtype = (n % 2 === 0) ? 'Blended' : 'Standard';
-          out.push({ id: `d-${cs}-${secId}-ws`, course, type: 'Worksheet', subtype,
-            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
-            title: `${sec} ${block.label} Worksheet${subtype === 'Blended' ? ' (Blended/Honors)' : ''}`,
-            desc: `Practice set covering ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
-            worksheetFile: '#', solutionsFile: '#', updated: nextDate() });
-          out.push({ id: `d-${cs}-${secId}-lgn`, course, type: 'LectureGuideNotes',
-            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
-            title: `${sec} ${block.label} — Guide & Notes (${suffix})`,
-            desc: `Guide and notes covering ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
-            guideFile: '#', notesFile: '#', updated: nextDate() });
-          out.push({ id: `d-${cs}-${secId}-vid`, course, type: 'LectureVideo',
-            sections: [sec], sectionLabel: `${block.label} — ${suffix}`,
-            title: `${sec} ${block.label} — Lecture Video (${suffix})`,
-            desc: `Recorded walkthrough of ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
-            playlistUrl: '#', updated: nextDate() });
-          out.push({ id: `d-${cs}-${secId}-app`, course, type: 'Applet',
-            sections: [sec],
-            title: `${block.label} Explorer (${suffix})`,
-            desc: `Interactive exploration tool for ${block.label.toLowerCase()}, ${suffix.toLowerCase()}.`,
-            curve: 'M14,50 C34,20 56,45 74,25 S 100,45 118,20', launchUrl: '#', updated: nextDate() });
-        }
-      });
-    });
-    return out;
-  }
-  items.push(...buildDummyItems());
+  // Site data (items, courseOrder, typeOrder, typeLabel) lives in js/data.js, which
+  // browse.html loads immediately before this file.
 
   const fileTypeLabel = { Applet: "Interactive", Worksheet: "PDF", LectureGuideNotes: "PDF", LectureVideo: "Video" };
 
@@ -165,10 +31,6 @@
     "Discrete Math": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
   };
 
-  const courseOrder = ["Precalc", "Calc 1", "Calc 2", "Calc 3", "Linear Algebra", "Discrete Math", "Statistics"];
-  const typeOrder = ["Applet", "Worksheet", "LectureGuideNotes", "LectureVideo"];
-  const typeLabel = { Applet: "Applets", Worksheet: "Worksheets", LectureGuideNotes: "Lecture Guides/Notes", LectureVideo: "Lecture Videos" };
-
   const typeIconSVG = {
     Applet: `<svg viewBox="-1 -1 27 26">
       <line x1="4" y1="21" x2="4" y2="3"/><line x1="4" y1="21" x2="4" y2="23" stroke-width="1.3"/>
@@ -187,13 +49,12 @@
   const chevronLeftSVG = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`;
   const chevronRightSVG = `<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
 
-  let state = { level: 'home' };
+  let state = { level: 'courseMaterials' };
   let devShowEmptyCourses = false;
 
   // ---------- v16: History API — proper back/forward support ----------
   function statePath(s) {
     if (!s) return '/';
-    if (s.level === 'home') return '/';
     if (s.level === 'courseMaterials') return '/course-materials';
     if (s.level === 'typeBrowse') {
       const friendlySlug = { Applet: 'applets', LectureVideo: 'lecture-videos', Worksheet: 'worksheets', LectureGuideNotes: 'lecture-guides-notes' };
@@ -217,7 +78,7 @@
     render();
   }
   window.addEventListener('popstate', function (e) {
-    state = e.state || { level: 'home' };
+    state = e.state || { level: 'courseMaterials' };
     render();
   });
 
@@ -253,12 +114,11 @@
   function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('open'); }
   function closeMobileMenu() { document.getElementById('mobile-menu').classList.remove('open'); }
 
-  function clearNav() { document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('current')); }
+  function clearNav() { document.querySelectorAll('.nav-pill').forEach(n => n.classList.remove('current')); }
   function setCurrentNav(id) { const el = document.getElementById(id); if (el) el.classList.add('current'); }
 
   function updateNavHighlight() {
     clearNav();
-    if (state.level === 'home') { setCurrentNav('nav-home'); return; }
     if (state.level === 'typeBrowse' && state.type === 'Applet') { setCurrentNav('nav-applets'); return; }
     if (state.level === 'typeBrowse' && state.type === 'LectureVideo') { setCurrentNav('nav-videos'); return; }
     if (state.level === 'courseMaterials') { setCurrentNav('nav-coursematerials'); return; }
@@ -266,7 +126,6 @@
     if (state.level === 'detail') { setCurrentNav('nav-coursematerials'); return; }
   }
 
-  function goHome() { navigate({ level: 'home' }); }
   function goToCourseMaterials() { navigate({ level: 'courseMaterials' }); }
   function enterCourse(course) { navigate({ level: 'tier2', entry: 'course', course }); }
 
@@ -369,8 +228,7 @@
   }
 
   function crumbHTML() {
-    if (state.level === 'home') return '';
-    const parts = [`<span class="crumb" onclick="goHome()">Home</span>`];
+    const parts = [`<span class="crumb" onclick="window.location.href='index.html'">Home</span>`];
 
     if (state.level === 'courseMaterials') {
       parts.push(`<span class="sep">/</span><span class="current-crumb">Course Materials</span>`);
@@ -494,11 +352,6 @@
 
   function renderSidebar() {
     const card = document.getElementById('sidebar-card');
-    if (state.level === 'home') {
-      card.className = 'sidebar-card bio-card';
-      card.innerHTML = `<div class="sidebar-photo">KK</div><h3>Kyle Knee</h3><p>${bioText}</p>`;
-      return;
-    }
     card.className = 'sidebar-card';
     if (state.level === 'typeBrowse' || state.level === 'tier3') {
       card.innerHTML = sidebarContentForType(state.type);
@@ -593,33 +446,10 @@
     const shell = document.querySelector('.page-shell');
     // v18: sidebar now applies on both the top-level typeBrowse page AND the course-specific tier3
     // page, for the same three types; Applets stays sidebar-less on both.
-    const showSidebar = state.level === 'home'
-      || (state.level === 'typeBrowse' && sidebarTypes.includes(state.type))
+    const showSidebar = (state.level === 'typeBrowse' && sidebarTypes.includes(state.type))
       || (state.level === 'tier3' && sidebarTypes.includes(state.type));
     if (showSidebar) { shell.classList.remove('no-sidebar'); renderSidebar(); }
     else { shell.classList.add('no-sidebar'); }
-
-    if (state.level === 'home') {
-      const recent = [...items].sort((a, b) => new Date(b.updated) - new Date(a.updated)).slice(0, 5);
-      const whatsNewHTML = recent.map(i => `
-        <div class="whatsnew-item" onclick="openDetail('${i.id}')">
-          <div class="icon-badge">${typeIconSVG[i.type]}</div>
-          <div><div class="wn-title">${i.title}</div><div class="wn-meta">${i.course} · ${typeLabel[i.type]}</div></div>
-          <div class="wn-date">${formatDate(i.updated)}</div>
-        </div>`).join('');
-      const explainerHTML = typeOrder.map(t => `
-        <div class="explainer-card" onclick="enterType('${t}')">
-          <div class="icon-badge">${typeIconSVG[t]}</div>
-          <div><div class="label">${typeLabel[t]}</div><div class="desc">${typeDescription[t]}</div></div>
-        </div>`).join('');
-      page.innerHTML = `
-        <div class="home-title">Teaching Materials Hub</div>
-        <div class="home-subtitle">Applets, notes, and worksheets for every course — browse by course under Course Materials, or jump straight to Applets or Lecture Videos above.</div>
-        <div class="explainer-row">${explainerHTML}</div>
-        <div class="whatsnew"><h2>What's New</h2><div class="whatsnew-list">${whatsNewHTML}</div></div>
-      `;
-      return;
-    }
 
     if (state.level === 'courseMaterials') {
       const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => items.some(i => i.course === c));
@@ -722,8 +552,8 @@
 
     if (state.level === 'detail') {
       const item = items.find(i => i.id === state.id);
-      if (!item) { goHome(); return; }
-      if (item.type === 'Applet') { launchApplet(item.id); goHome(); return; }
+      if (!item) { goToCourseMaterials(); return; }
+      if (item.type === 'Applet') { launchApplet(item.id); goToCourseMaterials(); return; }
 
       let linksHTML = '';
       if (item.type === 'Worksheet') {
@@ -795,6 +625,15 @@
     formatDate([...items].sort((a, b) => new Date(b.updated) - new Date(a.updated))[0].updated);
 
   // ---------- initial load: set up history without creating a duplicate first entry ----------
-  state = { level: 'home' };
-  try { history.replaceState(state, '', '#/'); } catch (e) { /* ignore */ }
+  // browse.html has no home route of its own — the home page lives at index.html and links here
+  // via a hash (e.g. browse.html#/applets); parse that hash into a starting state, defaulting to
+  // Course Materials when there's no hash or it doesn't match a known top-level route.
+  function stateFromHash() {
+    const h = (window.location.hash || '').replace(/^#/, '');
+    if (h === '/applets') return { level: 'typeBrowse', type: 'Applet' };
+    if (h === '/lecture-videos') return { level: 'typeBrowse', type: 'LectureVideo' };
+    return { level: 'courseMaterials' };
+  }
+  state = stateFromHash();
+  try { history.replaceState(state, '', '#' + statePath(state)); } catch (e) { /* ignore */ }
   render();

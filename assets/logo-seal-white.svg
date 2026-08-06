@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#FFFFFF" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="65" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <path id="top" d="M 28 100 A 72 72 0 0 1 172 100" fill="none"/>
+  <path id="bot" d="M 8 100 A 92 92 0 0 0 192 100" fill="none"/>
+  <text font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="1" fill="#FFFFFF">
+    <textPath href="#top" startOffset="50%" text-anchor="middle">PROFESSOR</textPath>
+  </text>
+  <text font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="1" fill="#FFFFFF">
+    <textPath href="#bot" startOffset="50%" text-anchor="middle">MATHEMATICS</textPath>
+  </text>
+  <!-- K baseline 126 centers the ink block (top of the "2" to the K baseline = 53 units) on cy=100.
+       Georgia's digits are old-style, so the "2" sits at x-height (22 units at font-size 42), not cap height. -->
+  <text x="100" y="126" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="700" fill="#FFFFFF" text-anchor="middle">K<tspan font-size="42" dy="-31">2</tspan></text>
+</svg>

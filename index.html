@@ -3,74 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Teaching Materials Hub — v18</title>
+<title>Kyle Knee — Teaching Materials Hub</title>
+<!-- Paths stay document-relative: this is a GitHub Pages project site served from
+     /Course-Materials/, so a leading slash would break every one of these. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/home.css">
 </head>
 <body>
 
-<div class="meta-bar">
-  <b>Mockup v18 — result of the tier 3 "plainness" design round:</b> single-type pages (Worksheets,
-  Lecture Guides/Notes, Lecture Videos, Applets, at both the top-level browse page and the
-  course-specific page) now show a type icon inline with the page title. A per-unit accent color bar
-  now runs along the top of each card on unit-grouped pages (Tier 3), with the unit's carousel header
-  echoing the same color. The Worksheets/Guides-Notes/Videos sidebar now also appears on their
-  course-specific pages, not just the top-level browse page, and its icon sits inline with the
-  heading instead of stacked above it. Applets (no sidebar) keeps a one-line tagline under its title;
-  the other three drop the tagline since the sidebar already covers that ground.
-</div>
-
-<div class="c-topline">
-  <span>Harper College — Mathematics Department</span>
-</div>
+<div class="c-topline"><span>Harper College — Mathematics Department</span></div>
 <div class="c-banner">
-  <div class="c-banner-decor" aria-hidden="true">
-    <svg viewBox="0 0 1200 220" preserveAspectRatio="none">
-      <path d="M0 170 C 200 40, 340 210, 560 90 S 900 20, 1200 130" fill="none" stroke="white" stroke-width="2.5"/>
-      <path d="M0 90 C 260 190, 420 10, 640 120 S 980 200, 1200 60" fill="none" stroke="white" stroke-width="1.5" opacity="0.6"/>
-    </svg>
-  </div>
+  <div class="c-banner-decor" aria-hidden="true"><svg viewBox="0 0 1200 130" preserveAspectRatio="none"><path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" fill="none" stroke-width="2.5"/></svg></div>
   <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
-  <div class="c-banner-inner">
-    <div class="c-eyebrow">Professor</div>
-    <div class="c-name">Kyle Knee</div>
-    <div class="c-title">Mathematics, Harper College</div>
-  </div>
-</div>
-<div class="nav">
-  <div class="nav-links">
-    <div class="nav-item"><div class="nav-link" id="nav-home" onclick="goHome()">Home</div></div>
-    <div class="nav-item"><div class="nav-link" id="nav-coursematerials" onclick="goToCourseMaterials()">Course Materials</div></div>
-    <div class="nav-item"><div class="nav-link" id="nav-applets" onclick="enterType('Applet')">Applets</div></div>
-    <div class="nav-item"><div class="nav-link" id="nav-videos" onclick="enterType('LectureVideo')">Lecture Videos</div></div>
-  </div>
-  <div class="nav-search">
-    <input class="search-box" id="search-input" placeholder="Search..." oninput="doSearch(this.value)">
-    <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
-    <div class="search-results" id="search-results"></div>
+  <div class="banner-row">
+    <a class="brand" href="index.html" aria-label="Professor Kyle Knee — home">
+      <img class="brand-mark" src="assets/logo-seal-white.svg" alt="" width="72" height="72">
+      <div class="brand-text"><div class="b-name">Professor Kyle Knee</div><div class="b-title">Harper College Mathematics</div></div>
+    </a>
+    <div class="right-cluster">
+      <div class="nav-pills">
+        <div class="nav-pill current">Home</div>
+        <a class="nav-pill" href="browse.html">Browse by Course</a>
+        <a class="nav-pill" href="browse.html#/applets">Applets</a>
+        <a class="nav-pill" href="browse.html#/lecture-videos">Lecture Videos</a>
+      </div>
+      <div class="search-wrap"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+    </div>
   </div>
 </div>
 
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mobile-search">
-    <input class="search-box" id="search-input-mobile" placeholder="Search..." oninput="doSearch(this.value, true)">
-    <div class="search-results" id="search-results-mobile"></div>
-  </div>
-  <div class="mobile-link" onclick="goHome(); closeMobileMenu();">Home</div>
-  <div class="mobile-link" onclick="goToCourseMaterials(); closeMobileMenu();">Course Materials</div>
-  <div class="mobile-link" onclick="enterType('Applet'); closeMobileMenu();">Applets</div>
-  <div class="mobile-link" onclick="enterType('LectureVideo'); closeMobileMenu();">Lecture Videos</div>
+  <div class="mobile-search"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+  <div class="mobile-link" style="font-weight:700;">Home</div>
+  <a class="mobile-link" href="browse.html">Browse by Course</a>
+  <a class="mobile-link" href="browse.html#/applets">Applets</a>
+  <a class="mobile-link" href="browse.html#/lecture-videos">Lecture Videos</a>
 </div>
 
-<div class="page-shell">
-  <div class="main-col" id="page"></div>
-  <div class="sidebar-col">
-    <div class="sidebar-card" id="sidebar-card"></div>
+<!-- ================= HERO: soft curve wash + title/explanation/stats + horizontal bio card ================= -->
+<div class="hero-full">
+  <div class="hero-bg-layer">
+    <svg viewBox="0 0 1400 420" preserveAspectRatio="none" style="width:100%;height:100%;">
+      <path d="M700 420 C 850 200 1000 420 1150 220 S 1350 60 1450 200" stroke-width="34" fill="none"/>
+    </svg>
+  </div>
+  <svg class="hero-ripple-accent" viewBox="0 0 1400 420" preserveAspectRatio="none">
+    <circle class="ripple-dot" cx="1120" cy="150" r="3.5"/>
+    <circle class="ripple-ring" cx="1120" cy="150" r="6"/>
+    <circle class="ripple-ring delay1" cx="1120" cy="150" r="6"/>
+    <circle class="ripple-ring delay2" cx="1120" cy="150" r="6"/>
+  </svg>
+  <div class="hero-inner-wrap">
+    <div class="hero-text">
+      <div class="h-title">Teaching Materials Hub</div>
+      <div class="h-desc">Applets, worksheets, lecture guides, and videos for every course — <b>browse by course</b> above, or explore by type below.</div>
+      <!-- numbers are filled in by renderHeroStats() in js/home.js, counting the same
+           js/data.js items array the browse pages count — never hardcode them here -->
+      <div class="hero-stats-row">
+        <div class="hero-stat"><div class="hero-stat-num" data-stat="courses">&mdash;</div><div class="hero-stat-label">Courses</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" data-stat="Applet">&mdash;</div><div class="hero-stat-label">Applets</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" data-stat="Worksheet">&mdash;</div><div class="hero-stat-label">Worksheets</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" data-stat="LectureGuideNotes">&mdash;</div><div class="hero-stat-label">Lecture Guides/Notes</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" data-stat="LectureVideo">&mdash;</div><div class="hero-stat-label">Lecture Videos</div></div>
+      </div>
+    </div>
+    <div class="bio-card-wide">
+      <img class="sidebar-photo" src="assets/logo-seal-accent.svg" alt="Professor Kyle Knee seal" width="92" height="92">
+      <div class="bio-text-col">
+        <h3>Kyle Knee</h3>
+        <div class="role">Mathematics Department, Harper College</div>
+        <p>Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.</p>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- ================= THREE SPOTLIGHTS: Browse by Course, Applets, Lecture Videos ================= -->
+<div class="type-sections">
+  <div class="section-label">Find what you need</div>
+
+  <div class="spotlight">
+    <div class="spotlight-media">
+      <svg class="course-stack-svg" viewBox="0 0 24 24">
+        <g class="course-card pos-back">
+          <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+          <text x="13" y="11.4" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" fill="var(--accent)" stroke="none" font-weight="700">&#8749;</text>
+        </g>
+        <g class="course-card pos-mid">
+          <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+          <text x="13" y="11.5" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" fill="var(--accent)" stroke="none" font-weight="700">&#931;</text>
+        </g>
+        <g class="course-card pos-front">
+          <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+          <text x="13" y="11.2" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="6" fill="var(--accent)" stroke="none" font-weight="700">lim</text>
+        </g>
+      </svg>
+    </div>
+    <div class="spotlight-body">
+      <div class="spotlight-eyebrow">By course</div>
+      <a class="spotlight-title" href="browse.html">Browse by Course</a>
+      <div class="spotlight-desc">See everything for one class in a single place — worksheets, lecture guides and notes, applets, and videos, organized by unit. The most direct path if you already know which course you need.</div>
+      <a class="spotlight-btn" href="browse.html">See all Courses →</a>
+    </div>
+  </div>
+  <div class="section-divider"></div>
+
+  <div class="spotlight reverse">
+    <div class="spotlight-media spotlight-media-circle">
+      <svg viewBox="-1 -1 27 26">
+        <line x1="4" y1="21" x2="4" y2="3"/><line x1="2" y1="19" x2="22" y2="19"/><path d="M4.5 17.5C6 11 8 8.5 9.5 8.5S13 11 13.5 13.5 16 18.5 17.5 18.5 20 15 21 9.5"/>
+        <circle class="ripple-halo" cx="21" cy="9.5" r="4.5"/>
+        <circle class="ripple-halo ripple-halo-outer" cx="21" cy="9.5" r="7"/>
+        <circle class="ripple-dot" cx="21" cy="9.5" r="0.9"/>
+        <circle class="ripple-ring" cx="21" cy="9.5" r="3"/>
+        <circle class="ripple-ring delay1" cx="21" cy="9.5" r="3"/>
+      </svg>
+    </div>
+    <div class="spotlight-body">
+      <div class="spotlight-eyebrow">Interactive</div>
+      <a class="spotlight-title" href="browse.html#/applets">Applets</a>
+      <div class="spotlight-desc">Browser-based tools you can drag, adjust, and explore — built to make abstract ideas visual, from rotating quadric surfaces to walking a point around the unit circle. Available across Precalc, Calc 3, and Linear Algebra.</div>
+      <a class="spotlight-btn" href="browse.html#/applets">See all Applets →</a>
+    </div>
+  </div>
+  <div class="section-divider"></div>
+
+  <div class="spotlight">
+    <div class="spotlight-media">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="13" rx="2"/>
+        <path d="M8 20h8M12 17v3"/>
+        <path class="video-play" d="M10 8l5 2.5L10 13z" fill="var(--accent)" stroke="none"/>
+        <path class="video-scribble" d="M5.5 14 Q 7 8.5 9 11.5 T 12.5 8.5 T 16 9 T 19 12.5" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+        <rect class="video-progress-track" x="4.5" y="15.3" width="15" height="1.3" rx="0.65" fill="var(--soft)" stroke="none"/>
+        <rect class="video-progress-bar" x="4.5" y="15.3" width="0" height="1.3" rx="0.65" fill="var(--accent)" stroke="none"/>
+      </svg>
+    </div>
+    <div class="spotlight-body">
+      <div class="spotlight-eyebrow">Recorded lectures</div>
+      <a class="spotlight-title" href="browse.html#/lecture-videos">Lecture Videos</a>
+      <div class="spotlight-desc">Recorded walkthroughs of key topics, organized into a playlist per course on YouTube. Section-level links throughout the site jump straight to the relevant part of the playlist. Currently covers Calc 1, Calc 2, and Calc 3.</div>
+      <a class="spotlight-btn" href="browse.html#/lecture-videos">See all Lecture Videos →</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
 <div class="site-footer">
   <div class="footer-inner">
     <div class="f-col">
+      <img class="f-seal" src="assets/logo-seal-white.svg" alt="" width="76" height="76">
       <div class="f-name">Kyle Knee</div>
       <div>Mathematics Department, Harper College</div>
       <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>
@@ -79,12 +168,13 @@
       <div>Unless otherwise noted, materials on this site are licensed under a
         <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</a>
         © 2026 Kyle Knee. You may share and adapt these materials for non-commercial educational use, provided appropriate credit is given.</div>
-      <div style="margin-top:8px;">Site last updated: <span id="footer-updated"></span></div>
+      <div style="margin-top:8px;">Site last updated: Aug 2, 2026</div>
     </div>
   </div>
 </div>
 
-<script src="js/app.js"></script>
+<script src="js/data.js"></script>
+<script src="js/home.js"></script>
 
 </body>
 </html>

@@ -10,25 +10,34 @@
   .meta-bar b { color: #fff; }
 
   .c-topline { background: #2E3A8C; color: #D6DBF7; font-size: 12.5px; padding: 6px 32px; text-align: center; }
-  .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); padding: 46px 32px 40px; color: white; overflow: hidden; }
+
+  /* ---------- shared site header: slim gradient banner + pill nav (matches the home page) ---------- */
+  .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; overflow: hidden; }
   .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; }
-  .c-banner-decor svg { width: 100%; height: 100%; display: block; }
-  .c-banner-inner { position: relative; text-align: center; }
-  .c-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #E3E6FB; margin-bottom: 8px; }
-  .c-name { font-size: 32px; font-weight: 800; letter-spacing: -0.01em; }
-  .c-title { font-size: 14px; color: #E3E6FB; margin-top: 6px; }
+  .c-banner-decor svg { width: 100%; height: 100%; display: block; stroke: white; }
+  .banner-row { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; flex-wrap: wrap; gap: 14px; }
+  /* The whole title block is one link back to the home page. The negative margin cancels the
+     padding, so the larger hit area and the hover wash don't shift the banner layout. */
+  .brand { display: flex; align-items: center; gap: 16px; cursor: pointer; border-radius: 12px; padding: 6px 10px; margin: -6px -10px; transition: background 0.15s; }
+  .brand:hover { background: rgba(255,255,255,0.12); }
+  .brand:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  /* Loaded as <img> rather than inline SVG on purpose: css/home.css sets a global
+     `svg { stroke: var(--accent); fill: none }` that would strip the seal's own colours. */
+  .brand-mark { width: 72px; height: 72px; flex-shrink: 0; }
+  .brand-text .b-name { font-size: 27px; font-weight: 800; line-height: 1.1; }
+  .brand-text .b-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.35); display: inline-block; }
+  .right-cluster { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .nav-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-pill { display: inline-block; padding: 9px 15px; font-size: 13.5px; font-weight: 600; color: #E3E6FB; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+  .nav-pill.current { background: rgba(255,255,255,0.2); color: #fff; }
+  .nav-pill:hover:not(.current) { color: #fff; }
 
-  .nav { background: var(--card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-wrap: wrap; }
-  .nav-links { display: flex; flex-wrap: wrap; }
-  .nav-item { position: relative; }
-  .nav-link { display: inline-block; padding: 14px 18px; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
-  .nav-link.current { color: var(--accent); border-bottom: 3px solid var(--accent); }
-  .nav-item:hover .nav-link:not(.current) { color: var(--accent); border-bottom: 3px solid var(--border); }
-
-  .nav-search { position: relative; padding: 10px 0; }
-  .search-box { border: 1px solid var(--border); border-radius: 18px; padding: 8px 34px 8px 14px; font-family: inherit; font-size: 13.5px; width: 200px; background: var(--bg); transition: width 0.2s; }
-  .search-box:focus { outline: 2px solid var(--accent-2); outline-offset: 1px; width: 260px; background: var(--card); }
-  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; border: none; background: var(--soft); color: var(--muted); font-size: 12px; line-height: 1; cursor: pointer; display: none; align-items: center; justify-content: center; }
+  .search-wrap { position: relative; }
+  .search-box { border: 1px solid rgba(255,255,255,0.35); border-radius: 18px; padding: 8px 34px 8px 32px; font-family: inherit; font-size: 13px; width: 170px; background: rgba(255,255,255,0.14); color: #fff; transition: width 0.2s; }
+  .search-box::placeholder { color: #E3E6FB; }
+  .search-box:focus { outline: 2px solid rgba(255,255,255,0.5); outline-offset: 1px; width: 220px; background: rgba(255,255,255,0.22); }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: #E3E6FB; pointer-events: none; }
+  .search-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; border: none; background: rgba(255,255,255,0.3); color: #fff; font-size: 12px; line-height: 1; cursor: pointer; display: none; align-items: center; justify-content: center; }
   .search-clear.visible { display: flex; }
   .search-results { position: absolute; top: 100%; right: 0; margin-top: 6px; width: 320px; display: flex; flex-direction: column; gap: 6px; z-index: 60; }
   .search-results:empty { display: none; }
@@ -37,7 +46,9 @@
   .search-results .r b { color: var(--accent); }
 
   .mobile-search { padding: 14px 20px; border-bottom: 1px solid var(--border); }
-  .mobile-search .search-box { width: 100%; }
+  .mobile-search .search-box { width: 100%; color: var(--text); background: var(--bg); border-color: var(--border); }
+  .mobile-search .search-box::placeholder { color: var(--muted); }
+  .mobile-search .search-icon { stroke: var(--muted); }
   .mobile-search .search-results { position: static; width: auto; margin-top: 8px; }
 
   .page-shell { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; padding: 28px 32px 80px; }
@@ -45,7 +56,6 @@
   .page-shell.no-sidebar .sidebar-col { display: none; }
   .main-col { min-width: 0; }
   .sidebar-card { background: var(--card); border-radius: 20px; padding: 26px 22px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); position: sticky; top: 28px; text-align: left; }
-  .sidebar-card.bio-card { text-align: center; } /* v18: home's bio card keeps its original centered layout */
   .sidebar-photo { width: 84px; height: 84px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 28px; font-weight: 700; margin: 0 auto 14px; }
   .sidebar-card h3 { margin: 0 0 10px; font-size: 16px; }
   .sidebar-card p { font-size: 13px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; text-align: left; }
@@ -73,8 +83,6 @@
   .title-icon-badge { width: 44px; height: 44px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .title-icon-badge svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
   .page-tagline { font-size: 13.5px; color: var(--muted); margin: 8px 0 0 56px; }
-  .home-title { font-size: 27px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 4px; }
-  .home-subtitle { font-size: 14.5px; color: var(--muted); margin: 0 0 28px; }
 
   .tile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
   .tile { background: var(--card); border-radius: 18px; padding: 22px 16px; text-align: center; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
@@ -195,38 +203,29 @@
   .cd-blurb { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; max-width: 640px; }
   .cd-counts { font-size: 12px; color: var(--accent-2); font-weight: 600; }
 
-  .hamburger { display: none; position: absolute; right: 20px; top: 18px; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+  .hamburger { display: none; position: absolute; right: 20px; top: 18px; z-index: 3; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
   .mobile-menu { display: none; background: var(--card); border-bottom: 1px solid var(--border); }
   .mobile-menu.open { display: block; }
   .mobile-menu a, .mobile-menu .mobile-link { display: block; padding: 13px 20px; font-size: 14.5px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); cursor: pointer; }
   @media (max-width: 780px) {
-    .nav { display: none; }
+    .nav-pills { display: none; }
     .hamburger { display: inline-block; }
-    .nav-search { display: none; }
+    .search-wrap { display: none; }
+    /* The hamburger is absolutely positioned at the right edge, so the row reserves space for
+       it. Without the padding-right the centred brand runs underneath the button — and because
+       .banner-row paints above .hamburger, the brand link would swallow the taps. */
+    .banner-row { justify-content: center; text-align: center; padding: 14px 56px 14px 16px; }
+    /* A 72px seal plus the 27px name doesn't fit 375px alongside the hamburger. The curved
+       text stops being legible at this size, but the mark still reads as a mark. */
+    .brand { gap: 12px; }
+    .brand-mark { width: 48px; height: 48px; }
+    .brand-text .b-name { font-size: 18px; }
+    .brand-text .b-title { font-size: 9.5px; letter-spacing: 0.08em; margin-top: 4px; padding-top: 4px; }
   }
   @media (max-width: 900px) {
     .page-shell { grid-template-columns: 1fr; }
     .sidebar-card { position: static; text-align: center; }
   }
-
-  .explainer-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 32px; }
-  .explainer-card { background: var(--card); border-radius: 16px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
-  .explainer-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
-  .explainer-card .icon-badge { width: 42px; height: 42px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .explainer-card .icon-badge svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
-  .explainer-card .label { font-size: 14.5px; font-weight: 700; margin-bottom: 3px; }
-  .explainer-card .desc { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
-
-  .whatsnew { margin-top: 8px; }
-  .whatsnew h2 { font-size: 16px; margin-bottom: 12px; }
-  .whatsnew-list { display: flex; flex-direction: column; gap: 8px; }
-  .whatsnew-item { display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: 14px; padding: 12px 16px; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
-  .whatsnew-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
-  .whatsnew-item .icon-badge { width: 34px; height: 34px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .whatsnew-item .icon-badge svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 1.7; }
-  .whatsnew-item .wn-title { font-size: 13.5px; font-weight: 600; }
-  .whatsnew-item .wn-meta { font-size: 12px; color: var(--muted); }
-  .whatsnew-item .wn-date { margin-left: auto; font-size: 11.5px; color: var(--eyebrow); white-space: nowrap; }
 
   .course-info { background: var(--card); border-radius: 20px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); }
   .course-info p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
@@ -268,4 +267,6 @@
   .footer-inner .f-name { color: white; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
   .footer-inner a { color: #B9B9D6; }
   .footer-inner .f-col { max-width: 340px; }
+  /* White seal, because the footer ground is #2A2A3D. */
+  .footer-inner .f-seal { width: 76px; height: 76px; display: block; margin-bottom: 12px; opacity: 0.9; }
   .footer-inner .f-license a { color: #D6DBF7; text-decoration: underline; }

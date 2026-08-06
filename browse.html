@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Materials — Kyle Knee</title>
+<!-- Paths stay document-relative: this is a GitHub Pages project site served from
+     /Course-Materials/, so a leading slash would break every one of these. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="c-topline">
+  <span>Harper College — Mathematics Department</span>
+</div>
+<div class="c-banner">
+  <div class="c-banner-decor" aria-hidden="true"><svg viewBox="0 0 1200 130" preserveAspectRatio="none"><path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" fill="none" stroke-width="2.5"/></svg></div>
+  <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+  <div class="banner-row">
+    <a class="brand" href="index.html" aria-label="Professor Kyle Knee — home">
+      <img class="brand-mark" src="assets/logo-seal-white.svg" alt="" width="72" height="72">
+      <div class="brand-text"><div class="b-name">Professor Kyle Knee</div><div class="b-title">Harper College Mathematics</div></div>
+    </a>
+    <div class="right-cluster">
+      <div class="nav-pills">
+        <a class="nav-pill" href="index.html">Home</a>
+        <div class="nav-pill" id="nav-coursematerials" onclick="goToCourseMaterials()">Browse by Course</div>
+        <div class="nav-pill" id="nav-applets" onclick="enterType('Applet')">Applets</div>
+        <div class="nav-pill" id="nav-videos" onclick="enterType('LectureVideo')">Lecture Videos</div>
+      </div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+        <input class="search-box" id="search-input" placeholder="Search..." oninput="doSearch(this.value)">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-search">
+    <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+    <input class="search-box" id="search-input-mobile" placeholder="Search..." oninput="doSearch(this.value, true)">
+    <div class="search-results" id="search-results-mobile"></div>
+  </div>
+  <a class="mobile-link" href="index.html">Home</a>
+  <div class="mobile-link" onclick="goToCourseMaterials(); closeMobileMenu();">Browse by Course</div>
+  <div class="mobile-link" onclick="enterType('Applet'); closeMobileMenu();">Applets</div>
+  <div class="mobile-link" onclick="enterType('LectureVideo'); closeMobileMenu();">Lecture Videos</div>
+</div>
+
+<div class="page-shell">
+  <div class="main-col" id="page"></div>
+  <div class="sidebar-col">
+    <div class="sidebar-card" id="sidebar-card"></div>
+  </div>
+</div>
+
+<div class="site-footer">
+  <div class="footer-inner">
+    <div class="f-col">
+      <img class="f-seal" src="assets/logo-seal-white.svg" alt="" width="76" height="76">
+      <div class="f-name">Kyle Knee</div>
+      <div>Mathematics Department, Harper College</div>
+      <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>
+    </div>
+    <div class="f-col f-license">
+      <div>Unless otherwise noted, materials on this site are licensed under a
+        <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</a>
+        © 2026 Kyle Knee. You may share and adapt these materials for non-commercial educational use, provided appropriate credit is given.</div>
+      <div style="margin-top:8px;">Site last updated: <span id="footer-updated"></span></div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

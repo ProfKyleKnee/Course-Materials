@@ -1,2 +1,12 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Image assets are binary: never run line-ending normalization over them.
+# text=auto already detects these correctly, but being explicit means a stray
+# checkout setting can't corrupt the favicons.
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Ring spans r=82..94, leaving 6 units of clearance inside the 100-unit viewBox half-width.
+       (The original r=95/stroke-10 reached exactly 100 and clipped on some renderers.) -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#3B4FC2" stroke-width="12"/>
+  <!-- Centered on the circle: text-anchor=middle handles x; baseline 134 centers the ink block
+       vertically (top of the "2" to the K baseline = 67.3 units) on cy=100. Georgia's digits are
+       old-style, so the "2" sits at x-height, not cap height. -->
+  <text x="100" y="134" font-family="Georgia, 'Times New Roman', serif" font-size="96" font-weight="700" fill="#3B4FC2" text-anchor="middle">K<tspan font-size="54" dy="-39">2</tspan></text>
+</svg>
