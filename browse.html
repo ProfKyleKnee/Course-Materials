@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Course Materials — Kyle Knee</title>
+<!-- Paths stay document-relative: this is a GitHub Pages project site served from
+     /Course-Materials/, so a leading slash would break every one of these. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -15,10 +23,10 @@
   <div class="c-banner-decor" aria-hidden="true"><svg viewBox="0 0 1200 130" preserveAspectRatio="none"><path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" fill="none" stroke-width="2.5"/></svg></div>
   <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
   <div class="banner-row">
-    <div class="brand">
-      <div class="brand-mark">KK</div>
-      <div class="brand-text"><div class="b-name">Kyle Knee</div><div class="b-title">Mathematics, Harper College</div></div>
-    </div>
+    <a class="brand" href="index.html" aria-label="Professor Kyle Knee — home">
+      <img class="brand-mark" src="assets/logo-seal-white.svg" alt="" width="72" height="72">
+      <div class="brand-text"><div class="b-name">Professor Kyle Knee</div><div class="b-title">Harper College Mathematics</div></div>
+    </a>
     <div class="right-cluster">
       <div class="nav-pills">
         <a class="nav-pill" href="index.html">Home</a>
@@ -58,6 +66,7 @@
 <div class="site-footer">
   <div class="footer-inner">
     <div class="f-col">
+      <img class="f-seal" src="assets/logo-seal-white.svg" alt="" width="76" height="76">
       <div class="f-name">Kyle Knee</div>
       <div>Mathematics Department, Harper College</div>
       <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>

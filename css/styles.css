@@ -16,10 +16,16 @@
   .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; }
   .c-banner-decor svg { width: 100%; height: 100%; display: block; stroke: white; }
   .banner-row { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; flex-wrap: wrap; gap: 14px; }
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .brand-mark { width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.16); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
-  .brand-text .b-name { font-size: 23px; font-weight: 800; letter-spacing: -0.01em; }
-  .brand-text .b-title { font-size: 12.5px; color: #E3E6FB; margin-top: 2px; }
+  /* The whole title block is one link back to the home page. The negative margin cancels the
+     padding, so the larger hit area and the hover wash don't shift the banner layout. */
+  .brand { display: flex; align-items: center; gap: 16px; cursor: pointer; border-radius: 12px; padding: 6px 10px; margin: -6px -10px; transition: background 0.15s; }
+  .brand:hover { background: rgba(255,255,255,0.12); }
+  .brand:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  /* Loaded as <img> rather than inline SVG on purpose: css/home.css sets a global
+     `svg { stroke: var(--accent); fill: none }` that would strip the seal's own colours. */
+  .brand-mark { width: 72px; height: 72px; flex-shrink: 0; }
+  .brand-text .b-name { font-size: 27px; font-weight: 800; line-height: 1.1; }
+  .brand-text .b-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.85; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.35); display: inline-block; }
   .right-cluster { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   .nav-pills { display: flex; gap: 4px; flex-wrap: wrap; }
   .nav-pill { display: inline-block; padding: 9px 15px; font-size: 13.5px; font-weight: 600; color: #E3E6FB; border-radius: 20px; cursor: pointer; white-space: nowrap; }
@@ -197,7 +203,7 @@
   .cd-blurb { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; max-width: 640px; }
   .cd-counts { font-size: 12px; color: var(--accent-2); font-weight: 600; }
 
-  .hamburger { display: none; position: absolute; right: 20px; top: 18px; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+  .hamburger { display: none; position: absolute; right: 20px; top: 18px; z-index: 3; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
   .mobile-menu { display: none; background: var(--card); border-bottom: 1px solid var(--border); }
   .mobile-menu.open { display: block; }
   .mobile-menu a, .mobile-menu .mobile-link { display: block; padding: 13px 20px; font-size: 14.5px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); cursor: pointer; }
@@ -205,7 +211,16 @@
     .nav-pills { display: none; }
     .hamburger { display: inline-block; }
     .search-wrap { display: none; }
-    .banner-row { justify-content: center; text-align: center; }
+    /* The hamburger is absolutely positioned at the right edge, so the row reserves space for
+       it. Without the padding-right the centred brand runs underneath the button — and because
+       .banner-row paints above .hamburger, the brand link would swallow the taps. */
+    .banner-row { justify-content: center; text-align: center; padding: 14px 56px 14px 16px; }
+    /* A 72px seal plus the 27px name doesn't fit 375px alongside the hamburger. The curved
+       text stops being legible at this size, but the mark still reads as a mark. */
+    .brand { gap: 12px; }
+    .brand-mark { width: 48px; height: 48px; }
+    .brand-text .b-name { font-size: 18px; }
+    .brand-text .b-title { font-size: 9.5px; letter-spacing: 0.08em; margin-top: 4px; padding-top: 4px; }
   }
   @media (max-width: 900px) {
     .page-shell { grid-template-columns: 1fr; }
@@ -252,4 +267,6 @@
   .footer-inner .f-name { color: white; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
   .footer-inner a { color: #B9B9D6; }
   .footer-inner .f-col { max-width: 340px; }
+  /* White seal, because the footer ground is #2A2A3D. */
+  .footer-inner .f-seal { width: 76px; height: 76px; display: block; margin-bottom: 12px; opacity: 0.9; }
   .footer-inner .f-license a { color: #D6DBF7; text-decoration: underline; }
