@@ -1,12 +1,51 @@
 // Home page only. Needs js/data.js loaded first (for `items` / `courseOrder` / `typeOrder`).
-function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('open'); }
+// #mobile-menu overlays the page (see .mobile-menu in css/styles.css) rather than sitting in
+// normal flow, so its top has to be set to the banner's actual rendered height right before
+// it opens — that height isn't a fixed number (brand text can wrap differently).
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  if (!menu.classList.contains('open')) {
+    menu.style.top = (document.querySelector('.c-topline').offsetHeight + document.querySelector('.c-banner').offsetHeight) + 'px';
+  }
+  menu.classList.toggle('open');
+}
+// Now that the menu overlays the page instead of pushing it down, a tap anywhere outside it
+// (or the hamburger, which has its own toggle) closes it — otherwise it'd stay floating over
+// content the user is trying to interact with.
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('mobile-menu');
+  if (!menu.classList.contains('open')) return;
+  if (menu.contains(e.target) || e.target.closest('.hamburger')) return;
+  menu.classList.remove('open');
+});
 
 // Hero stats, counted off the same js/data.js `items` array the browse pages count, so the
-// home page can't drift out of step with what browse.html reports.
+// home page can't drift out of step with what browse.html reports. Each number counts up
+// rather than just appearing, a small bit of life now that the hero has the full width to
+// itself. Skipped for prefers-reduced-motion, where it just jumps straight to the value.
+const COUNT_UP_MS = 900;
+function animateStat(el, target) {
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / COUNT_UP_MS, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    el.textContent = Math.round(eased * target);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
 function renderHeroStats() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const set = (key, n) => {
     const el = document.querySelector(`.hero-stat-num[data-stat="${key}"]`);
-    if (el) el.textContent = n;
+    if (!el) return;
+    if (reduceMotion) { el.textContent = n; return; }
+    // Waits for the stat's own entrance animation (.hero-stat in css/home.css) to actually
+    // start before counting up, so the count finishes as the number becomes visible instead
+    // of mostly playing out while it's still hidden/fading in.
+    const wrap = el.closest('.hero-stat');
+    if (wrap) wrap.addEventListener('animationstart', () => animateStat(el, n), { once: true });
+    else animateStat(el, n);
   };
   set('courses', courseOrder.filter(c => items.some(i => i.course === c)).length);
   typeOrder.forEach(t => set(t, items.filter(i => i.type === t).length));

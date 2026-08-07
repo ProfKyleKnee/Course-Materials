@@ -204,7 +204,13 @@
   .cd-counts { font-size: 12px; color: var(--accent-2); font-weight: 600; }
 
   .hamburger { display: none; position: absolute; right: 20px; top: 18px; z-index: 3; background: none; border: none; color: white; font-size: 22px; cursor: pointer; padding: 4px 8px; }
-  .mobile-menu { display: none; background: var(--card); border-bottom: 1px solid var(--border); }
+  /* Overlays the page instead of sitting in normal flow, so opening it doesn't shove the
+     hero/page content downward. `top` has no default here — toggleMobileMenu() in each page's
+     script sets it inline to the banner's actual rendered height right before opening, since
+     that height varies (brand text wrapping, etc.) rather than being a fixed number. Position
+     is absolute (not fixed) so the menu stays anchored to the banner in the document — the
+     banner itself scrolls with the page, it isn't sticky. */
+  .mobile-menu { display: none; position: absolute; left: 0; right: 0; background: var(--card); border-bottom: 1px solid var(--border); box-shadow: 0 12px 24px rgba(30,30,50,0.18); max-height: calc(100vh - 60px); overflow-y: auto; z-index: 50; }
   .mobile-menu.open { display: block; }
   .mobile-menu a, .mobile-menu .mobile-link { display: block; padding: 13px 20px; font-size: 14.5px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); cursor: pointer; }
   @media (max-width: 780px) {
@@ -262,7 +268,11 @@
 
   .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 14px; }
 
-  .site-footer { background: #2A2A3D; color: #B9B9D6; padding: 32px; margin-top: 40px; }
+  /* Same gradient as the header banner, as a slim top border — bookends every page the same
+     way the home page's hub divider bookends its hero, rather than the footer just being a
+     flat slab of color with no visual link back to the top of the page. */
+  .site-footer { position: relative; background: #2A2A3D; color: #B9B9D6; padding: 32px; margin-top: 40px; }
+  .site-footer::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
   .footer-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 12.5px; padding: 0 32px; }
   .footer-inner .f-name { color: white; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
   .footer-inner a { color: #B9B9D6; }
@@ -270,3 +280,9 @@
   /* White seal, because the footer ground is #2A2A3D. */
   .footer-inner .f-seal { width: 76px; height: 76px; display: block; margin-bottom: 12px; opacity: 0.9; }
   .footer-inner .f-license a { color: #D6DBF7; text-decoration: underline; }
+
+  /* ---------- footer quick links: same destinations as the main nav, so pages reached by a
+     deep link or a long scroll don't require scrolling back up to get anywhere else ---------- */
+  .f-links-title { color: white; font-weight: 700; font-size: 13px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .f-links { display: flex; flex-direction: column; gap: 8px; }
+  .f-links a:hover { color: white; text-decoration: underline; }
