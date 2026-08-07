@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Kyle Knee</title>
+<!-- Paths stay document-relative: this is a GitHub Pages project site served from
+     /Course-Materials/, so a leading slash would break every one of these. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/about.css">
+</head>
+<body>
+
+<div class="c-topline"><span>Harper College — Mathematics Department</span></div>
+<div class="c-banner">
+  <div class="c-banner-decor" aria-hidden="true"><svg viewBox="0 0 1200 130" preserveAspectRatio="none"><path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" fill="none" stroke-width="2.5"/></svg></div>
+  <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+  <div class="banner-row">
+    <a class="brand" href="index.html" aria-label="Professor Kyle Knee — home">
+      <img class="brand-mark" src="assets/logo-seal-white.svg" alt="" width="72" height="72">
+      <div class="brand-text"><div class="b-name">Professor Kyle Knee</div><div class="b-title">Harper College Mathematics</div></div>
+    </a>
+    <div class="right-cluster">
+      <div class="nav-pills">
+        <a class="nav-pill" href="index.html">Home</a>
+        <a class="nav-pill" href="browse.html">Browse by Course</a>
+        <a class="nav-pill" href="browse.html#/applets">Applets</a>
+        <a class="nav-pill" href="browse.html#/lecture-videos">Lecture Videos</a>
+        <div class="nav-pill current">About</div>
+      </div>
+      <div class="search-wrap"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-menu" id="mobile-menu">
+  <div class="mobile-search"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+  <a class="mobile-link" href="index.html">Home</a>
+  <a class="mobile-link" href="browse.html">Browse by Course</a>
+  <a class="mobile-link" href="browse.html#/applets">Applets</a>
+  <a class="mobile-link" href="browse.html#/lecture-videos">Lecture Videos</a>
+  <div class="mobile-link" style="font-weight:700;">About</div>
+</div>
+
+<div class="page-shell no-sidebar">
+  <div class="main-col">
+    <div class="breadcrumb"><span class="crumb" onclick="location.href='index.html'">Home</span><span class="sep">/</span><span class="current-crumb">About</span></div>
+    <div class="page-title">About</div>
+
+    <div class="detail-card">
+      <div class="about-bio-row">
+        <img class="about-photo" src="assets/logo-seal-accent.svg" alt="Professor Kyle Knee seal" width="110" height="110">
+        <div>
+          <div class="detail-title" style="margin:0;">Kyle Knee</div>
+          <div class="about-role">Mathematics Department, Harper College</div>
+        </div>
+      </div>
+      <p class="detail-desc">Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.</p>
+
+      <!-- static list, mirrors courseOrder in js/data.js — this page is intentionally not
+           data-driven, so this is duplicated by hand rather than loaded from data.js -->
+      <div class="about-courses">
+        <span class="item-pill">Precalc</span>
+        <span class="item-pill">Calc 1</span>
+        <span class="item-pill">Calc 2</span>
+        <span class="item-pill">Calc 3</span>
+        <span class="item-pill">Linear Algebra</span>
+        <span class="item-pill">Discrete Math</span>
+        <span class="item-pill">Statistics</span>
+      </div>
+
+      <div class="detail-links">
+        <a class="file-link" href="mailto:kknee1@harpercollege.edu">Email Professor Knee</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<div class="site-footer">
+  <div class="footer-inner">
+    <div class="f-col">
+      <img class="f-seal" src="assets/logo-seal-white.svg" alt="" width="76" height="76">
+      <div class="f-name">Kyle Knee</div>
+      <div>Mathematics Department, Harper College</div>
+      <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>
+    </div>
+    <div class="f-col">
+      <div class="f-links-title">Quick Links</div>
+      <div class="f-links">
+        <a href="index.html">Home</a>
+        <a href="browse.html">Browse by Course</a>
+        <a href="browse.html#/applets">Applets</a>
+        <a href="browse.html#/lecture-videos">Lecture Videos</a>
+        <a href="about.html">About</a>
+      </div>
+    </div>
+    <div class="f-col f-license">
+      <div>Unless otherwise noted, materials on this site are licensed under a
+        <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</a>
+        © 2026 Kyle Knee. You may share and adapt these materials for non-commercial educational use, provided appropriate credit is given.</div>
+      <div style="margin-top:8px;">Site last updated: Aug 2, 2026</div>
+    </div>
+  </div>
+</div>
+
+<script src="js/about.js"></script>
+
+</body>
+</html>

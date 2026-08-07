@@ -32,6 +32,7 @@
         <a class="nav-pill" href="browse.html">Browse by Course</a>
         <a class="nav-pill" href="browse.html#/applets">Applets</a>
         <a class="nav-pill" href="browse.html#/lecture-videos">Lecture Videos</a>
+        <a class="nav-pill" href="about.html">About</a>
       </div>
       <div class="search-wrap"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
     </div>
@@ -44,21 +45,19 @@
   <a class="mobile-link" href="browse.html">Browse by Course</a>
   <a class="mobile-link" href="browse.html#/applets">Applets</a>
   <a class="mobile-link" href="browse.html#/lecture-videos">Lecture Videos</a>
+  <a class="mobile-link" href="about.html">About</a>
 </div>
 
-<!-- ================= HERO: soft curve wash + title/explanation/stats + horizontal bio card ================= -->
+<!-- ================= HERO: soft curve wash + title/explanation/stats ================= -->
 <div class="hero-full">
   <div class="hero-bg-layer">
+    <!-- two overlapping curves for a bit more depth now that the hero has no ripple dot or
+         bio card competing for attention — the second is thinner and offset toward the top -->
     <svg viewBox="0 0 1400 420" preserveAspectRatio="none" style="width:100%;height:100%;">
       <path d="M700 420 C 850 200 1000 420 1150 220 S 1350 60 1450 200" stroke-width="34" fill="none"/>
+      <path d="M-50 60 C 150 200 320 10 520 130 S 900 260 1150 90" stroke-width="16" fill="none"/>
     </svg>
   </div>
-  <svg class="hero-ripple-accent" viewBox="0 0 1400 420" preserveAspectRatio="none">
-    <circle class="ripple-dot" cx="1120" cy="150" r="3.5"/>
-    <circle class="ripple-ring" cx="1120" cy="150" r="6"/>
-    <circle class="ripple-ring delay1" cx="1120" cy="150" r="6"/>
-    <circle class="ripple-ring delay2" cx="1120" cy="150" r="6"/>
-  </svg>
   <div class="hero-inner-wrap">
     <div class="hero-text">
       <div class="h-title">Teaching Materials Hub</div>
@@ -66,27 +65,44 @@
       <!-- numbers are filled in by renderHeroStats() in js/home.js, counting the same
            js/data.js items array the browse pages count — never hardcode them here -->
       <div class="hero-stats-row">
-        <div class="hero-stat"><div class="hero-stat-num" data-stat="courses">&mdash;</div><div class="hero-stat-label">Courses</div></div>
-        <div class="hero-stat"><div class="hero-stat-num" data-stat="Applet">&mdash;</div><div class="hero-stat-label">Applets</div></div>
-        <div class="hero-stat"><div class="hero-stat-num" data-stat="Worksheet">&mdash;</div><div class="hero-stat-label">Worksheets</div></div>
-        <div class="hero-stat"><div class="hero-stat-num" data-stat="LectureGuideNotes">&mdash;</div><div class="hero-stat-label">Lecture Guides/Notes</div></div>
-        <div class="hero-stat"><div class="hero-stat-num" data-stat="LectureVideo">&mdash;</div><div class="hero-stat-label">Lecture Videos</div></div>
-      </div>
-    </div>
-    <div class="bio-card-wide">
-      <img class="sidebar-photo" src="assets/logo-seal-accent.svg" alt="Professor Kyle Knee seal" width="92" height="92">
-      <div class="bio-text-col">
-        <h3>Kyle Knee</h3>
-        <div class="role">Mathematics Department, Harper College</div>
-        <p>Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.</p>
+        <div class="hero-stat">
+          <!-- static echo of the Browse-by-Course stack below (same rect geometry/rotation as
+               its .course-card pos-back/pos-mid/pos-front), rather than a generic education
+               icon, to tie the stat back to its own card -->
+          <div class="hero-stat-icon"><svg viewBox="0 0 24 24">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)" fill="var(--soft)" transform="translate(-3.5,4) rotate(-15,13,9.75)"/>
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)" fill="var(--soft)" transform="translate(-1.75,2) rotate(-7,13,9.75)"/>
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)" fill="#fff"/>
+            <text x="13" y="11.2" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="6" fill="var(--accent)" stroke="none" font-weight="700">lim</text>
+          </svg></div>
+          <div class="hero-stat-num" data-stat="courses">&mdash;</div><div class="hero-stat-label">Courses</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-icon"><svg viewBox="-1 -1 27 26"><line x1="4" y1="21" x2="4" y2="3"/><line x1="4" y1="21" x2="4" y2="23" stroke-width="1.3"/><line x1="2" y1="19" x2="22" y2="19"/><line x1="4" y1="19" x2="2" y2="19" stroke-width="1.3"/><g transform="translate(1,-1.5)"><path d="M4.5 17.5C6 11 8 8.5 9.5 8.5S13 11 13.5 13.5 16 18.5 17.5 18.5 20 15 21 9.5"/><circle cx="21" cy="9.5" r="1.05" fill="var(--accent)" stroke="none"/><circle cx="21" cy="9.5" r="2.4" opacity="0.45"/><circle cx="21" cy="9.5" r="3.8" opacity="0.22"/></g></svg></div>
+          <div class="hero-stat-num" data-stat="Applet">&mdash;</div><div class="hero-stat-label">Applets</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-icon"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M16 3v3h3"/><line x1="8" y1="9" x2="15" y2="9"/><line x1="8" y1="12" x2="12" y2="12"/><path d="M9 15l5-5 2 2-5 5-2.5 0.5z"/></svg></div>
+          <div class="hero-stat-num" data-stat="Worksheet">&mdash;</div><div class="hero-stat-label">Worksheets</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><line x1="4" y1="7" x2="7" y2="7" stroke-width="2.4"/><line x1="4" y1="11" x2="7" y2="11" stroke-width="2.4"/><line x1="4" y1="15" x2="7" y2="15" stroke-width="2.4"/><line x1="10" y1="7" x2="17" y2="7"/><line x1="10" y1="11" x2="17" y2="11"/><line x1="10" y1="15" x2="15" y2="15"/></svg></div>
+          <div class="hero-stat-num" data-stat="LectureGuideNotes">&mdash;</div><div class="hero-stat-label">Lecture<br>Guides/Notes</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8l5 2.5L10 13z" fill="var(--accent)" stroke="none"/><path d="M8 20h8M12 17v3"/></svg></div>
+          <div class="hero-stat-num" data-stat="LectureVideo">&mdash;</div><div class="hero-stat-label">Lecture Videos</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="hub-divider"></div>
+
 <!-- ================= THREE SPOTLIGHTS: Browse by Course, Applets, Lecture Videos ================= -->
 <div class="type-sections">
-  <div class="section-label">Find what you need</div>
+  <div class="section-label">Find What You Need</div>
 
   <div class="spotlight">
     <div class="spotlight-media">
@@ -152,6 +168,24 @@
       <a class="spotlight-btn" href="browse.html#/lecture-videos">See all Lecture Videos →</a>
     </div>
   </div>
+  <div class="section-divider"></div>
+
+  <!-- ================= ABOUT: closes out the card list. Plain spotlight row like its three
+       siblings — no special card background/border of its own, just the standard circular
+       media badge and accent-outlined button ================= -->
+  <div class="spotlight reverse">
+    <div class="spotlight-media spotlight-media-circle">
+      <img src="assets/logo-seal-accent.svg" alt="Professor Kyle Knee seal" width="110" height="110">
+    </div>
+    <div class="spotlight-body">
+      <!-- title matches the "About" nav pill, same as the other three card titles match
+           theirs — the name moves to the eyebrow instead of being the headline -->
+      <div class="spotlight-eyebrow">Kyle Knee</div>
+      <a class="spotlight-title" href="about.html">About</a>
+      <div class="spotlight-desc">Mathematics professor at Harper College, teaching Calculus, Statistics, Precalculus, Linear Algebra, and Discrete Math.</div>
+      <a class="spotlight-btn" href="about.html">More about me →</a>
+    </div>
+  </div>
 
 </div>
 
@@ -163,6 +197,16 @@
       <div class="f-name">Kyle Knee</div>
       <div>Mathematics Department, Harper College</div>
       <div style="margin-top:6px;"><a href="mailto:kknee1@harpercollege.edu">kknee1@harpercollege.edu</a></div>
+    </div>
+    <div class="f-col">
+      <div class="f-links-title">Quick Links</div>
+      <div class="f-links">
+        <a href="index.html">Home</a>
+        <a href="browse.html">Browse by Course</a>
+        <a href="browse.html#/applets">Applets</a>
+        <a href="browse.html#/lecture-videos">Lecture Videos</a>
+        <a href="about.html">About</a>
+      </div>
     </div>
     <div class="f-col f-license">
       <div>Unless otherwise noted, materials on this site are licensed under a

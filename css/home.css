@@ -11,43 +11,48 @@
   .hero-full { position: relative; width: 100%; overflow: hidden; background: linear-gradient(160deg, #F5F6FC, #E4E7FA 55%, #D2D8F5); }
   .hero-bg-layer { position: absolute; inset: -40px; filter: blur(30px); opacity: 0.55; }
   .hero-bg-layer svg { stroke: var(--decor); }
-  .hero-inner-wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: var(--hero-pad-y) 32px; display: flex; justify-content: space-between; align-items: flex-start; gap: 48px; flex-wrap: wrap; }
-  /* The five stats need ~555px to sit on one line, so this stays comfortably above that.
-     The gap is set explicitly rather than left to space-between's leftovers, because the bio
-     card now grows to absorb whatever room is going spare. */
-  .hero-text { max-width: 620px; padding-top: 10px; }
+  .hero-inner-wrap { position: relative; max-width: 1240px; margin: 0 auto; padding: var(--hero-pad-y) 32px; }
+  /* The bio card no longer shares this row (it's its own card at the end of the spotlight
+     list below), so the text block is free to center and use the full hero width instead of
+     being capped to a column. */
+  .hero-text { text-align: center; }
   .hero-text .h-title { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 14px; color: var(--accent); }
-  .hero-text .h-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); }
+  .hero-text .h-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); max-width: 640px; margin: 0 auto; }
   .hero-text .h-desc b { color: var(--accent); }
 
-  /* ---------- hero stats: one line, always. nowrap rather than relying on the row happening
-     to fit — at the old gap it overshot the text column by 3px and silently broke in two ---------- */
-  .hero-stats-row { display: flex; flex-wrap: nowrap; gap: 20px 24px; margin-top: 16px; }
-  .hero-stat { min-width: 64px; }
-  .hero-stat-num { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
-  .hero-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; white-space: nowrap; }
+  /* ---------- hero stats: full-width row, spread evenly across the freed hero width ---------- */
+  .hero-stats-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; margin-top: 22px; }
+  /* fixed width rather than min-width, so every column reads as the same size regardless of
+     label length — "Lecture Guides/Notes" wraps to two lines (see index.html) specifically so
+     it fits this width instead of forcing a wider column than its neighbors */
+  .hero-stat { width: 96px; text-align: center; }
+  .hero-stat-icon { width: 26px; height: 26px; margin: 0 auto 8px; }
+  .hero-stat-icon svg { width: 100%; height: 100%; }
+  .hero-stat-num { font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+  .hero-stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px; }
 
-  /* ---------- bio card: floats via shadow/contrast, sits in normal flow so it's fully contained in the hero ---------- */
-  /* Grows into whatever the text column leaves, so the full bio fits without the card going
-     tall and narrow. The low flex-basis is deliberate — it only governs when the card gives up
-     and wraps below the text on mid-size screens, not how wide it gets on roomy ones. */
-  .bio-card-wide { flex: 1 1 360px; display: flex; align-items: center; gap: 20px; background: var(--card); border-radius: 18px; padding: 18px 24px; box-shadow: 0 6px 18px rgba(60,60,90,0.14); text-align: left; z-index: 5; }
-  /* The accent seal reads on the white card, so it drops the filled circle the "KK" monogram
-     needed. 92px is where the curved PROFESSOR / MATHEMATICS text is comfortably legible. */
-  .bio-card-wide .sidebar-photo { width: 92px; height: 92px; flex-shrink: 0; margin: 0; background: none; border-radius: 0; }
-  .bio-card-wide h3 { margin: 0 0 2px; font-size: 15px; }
-  .bio-card-wide .role { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
-  .bio-card-wide p { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 0; }
-  /* Laptop widths: trim the gap and the text column so the two stay side by side a while
-     longer. Without this the bio card drops below the text as early as ~1150px and the hero
-     balloons to ~410px tall. 580px still clears the ~555px the stats row needs. */
-  @media (max-width: 1180px) {
-    .hero-inner-wrap { gap: 32px; }
-    .hero-text { max-width: 580px; }
+  /* ---------- hero entrance: title, then description, then the stats cascading in one after
+     another. backwards fill-mode holds each element at its 0% frame until its own delay hits,
+     so nothing flashes at full opacity before its turn. ---------- */
+  @keyframes hero-fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-text .h-title, .hero-text .h-desc, .hero-stat { animation: hero-fade-up 0.6s ease-out backwards; }
+  .hero-text .h-title { animation-delay: 0s; }
+  .hero-text .h-desc { animation-delay: 0.12s; }
+  .hero-stat:nth-child(1) { animation-delay: 0.28s; }
+  .hero-stat:nth-child(2) { animation-delay: 0.36s; }
+  .hero-stat:nth-child(3) { animation-delay: 0.44s; }
+  .hero-stat:nth-child(4) { animation-delay: 0.52s; }
+  .hero-stat:nth-child(5) { animation-delay: 0.6s; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-text .h-title, .hero-text .h-desc, .hero-stat { animation: none; }
   }
+
+  /* ---------- hub divider: same gradient as the header banner, marking a hard break between
+     the hero and the card list below rather than letting the pale hero wash fade into the
+     page background on its own ---------- */
+  .hub-divider { height: 6px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+
   @media (max-width: 900px) {
-    .bio-card-wide { flex: 1 1 100%; flex-direction: column; text-align: center; }
-    .hero-stats-row { flex-wrap: wrap; }
     /* the stacked hero already runs well past 500px tall here, so it keeps the original
        spacing and sits out the height increase entirely */
     .hero-inner-wrap { padding-top: 29px; padding-bottom: 29px; }
@@ -65,16 +70,31 @@
   .ripple-halo-outer { opacity: 0.08; }
   .ripple-ring { fill: none; stroke: var(--decor); stroke-width: 1.4; animation: ripple-pulse 2.6s ease-out infinite; transform-origin: center; }
   .ripple-ring.delay1 { animation-delay: 0.65s; }
-  .ripple-ring.delay2 { animation-delay: 1.3s; }
-  .hero-ripple-accent { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
   /* ---------- material/course spotlight sections ---------- */
   .type-sections { padding: 10px 32px 50px; }
-  .section-label { font-size: 13px; font-weight: 700; color: var(--eyebrow); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 6px; max-width: 1240px; margin-left: auto; margin-right: auto; }
+  /* a real section heading now, not a small eyebrow tag — matches the weight of the card
+     titles below it (.spotlight-title) rather than the tiny uppercase labels on each
+     individual card (.spotlight-eyebrow) */
+  .section-label { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; margin: 0 0 20px; max-width: 1240px; margin-left: auto; margin-right: auto; }
   .spotlight { display: flex; align-items: center; gap: 36px; padding: 34px 0; max-width: 1240px; margin: 0 auto; }
   .spotlight.reverse { flex-direction: row-reverse; }
   .spotlight-media { position: relative; width: 260px; height: 180px; flex-shrink: 0; border-radius: 18px; background: linear-gradient(160deg, var(--soft), #E4E6F8); display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .spotlight-media svg { width: 52%; height: 52%; stroke: var(--accent); }
+  /* the About card's seal photo, the only non-svg media used in a spotlight so far. Its own
+     hover moment (the other three spotlights each have one already) — repeats while hovered
+     like theirs, with a ~1s hold at rest between pulses (58% to 100% of the cycle below)
+     rather than pulsing back-to-back, so it reads as a slow "hello, hello" instead of a buzz. */
+  /* will-change forces this onto its own stable GPU layer, rasterized once — without it some
+     browsers re-render the seal's SVG text at each animation frame, and if the exact serif
+     font in the SVG isn't installed locally, that re-render can briefly substitute a different
+     fallback font than the one the resting, static image uses. */
+  .spotlight-media img { width: 60%; height: 60%; object-fit: contain; will-change: transform; }
+  @keyframes seal-pulse { 0% { transform: scale(1); } 26% { transform: scale(1.14); } 58%, 100% { transform: scale(1); } }
+  .spotlight:hover .spotlight-media img { animation: seal-pulse 2.4s ease-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .spotlight:hover .spotlight-media img { animation: none; }
+  }
   /* ---------- circular badge variant, used by the Applets spotlight ---------- */
   .spotlight-media-circle { width: 190px; height: 190px; border-radius: 50%; }
   /* An SVG clips to its own viewBox by default, which sliced ~7px off the right of the
