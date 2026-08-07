@@ -1,8 +1,8 @@
 # Course-Materials — Repository Reference
 
 Static site (no build step, no package manager, no dependencies). Plain HTML + CSS + vanilla JS,
-served directly as files. Everything below describes the state of the `adjusting-home-page` branch,
-which is the most complete branch in the repo.
+served directly as files. Everything below describes the current state of `main` (the
+`adjusting-home-page` and `Modify-Home` branches that built this up have both merged in).
 
 ---
 
@@ -12,11 +12,12 @@ which is the most complete branch in the repo.
 /
 ├── index.html            Home page
 ├── browse.html           Browse/search SPA (all non-home views)
+├── about.html            Static "About" bio page
 ├── README.md             One line: "# Website"
 ├── .gitattributes        LF normalization; *.png/.ico/.jpg/.jpeg/.gif/.webp forced binary
 ├── assets/               Favicons and logo SVGs (static image files only)
-├── css/                  Stylesheets (2 files)
-└── js/                   Scripts (3 files)
+├── css/                  Stylesheets (3 files)
+└── js/                   Scripts (4 files)
 ```
 
 There are no other directories. No `.github/`, no `package.json`, no config files, no test
@@ -30,7 +31,7 @@ directory, no `_layouts`/`_includes` (not a Jekyll site).
 | `favicon.ico` | Legacy `.ico` favicon |
 | `apple-touch-icon.png` | iOS home-screen icon |
 | `logo-seal-white.svg` | K² seal, all strokes/fills `#FFFFFF` — used on colored grounds (banner, footer) |
-| `logo-seal-accent.svg` | Same artwork, all strokes/fills `#3B4FC2` — used on white grounds (hero bio card) |
+| `logo-seal-accent.svg` | Same artwork, all strokes/fills `#3B4FC2` — used on white/pale grounds: `about.html`'s photo and the home page's About-card circular badge (`.spotlight-media-circle`, whose background is a pale gradient, not a colored fill) |
 
 `logo-seal-white.svg` and `logo-seal-accent.svg` are byte-identical apart from the color values.
 Both are 200×200 viewBox with curved `PROFESSOR` / `MATHEMATICS` text on `<textPath>` and a serif
@@ -39,19 +40,21 @@ Both are 200×200 viewBox with curved `PROFESSOR` / `MATHEMATICS` text on `<text
 ### HTML pages
 | File | Responsibility |
 |---|---|
-| `index.html` | Home only. Static markup: header, hero (title + description + 5 stat numbers + bio card), three "spotlight" sections (Browse by Course / Applets / Lecture Videos), footer. Loads `css/styles.css` + `css/home.css`, then `js/data.js` + `js/home.js`. |
-| `browse.html` | Shell for every other view. Its `<body>` contains only the header, mobile menu, an empty `<div id="page">` + `<div id="sidebar-card">`, and the footer. All page content is rendered into `#page` by `js/app.js`. Loads `css/styles.css` only, then `js/data.js` + `js/app.js`. |
+| `index.html` | Home only. Static markup: header, hero (title + description + a centered, full-width row of 5 stat numbers — each with its own icon, count-up animation, and staggered entrance fade), a gradient `.hub-divider` bar, then a "Find What You Need" section of four `.spotlight` cards (Browse by Course / Applets / Lecture Videos / About — the last links to `about.html`), footer. Loads `css/styles.css` + `css/home.css`, then `js/data.js` + `js/home.js`. |
+| `browse.html` | Shell for every other data-driven view. Its `<body>` contains only the header, mobile menu, an empty `<div id="page">` + `<div id="sidebar-card">`, and the footer. All page content is rendered into `#page` by `js/app.js`. Loads `css/styles.css` only, then `js/data.js` + `js/app.js`. |
+| `about.html` | Static bio page — photo, full bio paragraph, a course-pill list, and an email link, built from the shared `.detail-card`/`.item-pill`/`.file-link` components in `css/styles.css`. Not part of the SPA: plain `<a href>` nav links like `index.html`, no client-side routing. Loads `css/styles.css` + `css/about.css`, then `js/about.js` only — **no `js/data.js`**, since this page isn't data-driven. |
 
-There is no third HTML file. Every non-home view (course directory, per-type browse, per-course
-type listing, item detail) is a client-side route inside `browse.html`, not a separate file.
+Every non-home, non-about view (course directory, per-type browse, per-course type listing, item
+detail) is a client-side route inside `browse.html`. `about.html` is the one static page that
+lives outside that SPA entirely — it's a real, separate HTML file, not a route.
 
 ### Naming conventions
 - **HTML**: lowercase, single word, `.html` extension, at repo root. No subdirectories, no
   `index.html`-per-folder pattern.
-- **CSS**: lowercase, `css/<scope>.css`. `styles.css` = shared/global; `home.css` = page-specific,
-  named after the page that loads it.
-- **JS**: lowercase, `js/<name>.js`. `data.js` = data; `app.js` / `home.js` = named after the page
-  they drive (`app.js` drives `browse.html`).
+- **CSS**: lowercase, `css/<scope>.css`. `styles.css` = shared/global; `home.css` / `about.css` =
+  page-specific, named after the page that loads it.
+- **JS**: lowercase, `js/<name>.js`. `data.js` = data; `app.js` / `home.js` / `about.js` = named
+  after the page they drive (`app.js` drives `browse.html`).
 - **Data files**: there are **no `.json` files in this repo.** All site data is a JS object literal
   in `js/data.js`.
 
@@ -59,23 +62,24 @@ type listing, item detail) is a client-side route inside `browse.html`, not a se
 
 ## 2. CSS Organization
 
-Two stylesheets, both loaded via `<link rel="stylesheet">` with document-relative hrefs.
+Three stylesheets, all loaded via `<link rel="stylesheet">` with document-relative hrefs.
 
 | File | Loaded by | Scope |
 |---|---|---|
-| `css/styles.css` | `index.html`, `browse.html` | Global. `:root` custom properties, reset, header/banner/nav, search, mobile menu, page shell + sidebar, breadcrumbs, all card/tile/carousel components, tooltips, footer, both media queries for the shared chrome. |
-| `css/home.css` | `index.html` only | Home-page-only. Hero, hero stats, bio card, ripple accents, spotlight sections, and the three spotlight animations. |
+| `css/styles.css` | `index.html`, `browse.html`, `about.html` | Global. `:root` custom properties, reset, header/banner/nav, search, mobile menu (now an overlay — see §4), page shell + sidebar, breadcrumbs, all card/tile/carousel components, tooltips, footer (including the gradient top border and `.f-links` quick-links column), both media queries for the shared chrome. |
+| `css/home.css` | `index.html` only | Home-page-only. Hero (centered text, full-width stat row, per-stat icons, count-up-friendly `tabular-nums`, entrance-fade keyframes), the `.hub-divider` gradient bar, ripple accents, spotlight sections (including the About card's `seal-pulse` hover loop), and the four spotlight animations. |
+| `css/about.css` | `about.html` only | About-page-only. Just the photo/name/role row layout and the course-pill wrapper — everything else on the page reuses global `styles.css` components (`.detail-card`, `.item-pill`, `.file-link`). |
 
 ### Import pattern to follow
 `styles.css` is always first, page-specific CSS second (so the page file can override globals):
 
 ```html
 <link rel="stylesheet" href="css/styles.css">
-<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/home.css">   <!-- or css/about.css, on the page that needs it -->
 ```
 
-Paths are **document-relative with no leading slash** (`css/…`, `js/…`, `assets/…`). Both HTML
-files carry a comment in `<head>` stating this is required because the site is served from a
+Paths are **document-relative with no leading slash** (`css/…`, `js/…`, `assets/…`). All three
+HTML files carry a comment in `<head>` stating this is required because the site is served from a
 project subpath.
 
 ### Custom properties
@@ -92,9 +96,17 @@ project subpath.
   records this. Any inline SVG added to `index.html` inherits that rule.
 - `.meta-bar` is defined in `styles.css:9` but referenced by no current HTML or JS (orphaned rule
   from the pre-split version).
-- The `course-card-cycle` animation duration (`0.9s`, `home.css:132`) and its `48%` keyframe are
+- The `course-card-cycle` animation duration (`0.9s`, `home.css:152`) and its `48%` keyframe are
   mirrored as numeric constants in `js/home.js` (`CYCLE_MS = 900`, `RECEDE_MS = 432`). Changing one
-  without the other desynchronizes the card-shuffle animation; `home.js:31` carries a comment saying so.
+  without the other desynchronizes the card-shuffle animation; a comment near the top of the
+  Browse-by-Course IIFE in `home.js` says so.
+- The About card's seal photo (`.spotlight-media img`, `home.css:92`) sets `will-change: transform`
+  specifically to stop its `seal-pulse` hover animation from occasionally re-rendering the SVG's
+  `<text>` monogram with a different font fallback mid-animation than the resting image uses —
+  `will-change` forces one stable rasterized layer instead of per-frame re-rendering.
+- `.mobile-menu` (`styles.css:213`) is `position: absolute` with no `top` set in CSS — each page's
+  `toggleMobileMenu()` sets `menu.style.top` inline, computed from the banner's actual rendered
+  height, right before opening it. See §4.
 
 ---
 
@@ -137,8 +149,8 @@ Type-dependent fields:
 `sectionLabel` is present on most non-Applet items but is **not read by any current code**.
 
 Every file/URL field in the dataset is currently the placeholder `'#'`. `fileLinkHTML()`
-(`js/app.js:165`) renders `'#'` and empty values as an inert, grayed-out `<span>` with a tooltip
-instead of a live link; `launchApplet()` (`js/app.js:155`) no-ops on `'#'`.
+(`js/app.js:183`) renders `'#'` and empty values as an inert, grayed-out `<span>` with a tooltip
+instead of a live link; `launchApplet()` (`js/app.js:173`) no-ops on `'#'`.
 
 ### Generated dummy data
 `js/data.js:82-140` defines `dummyUnitDefs` (5 units each for Calc 1 and Calc 3) and
@@ -151,22 +163,32 @@ Item counts shown anywhere on the site therefore include this generated data.
 |---|---|
 | `js/home.js` | `items`, `courseOrder`, `typeOrder` — for the hero stat numbers |
 | `js/app.js` | `items`, `courseOrder`, `typeOrder`, `typeLabel` — for every rendered view, search, and the footer date |
+| `js/about.js` | Nothing — doesn't load `js/data.js` at all. `about.html`'s content (bio, course list) is hand-written static markup, not rendered from `items`. |
 
 ### Data duplicated across files (must be kept in sync)
-1. **Type keys.** The `data-stat` attributes in `index.html:70-73` (`Applet`, `Worksheet`,
+1. **Type keys.** The `data-stat` attributes in `index.html`'s hero stats (`Applet`, `Worksheet`,
    `LectureGuideNotes`, `LectureVideo`) must match `typeOrder` strings in `js/data.js:143`.
-   `js/home.js:12` matches them by string.
-2. **Bio paragraph.** Written out in full twice: `index.html:81` (rendered) and `js/app.js:13` as
-   `const bioText` (declared, currently unreferenced).
-3. **Footer date.** `index.html:171` hardcodes `Site last updated: Aug 2, 2026`. `browse.html:78`
-   leaves it empty and `js/app.js:624` fills it from the newest `items[].updated`. The two pages
-   can and do disagree.
-4. **Header, mobile menu, and footer markup** are copy-pasted into both HTML files (there is no
-   partial/include mechanism). They differ deliberately: `index.html` uses plain `<a href>` links,
-   `browse.html` uses `onclick` handlers into the router.
-5. **`toggleMobileMenu()`** is defined twice — `js/home.js:2` and `js/app.js:114` — because each
-   page loads only one of the two scripts.
-6. **Palette hexes.** `unitAccentPalette` in `js/app.js:223` is a literal hex array, unrelated to
+   `js/home.js`'s `renderHeroStats()` matches them by string.
+2. **Bio paragraph.** Written out in full three times now: `index.html`'s About card uses a short
+   one-sentence teaser instead, but the full paragraph appears in `about.html`'s `.detail-desc` and
+   as `const bioText` in `js/app.js:13` (declared, still unreferenced by any code).
+3. **Course list.** `about.html`'s `.about-courses` pill row hand-types the same seven course names
+   as `courseOrder` in `js/data.js:142` — intentionally not data-driven (see §1), so it's a second
+   place that would need updating if a course were renamed.
+4. **Footer date.** `index.html` and `about.html` both hardcode `Site last updated: Aug 2, 2026`.
+   `browse.html` leaves it empty and `js/app.js:642` fills it from the newest `items[].updated`.
+   All three can disagree.
+5. **Header, mobile menu, and footer markup** are copy-pasted into all three HTML files (there is
+   no partial/include mechanism). `index.html` and `about.html` use plain `<a href>` nav links;
+   `browse.html` uses `onclick` handlers into the router. The footer's Quick Links column and
+   gradient top border are identical across all three.
+6. **`toggleMobileMenu()`** is defined three times — `js/home.js`, `js/app.js`, and `js/about.js` —
+   because each page loads only one of the three scripts. All three implementations must stay in
+   sync: each computes and sets the overlay's `top` offset from the banner's rendered height before
+   opening (see §4). `js/app.js` additionally has `closeMobileMenu()`, used by `browse.html`'s
+   in-SPA `onclick` links; all three files also register a document-level `click` listener that
+   closes the menu on an outside tap.
+7. **Palette hexes.** `unitAccentPalette` in `js/app.js:241` is a literal hex array, unrelated to
    the `:root` variables in `css/styles.css`.
 
 ---
@@ -178,8 +200,10 @@ Item counts shown anywhere on the site therefore include this generated data.
 <script src="js/data.js"></script>   <!-- must be first -->
 <script src="js/app.js"></script>    <!-- or js/home.js -->
 ```
-Neither page script guards for missing data — both reference `items` at top level and would throw
-if `data.js` were absent or loaded second. Both script files open with a comment stating this.
+Neither `js/app.js` nor `js/home.js` guards for missing data — both reference `items` at top level
+and would throw if `data.js` were absent or loaded second. Both script files open with a comment
+stating this. `about.html` is the exception: it doesn't load `js/data.js` at all, just
+`js/about.js` on its own (see §1).
 
 ### `index.html` → `browse.html` links
 `index.html` links into the SPA using hash routes:
@@ -187,10 +211,11 @@ if `data.js` were absent or loaded second. Both script files open with a comment
 - `browse.html#/applets` → `{ level: 'typeBrowse', type: 'Applet' }`
 - `browse.html#/lecture-videos` → `{ level: 'typeBrowse', type: 'LectureVideo' }`
 
-Only those two hashes are recognized. `stateFromHash()` (`js/app.js:631`) parses them; anything
+Only those two hashes are recognized. `stateFromHash()` (`js/app.js:649`) parses them; anything
 else falls back to Course Materials. Adding a new home-page link into a deeper view requires
-adding a case in `stateFromHash()` — the hash strings there must match the `href`s in `index.html`
-(lines 33-34 and 45-46) and the slugs in `statePath()` (`js/app.js:60`).
+adding a case in `stateFromHash()` — the hash strings there must match the `href`s in `index.html`'s
+nav pills/hero and the slugs in `statePath()` (`js/app.js:56`). `about.html` is a plain page, not a
+hash route — it's linked with a normal `href="about.html"`, same as `index.html`.
 
 ### DOM contract between `browse.html` and `js/app.js`
 `js/app.js` reads these IDs/selectors and will break if renamed in the HTML:
@@ -198,8 +223,19 @@ adding a case in `stateFromHash()` — the hash strings there must match the `hr
 `#search-clear`, `#search-input-mobile`, `#search-results-mobile`, `#footer-updated`,
 `#nav-coursematerials`, `#nav-applets`, `#nav-videos`.
 
-`js/home.js` reads: `#mobile-menu`, `.hero-stat-num[data-stat="…"]`, `.course-stack-svg`,
-`.course-card` (expects exactly 3), and `.spotlight` as the hover target.
+`js/home.js` reads: `#mobile-menu`, `.c-topline`, `.c-banner`, `.hero-stat-num[data-stat="…"]`,
+`.course-stack-svg`, `.course-card` (expects exactly 3), and `.spotlight` as the hover target.
+
+### Mobile menu overlay
+`#mobile-menu` (`styles.css:213`) is `position: absolute` with no default `top`, so it floats over
+the page instead of pushing content down when opened. Each page's `toggleMobileMenu()` sets
+`menu.style.top` inline — computed as `.c-topline`'s + `.c-banner`'s `offsetHeight`, measured right
+before opening — because the banner's rendered height isn't a fixed number (brand text wraps
+differently at different widths). A document-level `click` listener in each script closes the menu
+on a tap outside it (checking `menu.contains(e.target)` and `e.target.closest('.hamburger')`). This
+pattern — read the banner height, set `top`, toggle, listen for outside clicks — is duplicated
+identically across `js/home.js`, `js/app.js`, and `js/about.js` and must stay in sync if the
+banner's structure or the menu's positioning changes.
 
 ### Inline handlers
 All interaction uses inline `onclick="…"` attributes in HTML strings, calling functions declared at
@@ -207,9 +243,9 @@ file scope in `js/app.js`. Those functions must stay global (no module wrapper, 
 `app.js`) or every handler breaks silently.
 
 ### Asset references
-Both HTML files reference the same six favicon/touch-icon files and `assets/logo-seal-white.svg`
-(banner + footer); `index.html` additionally uses `assets/logo-seal-accent.svg`. All references are
-document-relative.
+All three HTML files reference the same six favicon/touch-icon files and `assets/logo-seal-white.svg`
+(banner + footer); `index.html` additionally uses `assets/logo-seal-accent.svg` for the About card's
+photo, and `about.html` uses it again for its own photo. All references are document-relative.
 
 ---
 
@@ -219,23 +255,21 @@ document-relative.
   preprocessor, or package manager.
 - **Remote:** `https://github.com/ProfKyleKnee/Course-Materials.git` (`origin`).
 - **Serving path:** the site is a GitHub Pages *project* site served from the `/Course-Materials/`
-  subpath. Comments at the top of both `index.html` and `browse.html` state this explicitly and
-  note that a leading `/` on any href would break it. The Pages source branch/folder is a
-  repository setting and is not recorded anywhere in the repo.
+  subpath. Comments at the top of all three HTML files state this explicitly and note that a
+  leading `/` on any href would break it. The Pages source branch/folder is a repository setting
+  and is not recorded anywhere in the repo.
 - **No GitHub Actions.** There is no `.github/` directory on any branch — no workflows, no CI, no
   linting, no deploy action.
 - **No dates-file automation.** No script or action generates a dates/manifest file. The
-  "last updated" values come from two places, both manual or client-side: the hardcoded string in
-  `index.html:171`, and `js/app.js:624`, which computes the newest `items[].updated` at page load.
+  "last updated" values come from two places, both manual or client-side: the hardcoded strings in
+  `index.html` and `about.html`, and `js/app.js:642`, which computes the newest `items[].updated`
+  at page load for `browse.html`.
 - **No other automation** of any kind (no hooks, no cron, no submodules, no LFS).
 
-### Branch state
-`main` is behind this branch and contains only `index.html`, `js/app.js`, `css/styles.css`,
-`README.md`, `.gitattributes`. It has **no** `browse.html`, `js/data.js`, `js/home.js`,
-`css/home.css`, or `assets/`; its `index.html` is titled "Teaching Materials Hub — v18" and opens
-with a `.meta-bar` changelog block, and its `js/app.js` still contains the `items` array inline.
-The two-page structure and split data file exist only on `adjusting-home-page` (and its remote
-counterpart).
+### PR workflow
+Changes land via feature branches merged into `main` through a pull request — never a direct push
+or local merge to `main`. `main` currently reflects the full home-page redesign and `about.html`
+addition (branches `adjusting-home-page` and `Modify-Home` have both merged in and been deleted).
 
 ---
 
@@ -243,10 +277,11 @@ counterpart).
 
 ### Indentation
 - **HTML**: 2 spaces. Top-level `<body>` children start at column 0; nesting indents by 2.
-- **`css/styles.css`, `css/home.css`, `js/data.js`, `js/app.js`**: every line carries a **2-space
-  base indent** — i.e. even top-level rules and declarations begin at column 2, not 0. Nesting is
-  2 spaces on top of that.
-- **`js/home.js`** is the exception: it starts at column 0 with conventional 2-space nesting.
+- **`css/styles.css`, `css/home.css`, `css/about.css`, `js/data.js`, `js/app.js`**: every line
+  carries a **2-space base indent** — i.e. even top-level rules and declarations begin at column 2,
+  not 0. Nesting is 2 spaces on top of that.
+- **`js/home.js` and `js/about.js`** are the exceptions: both start at column 0 with conventional
+  2-space nesting.
 - Match whichever file you are editing.
 
 ### CSS style
@@ -261,11 +296,14 @@ counterpart).
 ### Class naming
 Flat, lowercase, hyphen-separated. No BEM, no utility classes, no CSS-in-JS.
 Two patterns coexist:
-- Full descriptive names for blocks: `.course-directory-card`, `.carousel-header`, `.sidebar-card`.
+- Full descriptive names for blocks: `.course-directory-card`, `.carousel-header`, `.sidebar-card`,
+  `.hero-stat-icon`, `.hub-divider`.
 - Short prefixed abbreviations for a block's children: `.cd-title` / `.cd-blurb` / `.cd-counts`
   (course-directory), `.ac-eyebrow` / `.ac-title` / `.ac-body` (applet-card), `.pb-label` /
   `.pb-desc` / `.pb-count` (pillbox), `.wn-title` / `.wn-meta` (whats-new), `.b-name` / `.b-title`
-  (brand), `.f-col` / `.f-name` / `.f-seal` (footer), `.h-title` / `.h-desc` (hero).
+  (brand), `.f-col` / `.f-name` / `.f-seal` / `.f-links` / `.f-links-title` (footer), `.h-title` /
+  `.h-desc` (hero), `.about-bio-row` / `.about-photo` / `.about-role` / `.about-courses`
+  (`about.html`-only, in `css/about.css`).
 
 State/modifier classes are bare words appended to the base: `.current`, `.open`, `.visible`,
 `.disabled`, `.reverse`, `.no-sidebar`, `.chip-active`, `.cycling`, `.on-top`, `.pos-front`.
@@ -291,8 +329,8 @@ State/modifier classes are bare words appended to the base: `.current`, `.open`,
 
 ### HTML style
 - Attribute order: `class`, then `id`, then `src`/`href`, then everything else.
-- Inline `style="…"` is used sparingly for one-off spacing (e.g. `index.html:165`,
-  `js/app.js:470`) alongside the stylesheets.
+- Inline `style="…"` is used sparingly for one-off spacing (e.g. `index.html:199`,
+  `js/app.js:488`) alongside the stylesheets.
 - SVG is written inline in the HTML for decoration, and as template-literal strings in
   `js/app.js` (`typeIconSVG`, `folderIcon`, `chevronLeftSVG`, `chevronRightSVG`) for icons.
 - `aria-label` / `aria-hidden` / `aria-disabled` are used on interactive and decorative elements.
