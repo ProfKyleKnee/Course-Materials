@@ -31,6 +31,19 @@
     "Discrete Math": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
   };
 
+  // ---------- course directory symbols: the same per-course glyph shorthand a student would
+  // recognize from the course itself, used as a badge on each course-directory-card. size is
+  // tuned per-symbol so visually heavier/wider glyphs (e.g. "sin(θ)") don't overpower the badge. ----------
+  const courseSymbol = {
+    "Precalc": { text: "sin(θ)", size: "15px" },
+    "Calc 1": { text: "lim", size: "16px" },
+    "Calc 2": { text: "Σ", size: "24px" },
+    "Calc 3": { text: "∭", size: "20px" },
+    "Linear Algebra": { text: "λ", size: "24px" },
+    "Discrete Math": { text: "∀", size: "22px" },
+    "Statistics": { text: "%", size: "24px" },
+  };
+
   const typeIconSVG = {
     Applet: `<svg viewBox="-1 -1 27 26">
       <line x1="4" y1="21" x2="4" y2="3"/><line x1="4" y1="21" x2="4" y2="23" stroke-width="1.3"/>
@@ -50,7 +63,6 @@
   const chevronRightSVG = `<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
 
   let state = { level: 'courseMaterials' };
-  let devShowEmptyCourses = false;
 
   // ---------- v16: History API — proper back/forward support ----------
   function statePath(s) {
@@ -379,7 +391,7 @@
   // ---------- v16: top-level course carousels (Applets / Lecture Videos overview pages) ----------
   function courseCarouselsHTML(typeVal) {
     const all = items.filter(i => i.type === typeVal);
-    const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+    const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
     return coursesPresent.map(c => {
       const inCourse = all.filter(a => a.course === c).sort(sectionCompare);
@@ -449,14 +461,6 @@
     return chipsHTML + rows;
   }
 
-  function devToggleHTML() {
-    return `<label class="dev-toggle">
-      <input type="checkbox" ${devShowEmptyCourses ? 'checked' : ''} onchange="toggleShowEmptyCourses(this.checked)">
-      <span class="dev-tag">Dev preview</span> Show all courses, including empty ones (remove before launch)
-    </label>`;
-  }
-  function toggleShowEmptyCourses(checked) { devShowEmptyCourses = checked; render(); }
-
   function render() {
     updateNavHighlight();
 
@@ -470,25 +474,47 @@
     else { shell.classList.add('no-sidebar'); }
 
     if (state.level === 'courseMaterials') {
-      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => items.some(i => i.course === c));
+      const coursesPresent = courseOrder.filter(c => items.some(i => i.course === c));
       const body = coursesPresent.map(c => {
         const info = courseInfo[c] || {};
+        const sym = courseSymbol[c] || { text: '', size: '20px' };
         const counts = typeOrder.map(t => {
           const n = items.filter(i => i.course === c && i.type === t).length;
-          return n ? `${typeLabel[t]}: ${n}` : null;
-        }).filter(Boolean).join(' · ');
+          return n ? `<span class="cd-count-chip">${typeLabel[t]}: ${n}</span>` : null;
+        }).filter(Boolean).join('');
         return `<div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
-          <div class="cd-title">${c}</div>
-          <div class="cd-blurb">${info.blurb || ''}</div>
-          <div class="cd-counts">${counts || 'No items yet'}</div>
+          <div class="cd-symbol-badge" style="font-size:${sym.size};" aria-hidden="true">${sym.text}</div>
+          <div class="cd-content">
+            <div class="cd-title">${c}</div>
+            <div class="cd-blurb">${info.blurb || ''}</div>
+            <div class="cd-counts">${counts || 'No items yet'}</div>
+          </div>
         </div>`;
       }).join('');
+      const stackBadgeHTML = `<div class="title-stack-badge" aria-hidden="true">
+        <svg class="course-stack-svg" viewBox="0 0 24 24">
+          <g class="course-card pos-back">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.4" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" fill="var(--accent)" stroke="none" font-weight="700">&#8749;</text>
+          </g>
+          <g class="course-card pos-mid">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.5" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" fill="var(--accent)" stroke="none" font-weight="700">&#931;</text>
+          </g>
+          <g class="course-card pos-front">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.2" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="6" fill="var(--accent)" stroke="none" font-weight="700">lim</text>
+          </g>
+        </svg>
+      </div>`;
       page.innerHTML = `
         ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">Course Materials</div>
-        ${devToggleHTML()}
-        ${jumpRowHTML(coursesPresent)}
-        <div style="display:flex; flex-direction:column; gap:14px;">${body}</div>
+        <div class="title-row" style="margin-bottom:6px;">
+          ${stackBadgeHTML}
+          <div class="page-title" style="margin:0;">Course Materials</div>
+        </div>
+        <div class="page-tagline" style="margin:0 0 24px 72px;">Pick a course below to see everything for it — worksheets, lecture guides and notes, applets, and videos, organized by unit.</div>
+        <div class="course-directory-grid">${body}</div>
       `;
       return;
     }
@@ -498,14 +524,13 @@
     if (state.level === 'typeBrowse') {
       const t = state.type;
       const all = items.filter(i => i.type === t);
-      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+      const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
       const pageTitle = t === 'Applet' ? 'All Applets' : typeLabel[t];
       const unitLabel = t === 'Applet' ? 'applet' : (t === 'LectureVideo' ? 'video section' : 'item');
       const countText = `${all.length} ${unitLabel}${all.length === 1 ? '' : 's'} across ${courseOrder.filter(c => all.some(a => a.course === c)).length} courses`;
       page.innerHTML = `
         ${crumbHTML()}
         ${titleBlockHTML(t, pageTitle)}
-        ${devToggleHTML()}
         ${jumpRowHTML(coursesPresent)}
         <div class="result-count">${countText}</div>
         ${courseCarouselsHTML(t)}
@@ -526,12 +551,12 @@
           </div>`;
         }
         const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
-        tilesHTML = `<div class="pillbox-list">${availableTypes.map(t => {
+        tilesHTML = `<div class="tile-grid">${availableTypes.map(t => {
           const count = items.filter(i => i.course === state.course && i.type === t).length;
-          return `<div class="pillbox-row" onclick="openTier3('course','${state.course}','${t}')">
+          return `<div class="tile" onclick="openTier3('course','${state.course}','${t}')">
             <div class="icon-badge">${typeIconSVG[t]}</div>
-            <div><div class="pb-label">${typeLabel[t]}</div><div class="pb-desc">${typeDescription[t]}</div></div>
-            <div class="pb-count">${count} item${count === 1 ? '' : 's'}</div>
+            <div class="label">${typeLabel[t]}</div>
+            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
           </div>`;
         }).join('')}</div>`;
       } else {
