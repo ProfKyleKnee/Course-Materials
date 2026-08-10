@@ -2,7 +2,8 @@
 
 Static site (no build step, no package manager, no dependencies). Plain HTML + CSS + vanilla JS,
 served directly as files. Everything below describes the current state of `main` (the
-`adjusting-home-page` and `Modify-Home` branches that built this up have both merged in).
+`adjusting-home-page` and `Modify-Home` branches that built this up have both merged in), plus the
+real Calc 1 catalog and its source files added on the `Calc1-Content-Addition` branch.
 
 ---
 
@@ -17,11 +18,31 @@ served directly as files. Everything below describes the current state of `main`
 ├── .gitattributes        LF normalization; *.png/.ico/.jpg/.jpeg/.gif/.webp forced binary
 ├── assets/               Favicons and logo SVGs (static image files only)
 ├── css/                  Stylesheets (3 files)
-└── js/                   Scripts (4 files)
+├── js/                   Scripts (4 files)
+└── Course Materials/     Actual source files (PDF/DOCX) that data.js's items[] link to
 ```
 
-There are no other directories. No `.github/`, no `package.json`, no config files, no test
-directory, no `_layouts`/`_includes` (not a Jekyll site).
+No `.github/`, no `package.json`, no config files, no test directory, no `_layouts`/`_includes`
+(not a Jekyll site).
+
+### `Course Materials/`
+The real worksheets, lecture guides/notes, and Skill Check files the site links to — not app code,
+just static binary assets served as-is. Organized per course as `Course Materials/<Course>/`, e.g.
+`Course Materials/Calc 1/`:
+- `Notes/Ch. N/` — per-chapter Guide (`_Guide.pdf`/`.docx`) and Notes (`_Notes.pdf`/`.docx`) pairs,
+  one per textbook section, plus a `Worksheets/` subfolder (worksheet + `_Solutions` pairs). This is
+  the source of `LectureGuideNotes` and `subtype: 'Standard'` `Worksheet` items.
+- `Blended Sessions/Unit N/` — the Blended/Honors parallel track, organized by pedagogical unit
+  (1-4) rather than chapter number. Source of `subtype: 'Blended'` `Worksheet` items. Also holds
+  `Course Review/` (a whole-course review packet, not unit-specific — see the `resource` field
+  below) and the Skills Check practice+solutions pairs re-used for `subtype: 'Blended'` Skill Check
+  worksheet items.
+- `Skill Checks/Skill Check N/` — the Skills Check Practice + `_Solutions` pair used for the
+  `LectureGuideNotes`-typed Skill Check items (see below). Only the Practice/Solutions files are
+  used; per-part (A/B/C) variants and guideline docs were pruned as not needed for the catalog.
+Every `guideFile`/`notesFile`/`worksheetFile`/`solutionsFile` path in `js/data.js` for a course with
+real content is a relative path into this tree; `fileLinkHTML()` (`js/app.js`) renders it as a real
+link only when the path isn't `'#'` or empty.
 
 ### `assets/`
 | File | Contents |
@@ -153,17 +174,48 @@ Type-dependent fields:
 | `LectureVideo` | `playlistUrl` |
 | `Applet` | `launchUrl`, `curve` (an SVG path `d` string used for the card's mini-graph and the dot's `offset-path`) |
 
-`sectionLabel` is present on most non-Applet items but is **not read by any current code**.
+`sectionLabel` is present on most non-Applet items but is **not read by any current code**, except
+as the fallback title text for the section-stripped Blended worksheet titles generated for Calc 1
+(see below).
 
-Every file/URL field in the dataset is currently the placeholder `'#'`. `fileLinkHTML()`
+An optional `resource: true` field marks an item as *not* belonging to any unit (e.g. Calc 1's
+"Graphs To Know" reference sheet and its "Course Review" packet). `tier3BodyHTML()` (`js/app.js`)
+pulls `resource` items out of the unit computation entirely and renders them in their own
+"Resources" carousel block *after* the last unit's block, rather than grouping them into a
+(nonexistent) unit.
+
+For most courses every file/URL field in the dataset is still the placeholder `'#'`. **Calculus I
+is the exception** — every `LectureGuideNotes`, `Worksheet`, and `LectureVideo` item for it has a
+real `guideFile`/`notesFile`/`worksheetFile`/`solutionsFile` (a path into `Course Materials/Calc
+1/...`, see above) or `playlistUrl` (a real YouTube playlist link). `fileLinkHTML()`
 (`js/app.js:183`) renders `'#'` and empty values as an inert, grayed-out `<span>` with a tooltip
-instead of a live link; `launchApplet()` (`js/app.js:173`) no-ops on `'#'`.
+instead of a live link; `launchApplet()` (`js/app.js:173`) no-ops on `'#'`. Worksheet/Guide/Notes
+links are rendered with `{ newTab: true }` (opens `target="_blank" rel="noopener"`) so a student
+clicking a PDF doesn't lose their place in the browse UI — `LectureVideo`/channel links already had
+this.
+
+Calc 1's Skills Check 1/2/3 are represented twice, once per subtype: a `LectureGuideNotes` item
+(Practice+Solutions as `guideFile`/`notesFile`) and a `subtype: 'Blended'` `Worksheet` item (a
+*different* Blended-track Practice+Solutions pair, from `Blended Sessions/Unit N/`, not a duplicate
+of the first). Both use the placeholder section `'<chapter>.0'` (e.g. `'2.0'`) so they sort first
+within their chapter's unit grouping, ahead of that chapter's real `X.Y` sections — there's no
+dedicated "Skill Check" item type, this is a sorting convention layered on the existing schema.
 
 ### Generated dummy data
-`js/data.js:82-140` defines `dummyUnitDefs` (5 units each for Calculus I and Calculus III) and
-`buildDummyItems()`, which generates 4 items (worksheet / guide-notes / video / applet) × 10
-sections × 5 units × 2 courses = 400 items, appended with `items.push(...buildDummyItems())`.
-Item counts shown anywhere on the site therefore include this generated data.
+`js/data.js` defines `dummyUnitDefs` (5 units, **Calculus III only** — Calculus I was removed once
+its real catalog was built out, see below) and `buildDummyItems()`, which generates 4 items
+(worksheet / guide-notes / video / applet) × 10 sections × 5 units × 1 course = 200 items, appended
+with `items.push(...buildDummyItems())`. Item counts shown anywhere on the site therefore include
+this generated data for Calculus III (and any other course still on placeholder data).
+
+### Calc 1's real catalog
+Calculus I's `items[]` entries (136 total: 38 `LectureGuideNotes`, 62 `Worksheet`, 36
+`LectureVideo`) are hand-written, real data — not generated. Its chapters (2-5) don't align with
+its pedagogical unit numbers (1-4), since Chapter 1 has no unit of its own (just the "Graphs To
+Know" resource item) and Unit 1 starts at Chapter 2. `unitLabelOverrides` / `unitLabel(course, u)`
+(`js/app.js`) remaps the *displayed* unit number for Calculus I only (chapter `2`→"Unit 1", `3`→"2",
+`4`→"3", `5`→"4"); `unitOf()`'s raw return value (the chapter number) is still what's used for
+grouping/filtering/`isolateUnit()` state everywhere — only the on-screen "Unit N" text changes.
 
 ### Consumers
 | Consumer | Uses |

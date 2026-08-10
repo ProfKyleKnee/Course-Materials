@@ -110,6 +110,18 @@
     return s.split('.')[0] || '0';
   }
 
+  // Calc 1's textbook chapters (2-5) don't line up with its pedagogical unit numbers (1-4) --
+  // Chapter 1 has no unit of its own (just the Graphs To Know resource), so Unit 1 starts at
+  // Chapter 2. This maps the raw chapter number (unitOf's return value) to the number shown to
+  // students; grouping/filtering still keys off the raw chapter number everywhere else.
+  const unitLabelOverrides = {
+    'Calculus I': { '2': '1', '3': '2', '4': '3', '5': '4' },
+  };
+  function unitLabel(course, u) {
+    const overrides = unitLabelOverrides[course];
+    return (overrides && overrides[u]) || u;
+  }
+
   const RECENT_WINDOW_DAYS = 30;
   function isRecentlyUpdated(dateStr) {
     const updated = new Date(dateStr + 'T00:00:00');
@@ -299,7 +311,7 @@
         parts.push(`<span class="sep">/</span><span class="current-crumb">${state.course}</span>`);
       }
       if (state.isolatedUnit) {
-        parts.push(`<span class="sep">/</span><span class="current-crumb">Unit ${state.isolatedUnit}</span>`);
+        parts.push(`<span class="sep">/</span><span class="current-crumb">Unit ${unitLabel(state.course, state.isolatedUnit)}</span>`);
       }
     }
     if (state.level === 'detail') {
@@ -445,34 +457,47 @@
       : matchesAll;
 
     if (!matches.length) return `${subtypeChipsHTML}<div class="empty-state">No items match this filter yet.</div>`;
-    const units = [...new Set(matches.map(unitOf))].sort((a, b) => Number(a) - Number(b));
-    const colorMap = unitColorMap(units);
-    const isolated = state.isolatedUnit;
+
+    // Resources (e.g. Calc 1's "Graphs To Know") aren't part of any unit -- pull them out before
+    // computing unit groupings, and pin them in their own block at the top of the page.
+    const resourceItems = matches.filter(i => i.resource);
+    const unitMatches = matches.filter(i => !i.resource);
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
     const gridClass = typeVal === 'Applet' ? 'applet-grid' : 'grid';
+    const isolated = state.isolatedUnit;
+    const resourcesHTML = (resourceItems.length && !isolated) ? `
+      <div class="carousel-block" id="grp-resources">
+        <div class="carousel-header"><div class="carousel-title" style="cursor:default;">Resources</div></div>
+        <div class="${gridClass}">${resourceItems.map(i => cardFn(i)).join('')}</div>
+      </div>` : '';
+
+    if (!unitMatches.length) return `${subtypeChipsHTML}${resourcesHTML}`;
+
+    const units = [...new Set(unitMatches.map(unitOf))].sort((a, b) => Number(a) - Number(b));
+    const colorMap = unitColorMap(units);
 
     const chipsHTML = `<div class="jump-row">
       <span class="jump-link ${!isolated ? 'chip-active' : ''}" onclick="isolateUnit(null)">All Units</span>
-      ${units.map(u => `<span class="jump-link ${isolated === u ? 'chip-active' : ''}" onclick="isolateUnit('${u}')">Unit ${u}</span>`).join('')}
+      ${units.map(u => `<span class="jump-link ${isolated === u ? 'chip-active' : ''}" onclick="isolateUnit('${u}')">Unit ${unitLabel(course, u)}</span>`).join('')}
     </div>`;
 
     if (isolated) {
-      const inUnit = matches.filter(i => unitOf(i) === isolated);
+      const inUnit = unitMatches.filter(i => unitOf(i) === isolated);
       const color = colorMap[isolated];
       return `${subtypeChipsHTML}${chipsHTML}
-        <div class="result-count">${inUnit.length} item${inUnit.length === 1 ? '' : 's'} in Unit ${isolated}</div>
+        <div class="result-count">${inUnit.length} item${inUnit.length === 1 ? '' : 's'} in Unit ${unitLabel(course, isolated)}</div>
         <div class="${gridClass}">${inUnit.map(i => cardFn(i, color)).join('')}</div>`;
     }
 
     const slugId = `${slug(course)}-${typeVal}`;
     const rows = units.map(u => {
-      const inUnit = matches.filter(i => unitOf(i) === u);
+      const inUnit = unitMatches.filter(i => unitOf(i) === u);
       const rowId = `car-unit-${slugId}-${u}`;
       const color = colorMap[u];
       return `
         <div class="carousel-block unit-carousel-header" id="grp-unit-${u}" style="--unit-color:${color};">
           <div class="carousel-header">
-            <div class="carousel-title" onclick="isolateUnit('${u}')">Unit ${u}</div>
+            <div class="carousel-title" onclick="isolateUnit('${u}')">Unit ${unitLabel(course, u)}</div>
             ${inUnit.length > 1 ? `<div class="carousel-seeall" onclick="isolateUnit('${u}')">See all (${inUnit.length}) →</div>` : ''}
           </div>
           <div class="carousel-wrap">
@@ -482,7 +507,7 @@
           </div>
         </div>`;
     }).join('');
-    return subtypeChipsHTML + chipsHTML + rows;
+    return subtypeChipsHTML + chipsHTML + rows + resourcesHTML;
   }
 
   // Lines the sidebar card's resting position up with the jump row (course chips on typeBrowse,
@@ -655,11 +680,11 @@
 
       let linksHTML = '';
       if (item.type === 'Worksheet') {
-        linksHTML = fileLinkHTML(item.worksheetFile, 'Worksheet (PDF)')
-          + (item.hasSolutions !== false ? fileLinkHTML(item.solutionsFile, 'Solutions (PDF)') : '');
+        linksHTML = fileLinkHTML(item.worksheetFile, 'Worksheet (PDF)', { newTab: true })
+          + (item.hasSolutions !== false ? fileLinkHTML(item.solutionsFile, 'Solutions (PDF)', { newTab: true }) : '');
       } else if (item.type === 'LectureGuideNotes') {
-        linksHTML = (item.guideFile ? fileLinkHTML(item.guideFile, 'Lecture Guide (PDF)') : '')
-          + (item.notesFile ? fileLinkHTML(item.notesFile, 'Lecture Notes (PDF)') : '');
+        linksHTML = (item.guideFile ? fileLinkHTML(item.guideFile, 'Lecture Guide (PDF)', { newTab: true }) : '')
+          + (item.notesFile ? fileLinkHTML(item.notesFile, 'Lecture Notes (PDF)', { newTab: true }) : '');
       } else if (item.type === 'LectureVideo') {
         linksHTML = fileLinkHTML(item.playlistUrl, 'Watch on YouTube (playlist)', { newTab: true, tooltip: 'Playlist not yet linked' });
       }
