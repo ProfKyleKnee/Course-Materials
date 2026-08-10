@@ -22,13 +22,26 @@
   const guidesUseText = "The Lecture Guide is the skeleton version brought to class — theorems to notate rather than copy, problems to work through rather than read, diagrams to label as the lesson unfolds. It's the version taught from directly, marked up live so students can do the same on their own copy. The Lecture Notes are a completed version of that same guide, sometimes containing additional details beyond what's covered in class. The goal is to keep focus on understanding the ideas in the moment rather than transcribing — the guide provides structure during class, the notes provide the finished record.";
 
   const courseInfo = {
-    "Calc 1": { blurb: "First-semester calculus: limits, derivatives, and an introduction to integrals, with an emphasis on graphical and real-world interpretation.", topics: "Limits & continuity, derivative rules, related rates, optimization, intro to integration", audience: "Students starting calculus for the first time — no calculus background assumed." },
-    "Calc 2": { blurb: "Techniques of integration, sequences and series, and an introduction to parametric and polar curves.", topics: "Integration techniques, applications of integrals, sequences & series, parametric/polar", audience: "Students who've completed Calc 1 or the equivalent." },
-    "Calc 3": { blurb: "Multivariable calculus — vectors, partial derivatives, multiple integrals, and vector calculus.", topics: "Vectors & 3D space, partial derivatives, multiple integrals, vector fields", audience: "Students who've completed Calc 2." },
-    "Precalc": { blurb: "Foundational algebra and trigonometry needed before starting calculus.", topics: "Functions, polynomials, trig identities, exponential/log functions", audience: "Students preparing for Calc 1." },
+    "Calculus I": { blurb: "First-semester calculus: limits, derivatives, and an introduction to integrals, with an emphasis on graphical and real-world interpretation.", topics: "Limits & continuity, derivative rules, related rates, optimization, intro to integration", audience: "Students starting calculus for the first time — no calculus background assumed." },
+    "Calculus II": { blurb: "Techniques of integration, sequences and series, and an introduction to parametric and polar curves.", topics: "Integration techniques, applications of integrals, sequences & series, parametric/polar", audience: "Students who've completed Calculus I or the equivalent." },
+    "Calculus III": { blurb: "Multivariable calculus — vectors, partial derivatives, multiple integrals, and vector calculus.", topics: "Vectors & 3D space, partial derivatives, multiple integrals, vector fields", audience: "Students who've completed Calculus II." },
+    "Precalculus": { blurb: "Foundational algebra and trigonometry needed before starting calculus.", topics: "Functions, polynomials, trig identities, exponential/log functions", audience: "Students preparing for Calculus I." },
     "Statistics": { blurb: "Introductory statistics: descriptive stats, probability, and inferential methods.", topics: "Descriptive statistics, probability, distributions, hypothesis testing, confidence intervals", audience: "Students from any major needing an intro stats course." },
-    "Linear Algebra": { blurb: "Vectors, matrices, and linear transformations, with an eye toward applications.", topics: "Matrix operations, vector spaces, eigenvalues/eigenvectors, linear transformations", audience: "Students who've completed Calc 2 or by instructor permission." },
-    "Discrete Math": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
+    "Linear Algebra": { blurb: "Vectors, matrices, and linear transformations, with an eye toward applications.", topics: "Matrix operations, vector spaces, eigenvalues/eigenvectors, linear transformations", audience: "Students who've completed Calculus II or by instructor permission." },
+    "Discrete": { blurb: "Logic, proof techniques, and discrete structures used throughout computer science and mathematics.", topics: "Logic & proofs, set theory, combinatorics, graph theory basics", audience: "Math and CS students; no calculus required." },
+  };
+
+  // ---------- course directory symbols: the same per-course glyph shorthand a student would
+  // recognize from the course itself, used as a badge on each course-directory-card. size is
+  // tuned per-symbol so visually heavier/wider glyphs (e.g. "sin(θ)") don't overpower the badge. ----------
+  const courseSymbol = {
+    "Precalculus": { text: "sin(θ)", size: "15px" },
+    "Calculus I": { text: "lim", size: "16px" },
+    "Calculus II": { text: "Σ", size: "24px" },
+    "Calculus III": { text: "∭", size: "20px" },
+    "Linear Algebra": { text: "λ", size: "24px" },
+    "Discrete": { text: "∀", size: "22px" },
+    "Statistics": { text: "%", size: "24px" },
   };
 
   const typeIconSVG = {
@@ -50,7 +63,6 @@
   const chevronRightSVG = `<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
 
   let state = { level: 'courseMaterials' };
-  let devShowEmptyCourses = false;
 
   // ---------- v16: History API — proper back/forward support ----------
   function statePath(s) {
@@ -107,7 +119,7 @@
   }
   function recentBadgeHTML(dateStr) {
     return isRecentlyUpdated(dateStr)
-      ? `<span class="recent-badge" title="Updated ${formatDate(dateStr)}"><span class="dot-ico"></span>Updated</span>`
+      ? `<span class="recent-badge" title="Updated ${formatDate(dateStr)}"><span class="dot-ico"></span>Recently Updated</span>`
       : '';
   }
 
@@ -154,11 +166,18 @@
   }
 
   function openTier3(entry, courseVal, typeVal) {
-    navigate({ level: 'tier3', entry, course: courseVal, type: typeVal, isolatedUnit: null });
+    navigate({ level: 'tier3', entry, course: courseVal, type: typeVal, isolatedUnit: null, subtypeFilter: null });
   }
 
   function isolateUnit(u) {
     navigate(Object.assign({}, state, { isolatedUnit: u }));
+  }
+
+  // ---------- Worksheet Standard/Blended filter — same chip-row pattern as the unit jump row,
+  // stacked above it since it's a broader "which kind of worksheet" filter rather than a scoping
+  // control. Left independent of isolateUnit so both filters can combine (e.g. Unit 3 + Blended). ----------
+  function setSubtypeFilter(v) {
+    navigate(Object.assign({}, state, { subtypeFilter: v }));
   }
 
   function openDetail(id) {
@@ -226,11 +245,18 @@
   // Applets (no sidebar) keeps a one-line tagline here; the other three drop it since their sidebar
   // already covers the same ground. ----------
   const appletTagline = "Interactive tools to drag, adjust, and explore.";
-  function titleBlockHTML(type, titleText) {
+  // courseVal is only passed on the course+type (tier3) page: it swaps the badge from the
+  // material-type icon to the course symbol, since the type icon is already shown in the sidebar
+  // (sidebarContentForType) right next to this title — showing it twice was redundant. The
+  // top-level typeBrowse page (no single course) keeps the type icon, since there's no sidebar
+  // redundancy there — its sidebar covers the type, not a specific course.
+  function titleBlockHTML(type, titleText, courseVal) {
     const tagline = type === 'Applet' ? `<div class="page-tagline">${appletTagline}</div>` : '';
+    const sym = courseVal && courseSymbol[courseVal];
+    const badgeContent = sym ? `<span style="font-size:${sym.size};">${sym.text}</span>` : typeIconSVG[type];
     return `<div class="title-block">
       <div class="title-row">
-        <div class="title-icon-badge">${typeIconSVG[type]}</div>
+        <div class="title-icon-badge">${badgeContent}</div>
         <div class="page-title">${titleText}</div>
       </div>
       ${tagline}
@@ -328,13 +354,14 @@
     </div>`;
   }
 
+  // Kept as full tiles (type icon only, no course badge) rather than rows — the course name
+  // stays in the text so these can later link out to material from other courses on the same
+  // section without looking like they belong to the current course.
   function relatedRowHTML(i) {
-    return `<div class="whatsnew-item" onclick="openDetail('${i.id}')">
+    return `<div class="related-tile" onclick="openDetail('${i.id}')">
       <div class="icon-badge">${typeIconSVG[i.type]}</div>
-      <div>
-        <div class="wn-title">${i.title}</div>
-        <div class="wn-meta">${i.course} · ${typeLabel[i.type]}${i.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
-      </div>
+      <div class="rt-title">${i.title}</div>
+      <div class="rt-meta">${i.course} · ${typeLabel[i.type]}${i.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
     </div>`;
   }
 
@@ -379,7 +406,7 @@
   // ---------- v16: top-level course carousels (Applets / Lecture Videos overview pages) ----------
   function courseCarouselsHTML(typeVal) {
     const all = items.filter(i => i.type === typeVal);
-    const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+    const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
     return coursesPresent.map(c => {
       const inCourse = all.filter(a => a.course === c).sort(sectionCompare);
@@ -407,8 +434,17 @@
 
   // ---------- v16/v18: tier 3 — unit chip filter row + unit carousels, with isolate-to-full-grid.
   // v18 adds a per-unit accent color, cycling through unitAccentPalette by unit position. ----------
-  function tier3BodyHTML(matches, course, typeVal) {
-    if (!matches.length) return `<div class="empty-state">No items for this course/type yet.</div>`;
+  function tier3BodyHTML(matchesAll, course, typeVal) {
+    const subtypeChipsHTML = typeVal === 'Worksheet' ? `<div class="jump-row">
+      <span class="jump-link ${!state.subtypeFilter ? 'chip-active' : ''}" onclick="setSubtypeFilter(null)">All Worksheets</span>
+      <span class="jump-link ${state.subtypeFilter === 'Standard' ? 'chip-active' : ''}" onclick="setSubtypeFilter('Standard')">Standard</span>
+      <span class="jump-link ${state.subtypeFilter === 'Blended' ? 'chip-active' : ''}" onclick="setSubtypeFilter('Blended')">Blended/Honors</span>
+    </div>` : '';
+    const matches = (typeVal === 'Worksheet' && state.subtypeFilter)
+      ? matchesAll.filter(i => i.subtype === state.subtypeFilter)
+      : matchesAll;
+
+    if (!matches.length) return `${subtypeChipsHTML}<div class="empty-state">No items match this filter yet.</div>`;
     const units = [...new Set(matches.map(unitOf))].sort((a, b) => Number(a) - Number(b));
     const colorMap = unitColorMap(units);
     const isolated = state.isolatedUnit;
@@ -423,7 +459,7 @@
     if (isolated) {
       const inUnit = matches.filter(i => unitOf(i) === isolated);
       const color = colorMap[isolated];
-      return `${chipsHTML}
+      return `${subtypeChipsHTML}${chipsHTML}
         <div class="result-count">${inUnit.length} item${inUnit.length === 1 ? '' : 's'} in Unit ${isolated}</div>
         <div class="${gridClass}">${inUnit.map(i => cardFn(i, color)).join('')}</div>`;
     }
@@ -446,16 +482,28 @@
           </div>
         </div>`;
     }).join('');
-    return chipsHTML + rows;
+    return subtypeChipsHTML + chipsHTML + rows;
   }
 
-  function devToggleHTML() {
-    return `<label class="dev-toggle">
-      <input type="checkbox" ${devShowEmptyCourses ? 'checked' : ''} onchange="toggleShowEmptyCourses(this.checked)">
-      <span class="dev-tag">Dev preview</span> Show all courses, including empty ones (remove before launch)
-    </label>`;
+  // Lines the sidebar card's resting position up with the jump row (course chips on typeBrowse,
+  // unit chips on tier3) instead of the very top of the main column, so it doesn't sit noticeably
+  // higher than the content it's next to. Matches the .page-shell breakpoint (900px) where the
+  // sidebar drops below the main column instead of sitting beside it — no offset needed there.
+  function alignSidebarToJumpRow() {
+    const sidebar = document.getElementById('sidebar-card');
+    if (!sidebar) return;
+    const jumpRow = document.querySelector('#page .jump-row');
+    if (!jumpRow || window.innerWidth <= 900) { sidebar.style.marginTop = ''; return; }
+    // offsetTop is relative to the nearest *positioned* ancestor — neither #page nor .page-shell
+    // has one, so it was resolving all the way up to the document, not to the sidebar's own
+    // starting position. Comparing bounding rects instead measures the actual on-screen gap.
+    sidebar.style.marginTop = '0px';
+    const delta = jumpRow.getBoundingClientRect().top - sidebar.getBoundingClientRect().top;
+    sidebar.style.marginTop = Math.max(0, delta) + 'px';
   }
-  function toggleShowEmptyCourses(checked) { devShowEmptyCourses = checked; render(); }
+  window.addEventListener('resize', () => {
+    if (state.level === 'typeBrowse' || state.level === 'tier3') alignSidebarToJumpRow();
+  });
 
   function render() {
     updateNavHighlight();
@@ -470,25 +518,47 @@
     else { shell.classList.add('no-sidebar'); }
 
     if (state.level === 'courseMaterials') {
-      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => items.some(i => i.course === c));
+      const coursesPresent = courseOrder.filter(c => items.some(i => i.course === c));
       const body = coursesPresent.map(c => {
         const info = courseInfo[c] || {};
+        const sym = courseSymbol[c] || { text: '', size: '20px' };
         const counts = typeOrder.map(t => {
           const n = items.filter(i => i.course === c && i.type === t).length;
-          return n ? `${typeLabel[t]}: ${n}` : null;
-        }).filter(Boolean).join(' · ');
+          return n ? `<span class="cd-count-chip">${typeLabel[t]}: ${n}</span>` : null;
+        }).filter(Boolean).join('');
         return `<div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
-          <div class="cd-title">${c}</div>
-          <div class="cd-blurb">${info.blurb || ''}</div>
-          <div class="cd-counts">${counts || 'No items yet'}</div>
+          <div class="cd-symbol-badge" style="font-size:${sym.size};" aria-hidden="true">${sym.text}</div>
+          <div class="cd-content">
+            <div class="cd-title">${c}</div>
+            <div class="cd-blurb">${info.blurb || ''}</div>
+            <div class="cd-counts">${counts || 'No items yet'}</div>
+          </div>
         </div>`;
       }).join('');
+      const stackBadgeHTML = `<div class="title-stack-badge" aria-hidden="true">
+        <svg class="course-stack-svg" viewBox="0 0 24 24">
+          <g class="course-card pos-back">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.4" text-anchor="middle" font-family="Georgia, serif" font-size="6.5" fill="var(--accent)" stroke="none" font-weight="700">&#8749;</text>
+          </g>
+          <g class="course-card pos-mid">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.5" text-anchor="middle" font-family="Georgia, serif" font-size="7.5" fill="var(--accent)" stroke="none" font-weight="700">&#931;</text>
+          </g>
+          <g class="course-card pos-front">
+            <rect x="6.5" y="5" width="13" height="9.5" rx="2" stroke="var(--accent)"/>
+            <text x="13" y="11.2" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="6" fill="var(--accent)" stroke="none" font-weight="700">lim</text>
+          </g>
+        </svg>
+      </div>`;
       page.innerHTML = `
         ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">Course Materials</div>
-        ${devToggleHTML()}
-        ${jumpRowHTML(coursesPresent)}
-        <div style="display:flex; flex-direction:column; gap:14px;">${body}</div>
+        <div class="title-row" style="margin-bottom:6px;">
+          ${stackBadgeHTML}
+          <div class="page-title" style="margin:0;">Course Materials</div>
+        </div>
+        <div class="page-tagline" style="margin:0 0 24px 72px;">Pick a course below to see everything for it — worksheets, lecture guides and notes, applets, and videos, organized by unit.</div>
+        <div class="course-directory-grid">${body}</div>
       `;
       return;
     }
@@ -498,18 +568,18 @@
     if (state.level === 'typeBrowse') {
       const t = state.type;
       const all = items.filter(i => i.type === t);
-      const coursesPresent = devShowEmptyCourses ? courseOrder.slice() : courseOrder.filter(c => all.some(a => a.course === c));
+      const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
       const pageTitle = t === 'Applet' ? 'All Applets' : typeLabel[t];
       const unitLabel = t === 'Applet' ? 'applet' : (t === 'LectureVideo' ? 'video section' : 'item');
       const countText = `${all.length} ${unitLabel}${all.length === 1 ? '' : 's'} across ${courseOrder.filter(c => all.some(a => a.course === c)).length} courses`;
       page.innerHTML = `
         ${crumbHTML()}
         ${titleBlockHTML(t, pageTitle)}
-        ${devToggleHTML()}
         ${jumpRowHTML(coursesPresent)}
         <div class="result-count">${countText}</div>
         ${courseCarouselsHTML(t)}
       `;
+      alignSidebarToJumpRow();
       return;
     }
 
@@ -521,17 +591,19 @@
         if (info) {
           infoHTML = `<div class="course-info">
             <p>${info.blurb}</p>
-            <div class="topics"><b>Topics:</b> ${info.topics}</div>
-            <div class="topics" style="margin-top:4px;"><b>Who it's for:</b> ${info.audience}</div>
+            <div class="course-info-cols">
+              <div class="topics"><b>Topics:</b> ${info.topics}</div>
+              <div class="topics"><b>Who it's for:</b> ${info.audience}</div>
+            </div>
           </div>`;
         }
         const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
-        tilesHTML = `<div class="pillbox-list">${availableTypes.map(t => {
+        tilesHTML = `<div class="tile-grid">${availableTypes.map(t => {
           const count = items.filter(i => i.course === state.course && i.type === t).length;
-          return `<div class="pillbox-row" onclick="openTier3('course','${state.course}','${t}')">
+          return `<div class="tile" onclick="openTier3('course','${state.course}','${t}')">
             <div class="icon-badge">${typeIconSVG[t]}</div>
-            <div><div class="pb-label">${typeLabel[t]}</div><div class="pb-desc">${typeDescription[t]}</div></div>
-            <div class="pb-count">${count} item${count === 1 ? '' : 's'}</div>
+            <div class="label">${typeLabel[t]}</div>
+            <div class="count">${count} item${count === 1 ? '' : 's'}</div>
           </div>`;
         }).join('')}</div>`;
       } else {
@@ -548,9 +620,16 @@
           </div>`;
         }).join('')}</div>`;
       }
+      const tier2CourseSym = state.entry === 'course' ? courseSymbol[state.course] : null;
+      const tier2TitleHTML = tier2CourseSym
+        ? `<div class="title-row" style="margin-bottom:6px;">
+            <div class="title-icon-badge"><span style="font-size:${tier2CourseSym.size};">${tier2CourseSym.text}</span></div>
+            <div class="page-title" style="margin:0;">${state.course}</div>
+          </div>`
+        : `<div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>`;
       page.innerHTML = `
         ${crumbHTML()}
-        <div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>
+        ${tier2TitleHTML}
         ${infoHTML}
         ${tilesHTML}
       `;
@@ -562,9 +641,10 @@
       const titleSuffix = (state.type === 'Worksheet') ? 'Worksheets (Standard & Blended/Honors)' : typeLabel[state.type];
       page.innerHTML = `
         ${crumbHTML()}
-        ${titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`)}
+        ${titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`, state.course)}
         ${tier3BodyHTML(matches, state.course, state.type)}
       `;
+      alignSidebarToJumpRow();
       return;
     }
 
@@ -594,8 +674,13 @@
       page.innerHTML = `
         ${crumbHTML()}
         <div class="detail-card">
-          <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
-          <div class="detail-title">${item.title}</div>
+          <div class="title-row" style="margin-bottom:14px;">
+            <div class="title-icon-badge">${typeIconSVG[item.type]}</div>
+            <div>
+              <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
+              <div class="detail-title" style="margin:2px 0 0;">${item.title}</div>
+            </div>
+          </div>
           <div class="item-tag">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
           <p class="detail-desc">${item.desc}</p>
           <div class="detail-links">${linksHTML}</div>
@@ -610,12 +695,21 @@
     return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
+  // Broadened past just title+course so a search for a section number ("1.1"), a topic
+  // ("squeeze theorem"), a material type ("worksheet"), or a subtype ("blended") also matches —
+  // those are all things a student is just as likely to type as the item's own title.
+  function searchableText(i) {
+    return [
+      i.title, i.course, typeLabel[i.type], i.sectionLabel, (i.sections || []).join(' '),
+      i.subtype === 'Blended' ? 'Blended Honors' : (i.subtype === 'Standard' ? 'Standard' : '')
+    ].filter(Boolean).join(' ').toLowerCase();
+  }
   function doSearch(q, isMobile) {
     const boxId = isMobile ? 'search-results-mobile' : 'search-results';
     const box = document.getElementById(boxId);
     if (!isMobile) document.getElementById('search-clear').classList.toggle('visible', q.length > 0);
     if (!q) { box.innerHTML = ''; return; }
-    const matches = items.filter(i => (i.title + ' ' + i.course).toLowerCase().includes(q.toLowerCase()));
+    const matches = items.filter(i => searchableText(i).includes(q.toLowerCase()));
     box.innerHTML = matches.slice(0, 6).map((i, idx) =>
       `<div class="r" onclick="goToSearchResult(${idx}, ${!!isMobile})"><b>${i.title}</b> — ${i.course}, ${typeLabel[i.type]}${i.subtype === 'Blended' ? ' (Blended/Honors)' : ''}</div>`
     ).join('') || `<div class="r" style="cursor:default;"><span style="color:var(--eyebrow); font-style:italic;">No matches.</span></div>`;
