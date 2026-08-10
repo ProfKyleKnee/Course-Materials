@@ -94,8 +94,15 @@ project subpath.
 - `css/home.css:8` sets a **global** `svg { stroke: var(--accent); fill: none; … }`. This is why the
   seal is loaded as `<img>` rather than inlined on the home page — a comment in `styles.css:24`
   records this. Any inline SVG added to `index.html` inherits that rule.
-- `.meta-bar` is defined in `styles.css:9` but referenced by no current HTML or JS (orphaned rule
-  from the pre-split version).
+- `styles.css` defines its own `.course-card` / `.pos-front` / `.pos-mid` / `.pos-back` rules —
+  the *same class names* `home.css` uses for the animated 3-card shuffle stack, but only the static
+  fanned-stack positioning/fill/opacity states, none of the `@keyframes`/`.cycling` shuffle
+  behavior. This is intentional: `browse.html`'s Course Materials page reuses the home page's
+  3-card stack markup as a static title badge (`.title-stack-badge`, `js/app.js`'s
+  `courseMaterials` branch) since there's no hoverable spotlight card there to trigger a shuffle
+  against. The two rule sets never load on the same page (`home.css` is index.html-only), so there's
+  no runtime conflict, but a change to one stack's visual design (card size, rotation, colors)
+  won't automatically apply to the other — they have to be updated in parallel by hand.
 - The `course-card-cycle` animation duration (`0.9s`, `home.css:152`) and its `48%` keyframe are
   mirrored as numeric constants in `js/home.js` (`CYCLE_MS = 900`, `RECEDE_MS = 432`). Changing one
   without the other desynchronizes the card-shuffle animation; a comment near the top of the
@@ -119,7 +126,7 @@ whichever page script loads next:
 | Global | Type | Contents |
 |---|---|---|
 | `items` | array of objects | Every material on the site |
-| `courseOrder` | array of strings | `["Precalc", "Calc 1", "Calc 2", "Calc 3", "Linear Algebra", "Discrete Math", "Statistics"]` — display order and the canonical course-name spellings |
+| `courseOrder` | array of strings | `["Precalculus", "Calculus I", "Calculus II", "Calculus III", "Linear Algebra", "Discrete", "Statistics"]` — display order and the canonical course-name spellings |
 | `typeOrder` | array of strings | `["Applet", "Worksheet", "LectureGuideNotes", "LectureVideo"]` |
 | `typeLabel` | object | Type key → human label (`Applet: "Applets"`, `LectureGuideNotes: "Lecture Guides/Notes"`, …) |
 
@@ -129,7 +136,7 @@ Common to every item:
 ```js
 {
   id: 'g-c1-11',              // unique string; also the /item/<id> route segment
-  course: 'Calc 1',           // MUST match a string in courseOrder exactly
+  course: 'Calculus I',       // MUST match a string in courseOrder exactly
   type: 'LectureGuideNotes',  // MUST match a string in typeOrder exactly
   sections: ['1.1'],          // array; sorting and unit grouping use sections[0]
   title: '…',
@@ -153,7 +160,7 @@ Every file/URL field in the dataset is currently the placeholder `'#'`. `fileLin
 instead of a live link; `launchApplet()` (`js/app.js:173`) no-ops on `'#'`.
 
 ### Generated dummy data
-`js/data.js:82-140` defines `dummyUnitDefs` (5 units each for Calc 1 and Calc 3) and
+`js/data.js:82-140` defines `dummyUnitDefs` (5 units each for Calculus I and Calculus III) and
 `buildDummyItems()`, which generates 4 items (worksheet / guide-notes / video / applet) × 10
 sections × 5 units × 2 courses = 400 items, appended with `items.push(...buildDummyItems())`.
 Item counts shown anywhere on the site therefore include this generated data.
@@ -162,7 +169,7 @@ Item counts shown anywhere on the site therefore include this generated data.
 | Consumer | Uses |
 |---|---|
 | `js/home.js` | `items`, `courseOrder`, `typeOrder` — for the hero stat numbers |
-| `js/app.js` | `items`, `courseOrder`, `typeOrder`, `typeLabel` — for every rendered view, search, and the footer date |
+| `js/app.js` | `items`, `courseOrder`, `typeOrder`, `typeLabel` — for every rendered view, search, and the footer date. Search (`searchableText()`) matches title, course, type label, section numbers, `sectionLabel`, and Standard/Blended subtype — not just title+course. |
 | `js/about.js` | Nothing — doesn't load `js/data.js` at all. `about.html`'s content (bio, course list) is hand-written static markup, not rendered from `items`. |
 
 ### Data duplicated across files (must be kept in sync)
@@ -174,7 +181,13 @@ Item counts shown anywhere on the site therefore include this generated data.
    as `const bioText` in `js/app.js:13` (declared, still unreferenced by any code).
 3. **Course list.** `about.html`'s `.about-courses` pill row hand-types the same seven course names
    as `courseOrder` in `js/data.js:142` — intentionally not data-driven (see §1), so it's a second
-   place that would need updating if a course were renamed.
+   place that would need updating if a course were renamed. Renaming a course is a multi-file
+   change: every `items[].course` value in `js/data.js` (including the `dummyUnitDefs` keys and the
+   `course === 'Calculus I'` check inside `buildDummyItems()`) must match `courseOrder` exactly, and
+   `js/app.js`'s `courseInfo` (blurb/topics/audience) and `courseSymbol` (the per-course glyph badge
+   — see below) objects are keyed by the same course strings, so both need a matching key rename too.
+   `index.html`'s Applets/Lecture Videos spotlight descriptions also name specific courses in prose
+   and don't update automatically.
 4. **Footer date.** `index.html` and `about.html` both hardcode `Site last updated: Aug 2, 2026`.
    `browse.html` leaves it empty and `js/app.js:642` fills it from the newest `items[].updated`.
    All three can disagree.
@@ -237,6 +250,18 @@ pattern — read the banner height, set `top`, toggle, listen for outside clicks
 identically across `js/home.js`, `js/app.js`, and `js/about.js` and must stay in sync if the
 banner's structure or the menu's positioning changes.
 
+### Sidebar alignment
+On the two pages that show `#sidebar-card` (`typeBrowse` and `tier3`, for the three sidebar types —
+see the DOM contract above), `alignSidebarToJumpRow()` in `js/app.js` pushes the sidebar's resting
+position down with an inline `marginTop` so its top edge lines up with the page's `.jump-row` (course
+chips on `typeBrowse`, the Standard/Blended/unit chip rows on `tier3`) instead of the very top of the
+main column. It measures via `getBoundingClientRect()` deltas rather than `offsetTop`, since neither
+`#page` nor `.page-shell` is a positioned ancestor — `offsetTop` on the jump row would otherwise
+resolve relative to the document, not to the sidebar's own position. It's called once after each of
+those two render branches sets `page.innerHTML`, and again on `window resize` (matching the
+`.page-shell` 900px breakpoint where the sidebar drops below the main column instead of sitting
+beside it, at which point the margin is cleared).
+
 ### Inline handlers
 All interaction uses inline `onclick="…"` attributes in HTML strings, calling functions declared at
 file scope in `js/app.js`. Those functions must stay global (no module wrapper, no IIFE around
@@ -298,12 +323,16 @@ Flat, lowercase, hyphen-separated. No BEM, no utility classes, no CSS-in-JS.
 Two patterns coexist:
 - Full descriptive names for blocks: `.course-directory-card`, `.carousel-header`, `.sidebar-card`,
   `.hero-stat-icon`, `.hub-divider`.
-- Short prefixed abbreviations for a block's children: `.cd-title` / `.cd-blurb` / `.cd-counts`
-  (course-directory), `.ac-eyebrow` / `.ac-title` / `.ac-body` (applet-card), `.pb-label` /
-  `.pb-desc` / `.pb-count` (pillbox), `.wn-title` / `.wn-meta` (whats-new), `.b-name` / `.b-title`
-  (brand), `.f-col` / `.f-name` / `.f-seal` / `.f-links` / `.f-links-title` (footer), `.h-title` /
-  `.h-desc` (hero), `.about-bio-row` / `.about-photo` / `.about-role` / `.about-courses`
-  (`about.html`-only, in `css/about.css`).
+- Short prefixed abbreviations for a block's children: `.cd-title` / `.cd-blurb` / `.cd-counts` /
+  `.cd-symbol-badge` / `.cd-count-chip` (course-directory), `.ac-eyebrow` / `.ac-title` / `.ac-body`
+  (applet-card), `.rt-title` / `.rt-meta` (related-tile, on the item detail page), `.b-name` /
+  `.b-title` (brand), `.f-col` / `.f-name` / `.f-seal` / `.f-links` / `.f-links-title` (footer),
+  `.h-title` / `.h-desc` (hero), `.about-bio-row` / `.about-photo` / `.about-role` /
+  `.about-courses` (`about.html`-only, in `css/about.css`).
+- `.pillbox-row`/`.pb-*` (the old tier2 "pick a type" rows) and `.whatsnew-item`/`.wn-*` (the old
+  related-materials rows) have both been removed — tier2's type list and the detail page's related
+  materials now both reuse tile-grid patterns (`.tile-grid`/`.tile` and `.related-tile` respectively)
+  instead.
 
 State/modifier classes are bare words appended to the base: `.current`, `.open`, `.visible`,
 `.disabled`, `.reverse`, `.no-sidebar`, `.chip-active`, `.cycling`, `.on-top`, `.pos-front`.
