@@ -108,7 +108,7 @@
     { id: 'w-c1-3.9-std', course: 'Calculus I', type: 'Worksheet', subtype: 'Standard', sections: ['3.9'], sectionLabel: 'Exponential & Logarithmic Derivatives',
       title: '3.9 Exponential & Logarithmic Derivatives', desc: 'Practice set covering exponential & logarithmic derivatives.',
       worksheetFile: 'Course Materials/Calc 1/Notes/Ch. 3/Worksheets/3.9 Exponential & Logarithmic Derivatives Worksheet.pdf', solutionsFile: 'Course Materials/Calc 1/Notes/Ch. 3/Worksheets/3.9 Exponential & Logarithmic Derivatives Worksheet_Solutions.pdf', updated: '2026-02-23' },
-    { id: 'g-c1-3-ref-differentiation-rules', course: 'Calculus I', type: 'LectureGuideNotes', sections: ['3.999'], sectionLabel: 'Differentiation Rules',
+    { id: 'g-c1-3-ref-differentiation-rules', course: 'Calculus I', type: 'LectureGuideNotes', sections: ['3.999'], sectionLabel: 'Differentiation Rules', resource: true,
       title: 'Differentiation Rules', desc: 'Reference sheet: differentiation rules.',
       guideFile: null, notesFile: 'Course Materials/Calc 1/Notes/Ch. 3/Differentiation Rules.pdf', updated: '2026-02-09' },
     { id: 'g-c1-sc3', course: 'Calculus I', type: 'LectureGuideNotes', sections: ['4.0'], sectionLabel: 'Skills Check 3',
