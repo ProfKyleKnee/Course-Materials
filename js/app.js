@@ -507,7 +507,7 @@
           </div>
         </div>`;
     }).join('');
-    return subtypeChipsHTML + resourcesHTML + chipsHTML + rows;
+    return subtypeChipsHTML + chipsHTML + rows + resourcesHTML;
   }
 
   // Lines the sidebar card's resting position up with the jump row (course chips on typeBrowse,
