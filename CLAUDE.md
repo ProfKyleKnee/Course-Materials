@@ -3,7 +3,9 @@
 Static site (no build step, no package manager, no dependencies). Plain HTML + CSS + vanilla JS,
 served directly as files. Everything below describes the current state of `main` (the
 `adjusting-home-page` and `Modify-Home` branches that built this up have both merged in), plus the
-real Calc 1 catalog and its source files added on the `Calc1-Content-Addition` branch.
+real Calc 1 catalog and its source files added on the `Calc1-Content-Addition` branch, plus the
+real Calc 2 and Calc 3 catalogs and their source files added on the `Calc2&3-Content-Addition`
+branch (not yet merged to `main`).
 
 ---
 
@@ -140,7 +142,7 @@ project subpath.
 
 ## 3. Data Structure
 
-**All data lives in `js/data.js` as globals — there is no JSON.** The file declares four top-level
+**All data lives in `js/data.js` as globals — there is no JSON.** The file declares five top-level
 `const`s at file scope (no module, no IIFE), so they land on the global scope and are visible to
 whichever page script loads next:
 
@@ -150,6 +152,7 @@ whichever page script loads next:
 | `courseOrder` | array of strings | `["Precalculus", "Calculus I", "Calculus II", "Calculus III", "Linear Algebra", "Discrete", "Statistics"]` — display order and the canonical course-name spellings |
 | `typeOrder` | array of strings | `["Applet", "Worksheet", "LectureGuideNotes", "LectureVideo"]` |
 | `typeLabel` | object | Type key → human label (`Applet: "Applets"`, `LectureGuideNotes: "Lecture Guides/Notes"`, …) |
+| `coursesInDevelopment` | array of strings | Courses with no real materials wired up yet — currently `["Precalculus", "Linear Algebra", "Discrete", "Statistics"]`. Shared between `js/app.js` (caution-tape badge overlay, "In Development" pill, locks the course-directory-card against navigation — see "In-development course lock" under §4) and `js/home.js` (excluded from the hero "Courses" stat count). Remove a course from this list once its real catalog replaces the placeholder items. |
 
 ### `items` schema
 
@@ -171,8 +174,16 @@ Type-dependent fields:
 |---|---|
 | `Worksheet` | `subtype: 'Standard' \| 'Blended'`, `worksheetFile`, `solutionsFile`, optional `hasSolutions: false` (suppresses the solutions link) |
 | `LectureGuideNotes` | `guideFile`, `notesFile` — either may be `null` to omit that link |
-| `LectureVideo` | `playlistUrl` |
+| `LectureVideo` | `playlistUrl`, optional `inProgress: true` (see below) |
 | `Applet` | `launchUrl`, `curve` (an SVG path `d` string used for the card's mini-graph and the dot's `offset-path`) |
+
+An optional `inProgress: true` field on a `LectureVideo` item means the section has been recorded
+but the playlist isn't linked yet (as opposed to a course in `coursesInDevelopment`, which has no
+materials of any kind). It renders an amber "In Progress" pill on the item's card (`cardHTML()` in
+`js/app.js`) and swaps the detail page's disabled-link tooltip to "Video in progress — check back
+soon" instead of the generic "Playlist not yet linked" (`fileLinkHTML()` call in the `detail` render
+branch). Currently only used on Calculus III (29 of its 40 `LectureVideo` items), which has filmed
+far fewer sections than Calculus I/II.
 
 `sectionLabel` is present on most non-Applet items but is **not read by any current code**, except
 as the fallback title text for the section-stripped Blended worksheet titles generated for Calc 1
@@ -184,62 +195,78 @@ pulls `resource` items out of the unit computation entirely and renders them in 
 "Resources" carousel block *after* the last unit's block, rather than grouping them into a
 (nonexistent) unit.
 
-For most courses every file/URL field in the dataset is still the placeholder `'#'`. **Calculus I
-is the exception** — every `LectureGuideNotes`, `Worksheet`, and `LectureVideo` item for it has a
-real `guideFile`/`notesFile`/`worksheetFile`/`solutionsFile` (a path into `Course Materials/Calc
-1/...`, see above) or `playlistUrl` (a real YouTube playlist link). `fileLinkHTML()`
-(`js/app.js:183`) renders `'#'` and empty values as an inert, grayed-out `<span>` with a tooltip
-instead of a live link; `launchApplet()` (`js/app.js:173`) no-ops on `'#'`. Worksheet/Guide/Notes
-links are rendered with `{ newTab: true }` (opens `target="_blank" rel="noopener"`) so a student
-clicking a PDF doesn't lose their place in the browse UI — `LectureVideo`/channel links already had
-this.
+For courses in `coursesInDevelopment` (Precalculus, Linear Algebra, Discrete, Statistics), every
+file/URL field in the dataset is still a single hand-written placeholder item per type with `'#'`
+values. **Calculus I, II, and III are the exception** — every `LectureGuideNotes`, `Worksheet`, and
+(for Calc I/II) `LectureVideo` item has a real `guideFile`/`notesFile`/`worksheetFile`/
+`solutionsFile` (a path into `Course Materials/Calc <N>/...`, see above) or `playlistUrl` (a real
+YouTube playlist link). Calc III's `LectureVideo` items are a mix — see the `inProgress` note above.
+`fileLinkHTML()` (`js/app.js`) renders `'#'` and empty values as an inert, grayed-out `<span>` with
+a tooltip instead of a live link; `launchApplet()` (`js/app.js`) no-ops on `'#'`. Worksheet/Guide/
+Notes links are rendered with `{ newTab: true }` (opens `target="_blank" rel="noopener"`) so a
+student clicking a PDF doesn't lose their place in the browse UI — `LectureVideo`/channel links
+already had this.
 
-Calc 1's Skills Check 1/2/3 are represented twice, once per subtype: a `LectureGuideNotes` item
-(Practice+Solutions as `guideFile`/`notesFile`) and a `subtype: 'Blended'` `Worksheet` item (a
-*different* Blended-track Practice+Solutions pair, from `Blended Sessions/Unit N/`, not a duplicate
-of the first). Both use the placeholder section `'<chapter>.0'` (e.g. `'2.0'`) so they sort first
-within their chapter's unit grouping, ahead of that chapter's real `X.Y` sections — there's no
-dedicated "Skill Check" item type, this is a sorting convention layered on the existing schema.
+Calc I/II's Skills Check 1(/2/3 for Calc I) are represented twice, once per subtype: a
+`LectureGuideNotes` item (Practice+Solutions as `guideFile`/`notesFile`) and a `subtype: 'Blended'`
+`Worksheet` item (a *different* Blended-track Practice+Solutions pair, from `Blended Sessions/Unit
+N/`, not a duplicate of the first). Both use the placeholder section `'<chapter>.0'` (e.g. `'2.0'`)
+so they sort first within their chapter's unit grouping, ahead of that chapter's real `X.Y`
+sections — there's no dedicated "Skill Check" item type, this is a sorting convention layered on
+the existing schema. Calc III has no Skill Checks or Blended Sessions folder, so it has neither.
 
-### Generated dummy data
-`js/data.js` defines `dummyUnitDefs` (5 units, **Calculus III only** — Calculus I was removed once
-its real catalog was built out, see below) and `buildDummyItems()`, which generates 4 items
-(worksheet / guide-notes / video / applet) × 10 sections × 5 units × 1 course = 200 items, appended
-with `items.push(...buildDummyItems())`. Item counts shown anywhere on the site therefore include
-this generated data for Calculus III (and any other course still on placeholder data).
+### No generated dummy data
+`js/data.js` previously defined `dummyUnitDefs` / `buildDummyItems()` to generate placeholder items
+for whichever course didn't have a real catalog yet (Calculus I, then Calculus III). Both have since
+been replaced with real catalogs (see below), so the generator and its `items.push(...)` call were
+deleted entirely — there's no synthetic data left in `items[]`, only the hand-written placeholder
+items for courses in `coursesInDevelopment` and the real per-course catalogs.
 
-### Calc 1's real catalog
-Calculus I's `items[]` entries (136 total: 38 `LectureGuideNotes`, 62 `Worksheet`, 36
-`LectureVideo`) are hand-written, real data — not generated. Its chapters (2-5) don't align with
-its pedagogical unit numbers (1-4), since Chapter 1 has no unit of its own (just the "Graphs To
-Know" resource item) and Unit 1 starts at Chapter 2. `unitLabelOverrides` / `unitLabel(course, u)`
-(`js/app.js`) remaps the *displayed* unit number for Calculus I only (chapter `2`→"Unit 1", `3`→"2",
-`4`→"3", `5`→"4"); `unitOf()`'s raw return value (the chapter number) is still what's used for
-grouping/filtering/`isolateUnit()` state everywhere — only the on-screen "Unit N" text changes.
+### Calc 1/2/3's real catalogs
+Calculus I/II/III's `items[]` entries are hand-written, real data — not generated:
+
+| Course | LectureGuideNotes | Worksheet | LectureVideo | Applet | Total |
+|---|---|---|---|---|---|
+| Calculus I | 38 | 62 | 36 | 0 | 136 |
+| Calculus II | 40 | 65 | 36 | 0 | 141 |
+| Calculus III | 45 | 45 | 40 (11 real, 29 `inProgress`) | 1 | 131 |
+
+Calc I's chapters (2-5) don't align with its pedagogical unit numbers (1-4), since Chapter 1 has no
+unit of its own (just the "Graphs To Know" resource item) and Unit 1 starts at Chapter 2.
+`unitLabelOverrides` / `unitLabel(course, u)` (`js/app.js`) remaps the *displayed* unit number for
+Calculus I only (chapter `2`→"Unit 1", `3`→"2", `4`→"3", `5`→"4"); `unitOf()`'s raw return value
+(the chapter number) is still what's used for grouping/filtering/`isolateUnit()` state everywhere —
+only the on-screen "Unit N" text changes. Calc II and Calc III have no such override — their
+textbook chapter numbers and pedagogical unit numbers already align 1:1.
+
+Both Calc II and Calc III also carry a handful of `resource: true` items beyond the "reference
+sheet" pattern described above — cumulative review packets and exam-practice worksheets (e.g. Calc
+II's "Course Review", "Series Review 1/2"; Calc III's "Exam 5 Review") and, for Calc III, a
+"Recommended Book Problems" `LectureGuideNotes` reference item per chapter.
 
 ### Consumers
 | Consumer | Uses |
 |---|---|
-| `js/home.js` | `items`, `courseOrder`, `typeOrder` — for the hero stat numbers |
-| `js/app.js` | `items`, `courseOrder`, `typeOrder`, `typeLabel` — for every rendered view, search, and the footer date. Search (`searchableText()`) matches title, course, type label, section numbers, `sectionLabel`, and Standard/Blended subtype — not just title+course. |
+| `js/home.js` | `items`, `courseOrder`, `typeOrder`, `coursesInDevelopment` — for the hero stat numbers (the "Courses" count excludes courses in `coursesInDevelopment`; the four type counts don't) |
+| `js/app.js` | `items`, `courseOrder`, `typeOrder`, `typeLabel`, `coursesInDevelopment` — for every rendered view, search, and the footer date. Search (`searchableText()`) matches title, course, type label, section numbers, `sectionLabel`, and Standard/Blended subtype — not just title+course. |
 | `js/about.js` | Nothing — doesn't load `js/data.js` at all. `about.html`'s content (bio, course list) is hand-written static markup, not rendered from `items`. |
 
 ### Data duplicated across files (must be kept in sync)
 1. **Type keys.** The `data-stat` attributes in `index.html`'s hero stats (`Applet`, `Worksheet`,
-   `LectureGuideNotes`, `LectureVideo`) must match `typeOrder` strings in `js/data.js:143`.
+   `LectureGuideNotes`, `LectureVideo`) must match `typeOrder` strings in `js/data.js`.
    `js/home.js`'s `renderHeroStats()` matches them by string.
 2. **Bio paragraph.** Written out in full three times now: `index.html`'s About card uses a short
    one-sentence teaser instead, but the full paragraph appears in `about.html`'s `.detail-desc` and
-   as `const bioText` in `js/app.js:13` (declared, still unreferenced by any code).
+   as `const bioText` in `js/app.js` (declared, still unreferenced by any code).
 3. **Course list.** `about.html`'s `.about-courses` pill row hand-types the same seven course names
-   as `courseOrder` in `js/data.js:142` — intentionally not data-driven (see §1), so it's a second
+   as `courseOrder` in `js/data.js` — intentionally not data-driven (see §1), so it's a second
    place that would need updating if a course were renamed. Renaming a course is a multi-file
-   change: every `items[].course` value in `js/data.js` (including the `dummyUnitDefs` keys and the
-   `course === 'Calculus I'` check inside `buildDummyItems()`) must match `courseOrder` exactly, and
-   `js/app.js`'s `courseInfo` (blurb/topics/audience) and `courseSymbol` (the per-course glyph badge
-   — see below) objects are keyed by the same course strings, so both need a matching key rename too.
-   `index.html`'s Applets/Lecture Videos spotlight descriptions also name specific courses in prose
-   and don't update automatically.
+   change: every `items[].course` value in `js/data.js` must match `courseOrder` exactly, any
+   `coursesInDevelopment` entry for that course must be renamed too, and `js/app.js`'s `courseInfo`
+   (blurb/topics/audience) and `courseSymbol` (the per-course glyph badge — see below) objects are
+   keyed by the same course strings, so both need a matching key rename too. `index.html`'s
+   Applets/Lecture Videos spotlight descriptions also name specific courses in prose and don't
+   update automatically.
 4. **Footer date.** `index.html` and `about.html` both hardcode `Site last updated: Aug 2, 2026`.
    `browse.html` leaves it empty and `js/app.js:642` fills it from the newest `items[].updated`.
    All three can disagree.
@@ -313,6 +340,23 @@ resolve relative to the document, not to the sidebar's own position. It's called
 those two render branches sets `page.innerHTML`, and again on `window resize` (matching the
 `.page-shell` 900px breakpoint where the sidebar drops below the main column instead of sitting
 beside it, at which point the margin is cleared).
+
+### In-development course lock
+`js/app.js` defines `isInDevelopment(course)`, `devTapeHTML(course)`, and `devPillHTML(course)`,
+all driven by `coursesInDevelopment` in `js/data.js` (see §3). Three render sites call all three:
+the `courseMaterials` course-directory-card, the `tier2` course-landing header, and `titleBlockHTML()`
+(used by the `tier3` course+type header — not the top-level `typeBrowse` header, which has no
+specific course and so no badge to flag). Each site wraps its course-symbol badge (`.cd-symbol-badge`
+or `.title-icon-badge`) with an added `.badge-dev-wrap` class and injects `devTapeHTML()`'s
+`<span class="caution-tape">` inside it — a diagonal repeating-gradient stripe sized in `%` so it
+scales to whichever badge it's placed in (`css/styles.css`) — and appends `devPillHTML()`'s
+`<span class="in-dev-pill">In Development</span>` next to the title text. The course-directory-card
+additionally gets no `onclick` attribute at all when `isInDevelopment()` is true (instead of a
+guarded/no-op handler), plus a `.course-directory-card-locked` class that zeroes out the hover
+lift/box-shadow/border-left-color and the badge's hover scale — so there's nothing to click and
+nothing that visually suggests there is. `.in-progress-pill` (used on `LectureVideo` items with
+`inProgress: true`, see §3) is a separate, unrelated pill sharing the same amber palette by
+convention, not by shared class or shared list.
 
 ### Inline handlers
 All interaction uses inline `onclick="…"` attributes in HTML strings, calling functions declared at

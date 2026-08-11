@@ -13,7 +13,7 @@
   const bioText = "Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.";
 
   const videosSidebarText = "All of Kyle's recorded lecture walkthroughs live on one YouTube channel, organized into a playlist per course. Section-level links throughout this site jump straight to the relevant playlist — visit the full channel to browse everything in one place.";
-  const youtubeChannelUrl = "#";
+  const youtubeChannelUrl = "https://www.youtube.com/@kneedmath5234";
 
   // ---------- v17: sidebar copy for the Worksheets and Lecture Guides/Notes browse pages ----------
   const worksheetsOrgText = "Worksheets are grouped by course and unit. Blended/Honors versions are marked with a badge and appear alongside the Standard version for the same section.";
@@ -43,6 +43,16 @@
     "Discrete": { text: "∀", size: "22px" },
     "Statistics": { text: "%", size: "24px" },
   };
+
+  // ---------- coursesInDevelopment lives in js/data.js (shared with js/home.js's hero stat
+  // count). Here it drives the caution-tape overlay across the course badge plus an "In
+  // Development" pill next to the title, everywhere that badge/title pair is rendered (course
+  // directory card, course landing page, course+type header), and locks the directory card
+  // against navigation. Remove a course from that list once its real catalog replaces the
+  // placeholder items. ----------
+  function isInDevelopment(course) { return coursesInDevelopment.includes(course); }
+  function devTapeHTML(course) { return isInDevelopment(course) ? '<span class="caution-tape"></span>' : ''; }
+  function devPillHTML(course) { return isInDevelopment(course) ? '<span class="in-dev-pill">In Development</span>' : ''; }
 
   const typeIconSVG = {
     Applet: `<svg viewBox="-1 -1 27 26">
@@ -266,10 +276,11 @@
     const tagline = type === 'Applet' ? `<div class="page-tagline">${appletTagline}</div>` : '';
     const sym = courseVal && courseSymbol[courseVal];
     const badgeContent = sym ? `<span style="font-size:${sym.size};">${sym.text}</span>` : typeIconSVG[type];
+    const devWrapClass = courseVal ? ' badge-dev-wrap' : '';
     return `<div class="title-block">
       <div class="title-row">
-        <div class="title-icon-badge">${badgeContent}</div>
-        <div class="page-title">${titleText}</div>
+        <div class="title-icon-badge${devWrapClass}">${badgeContent}${courseVal ? devTapeHTML(courseVal) : ''}</div>
+        <div class="page-title">${titleText}${courseVal ? devPillHTML(courseVal) : ''}</div>
       </div>
       ${tagline}
     </div>`;
@@ -361,6 +372,7 @@
       <div>
         <span class="filetype-badge">${fileTypeLabel[i.type]}</span>
         ${i.subtype === 'Blended' ? `<span class="item-pill">Blended/Honors</span>` : ''}
+        ${i.inProgress ? `<span class="item-pill in-progress-pill">In Progress</span>` : ''}
         ${recentBadgeHTML(i.updated)}
       </div>
     </div>`;
@@ -551,10 +563,12 @@
           const n = items.filter(i => i.course === c && i.type === t).length;
           return n ? `<span class="cd-count-chip">${typeLabel[t]}: ${n}</span>` : null;
         }).filter(Boolean).join('');
-        return `<div class="course-directory-card" id="grp-${slug(c)}" onclick="enterCourse('${c}')">
-          <div class="cd-symbol-badge" style="font-size:${sym.size};" aria-hidden="true">${sym.text}</div>
+        const devLocked = isInDevelopment(c);
+        const cardAttrs = devLocked ? '' : ` onclick="enterCourse('${c}')"`;
+        return `<div class="course-directory-card${devLocked ? ' course-directory-card-locked' : ''}" id="grp-${slug(c)}"${cardAttrs}>
+          <div class="cd-symbol-badge badge-dev-wrap" style="font-size:${sym.size};" aria-hidden="true">${sym.text}${devTapeHTML(c)}</div>
           <div class="cd-content">
-            <div class="cd-title">${c}</div>
+            <div class="cd-title">${c}${devPillHTML(c)}</div>
             <div class="cd-blurb">${info.blurb || ''}</div>
             <div class="cd-counts">${counts || 'No items yet'}</div>
           </div>
@@ -648,8 +662,8 @@
       const tier2CourseSym = state.entry === 'course' ? courseSymbol[state.course] : null;
       const tier2TitleHTML = tier2CourseSym
         ? `<div class="title-row" style="margin-bottom:6px;">
-            <div class="title-icon-badge"><span style="font-size:${tier2CourseSym.size};">${tier2CourseSym.text}</span></div>
-            <div class="page-title" style="margin:0;">${state.course}</div>
+            <div class="title-icon-badge badge-dev-wrap"><span style="font-size:${tier2CourseSym.size};">${tier2CourseSym.text}</span>${devTapeHTML(state.course)}</div>
+            <div class="page-title" style="margin:0;">${state.course}${devPillHTML(state.course)}</div>
           </div>`
         : `<div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>`;
       page.innerHTML = `
@@ -686,7 +700,7 @@
         linksHTML = (item.guideFile ? fileLinkHTML(item.guideFile, 'Lecture Guide (PDF)', { newTab: true }) : '')
           + (item.notesFile ? fileLinkHTML(item.notesFile, 'Lecture Notes (PDF)', { newTab: true }) : '');
       } else if (item.type === 'LectureVideo') {
-        linksHTML = fileLinkHTML(item.playlistUrl, 'Watch on YouTube (playlist)', { newTab: true, tooltip: 'Playlist not yet linked' });
+        linksHTML = fileLinkHTML(item.playlistUrl, 'Watch on YouTube (playlist)', { newTab: true, tooltip: item.inProgress ? 'Video in progress — check back soon' : 'Playlist not yet linked' });
       }
 
       const related = relatedItems(item);
