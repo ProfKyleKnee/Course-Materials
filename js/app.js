@@ -354,17 +354,23 @@
     </svg>`;
   }
 
-  // Wireframe paraboloid opening upward: rim + a mid-height ellipse spin (squash on X) on hover,
-  // and a red cross-section ellipse fades in and sweeps from the rim down toward the vertex,
-  // shrinking as it goes -- echoing the applet's own fixed-z cross-section slider. Still (no hover)
-  // shows just the static bowl, no cross-section, per the ask this was built for.
+  // Wireframe paraboloid opening upward: rim + walls stay a fixed size always (a symmetric bowl's
+  // silhouette doesn't actually change shape as it spins around its own vertical axis, so resizing
+  // it was never right). "Spinning the x/y axes" is instead a flat axis-cross lying in the rim's
+  // plane that rotates in place -- literal, and can't distort anything since it's just two lines.
+  // The red cross-section ellipse fades in and sweeps from the rim down toward the vertex,
+  // shrinking as it goes, echoing the applet's own fixed-z slider. Both only run on hover; at rest
+  // it's just the plain bowl, nothing else visible.
   function paraboloidTileSVG() {
     return `<svg viewBox="0 0 100 90">
       <path class="qs-wall" d="M14,22 C18,48 30,66 50,78"/>
       <path class="qs-wall" d="M86,22 C82,48 70,66 50,78"/>
-      <ellipse class="qs-mid" cx="50" cy="50" rx="22" ry="6"/>
       <ellipse class="qs-cross" cx="50" cy="24" rx="34" ry="9"/>
       <ellipse class="qs-rim" cx="50" cy="22" rx="36" ry="10"/>
+      <g class="qs-axes">
+        <line x1="18" y1="22" x2="82" y2="22"/>
+        <line x1="50" y1="13" x2="50" y2="31"/>
+      </g>
     </svg>`;
   }
 

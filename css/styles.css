@@ -168,16 +168,21 @@
   }
 
   /* ---------- Quadric Surfaces card tile (tileType: 'paraboloid' in js/data.js) ----------
-     Static bowl at rest; on hover the rim + mid ellipse squash on X to fake a spin around the
-     vertical axis, and a red cross-section ellipse fades in and sweeps down toward the vertex,
-     shrinking to match — a paraboloid's cross-section really does shrink as z decreases. */
+     Static bowl at rest, nothing else visible or animating. On hover: a flat x/y axis-cross lying
+     in the rim's plane rotates in place (thin lines only, so it can't distort the bowl the way
+     resizing the rim did in an earlier version — a symmetric bowl's own silhouette doesn't actually
+     change as it spins around its own vertical axis, so the rim/walls never animate their size),
+     and a red cross-section ellipse fades in and sweeps down toward the vertex, shrinking to match
+     — a paraboloid's cross-section really does shrink as z decreases. */
   .qs-wall { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: 0.85; }
-  .qs-rim { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: qsSpin 3.4s ease-in-out infinite; animation-play-state: paused; }
-  .qs-mid { fill: none; stroke: var(--accent-2); stroke-width: 1.4; opacity: 0.55; transform-box: fill-box; transform-origin: center; animation: qsSpin 3.4s ease-in-out infinite; animation-play-state: paused; }
+  .qs-rim { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; }
   .qs-cross { fill: rgba(216,90,110,0.18); stroke: #D85A6E; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
-  .applet-card:hover .qs-rim, .applet-card:hover .qs-mid { animation-play-state: running; }
+  .qs-axes { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .qs-axes line { stroke: var(--accent-2); stroke-width: 1.4; }
   .applet-card:hover .qs-cross { animation: qsCross 3.4s ease-in-out infinite; }
-  @keyframes qsSpin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.5); } }
+  .applet-card:hover .qs-axes { animation: qsAxesSpin 3.4s linear infinite, qsAxesFade 3.4s ease-in-out infinite; }
+  @keyframes qsAxesSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes qsAxesFade { 0%, 100% { opacity: 0; } 15%, 85% { opacity: 0.65; } }
   @keyframes qsCross {
     0% { opacity: 0; cy: 24px; rx: 34px; ry: 9px; }
     10% { opacity: 0.9; }
