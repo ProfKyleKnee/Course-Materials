@@ -1,0 +1,59 @@
+/* ---------- shared applet header: topline strip, loaded by every applet's static HTML shell ----------
+   Structural counterpart to js/applet-header.js's appletHeaderHTML(). Only the topline (brand mark,
+   name, course-site link) is genuinely shared here — the gradient banner below it (kicker/title/tab
+   zone) lives in each applet's own React source, since these are independently-bundled apps with no
+   shared build pipeline. Its canonical styling is documented at the bottom of this file so every
+   applet's JSX can be hand-matched to the same values. */
+
+/* Fuses visually with the applet's own card below it: same #E8E8F2 page background and 24px inset
+   as the card's own outer wrapper (see the canonical banner spec below), zero bottom padding so
+   there's no gap, and top-only 20px rounding so the topline's bottom edge sits flush against the
+   card's now-flattened top corners. .aph-topline's own max-width (currently 1200px, matching the
+   Quadric Surfaces card) must equal whatever maxWidth the applet's own card wrapper uses -- if an
+   applet's own card wrapper doesn't match this exact background/maxWidth/padding math, the two
+   won't line up. Keep them in sync by hand. */
+.aph-header-wrap { background: #E8E8F2; padding: 24px 24px 0; }
+.aph-topline { box-sizing: border-box; max-width: 1200px; margin: 0 auto; background: #2E3A8C; color: #D6DBF7; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 20px; font-size: 13px; border-radius: 20px 20px 0 0; flex-wrap: wrap; }
+.aph-topline-brand { display: flex; align-items: center; gap: 9px; }
+.aph-mark-chip { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.14); flex-shrink: 0; }
+.aph-mark { display: block; flex-shrink: 0; }
+.aph-topline-link { display: inline-flex; align-items: center; gap: 4px; color: #D6DBF7; text-decoration: none; }
+.aph-topline-link:hover { color: #FFFFFF; }
+.aph-back-icon { flex-shrink: 0; }
+
+/* ---------- full-viewport layout, no forced page scroll ----------
+   html/body become a fixed-height flex column: the header sizes to its own content and #root gets
+   whatever's left. This replaces each applet's old "minHeight: 100vh" on its own React wrapper --
+   that math was correct back when the app WAS the whole page, but once the topline sits above it,
+   100vh-for-the-app plus the topline's own height guarantees the page is always taller than the
+   viewport, forcing a scrollbar no matter how little content there is. #root's own overflow:auto is
+   a safety net only (a very short window with a lot of content can still scroll inside it) -- it is
+   not meant to be the normal case. See the canonical banner spec below for the matching JSX change
+   each applet's own outer wrapper needs (minHeight:"100vh" -> height:"100%"). */
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; overflow: hidden; }
+.aph-header-wrap { flex-shrink: 0; }
+#root { flex: 1 1 auto; min-height: 0; overflow: auto; }
+
+/* ---------- canonical gradient-banner spec (NOT loaded from here — hand-match in each applet's JSX) ----------
+   Wrapper:     background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 16px 18px;
+                display: flex; align-items: center; justify-content: space-between; gap: 16px;
+                position: relative; overflow: hidden;
+   Decor line:  absolutely-positioned SVG, viewBox "0 0 1200 130" preserveAspectRatio="none",
+                path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke white, stroke-width 2.5,
+                opacity 0.14, pointer-events none, sits behind the text/tab content.
+   Kicker:      fontSize 11, fontWeight 700, color rgba(255,255,255,0.65), letterSpacing 0.08em,
+                textTransform uppercase. Text convention: "<Course> · Unit <n>".
+   Title:       fontSize 19, fontWeight 700, color #FFFFFF, letterSpacing -0.005em.
+   Right zone:  left empty unless the applet has its own tabs/toggles (e.g. a sliding-pill tab
+                switcher) — the shared header never puts anything here.
+   Outer card:  for the fused look (topline butted directly against the banner, no gap), the
+                applet's own top-level React wrapper must match .aph-header-wrap's math exactly:
+                same #E8E8F2 page background, same maxWidth/0-auto margin on the inner card as
+                .aph-topline uses, and the outer page padding must drop its *top* value to 0 (keep 24px on the other
+                three sides) since the topline already supplies that inset. The inner card's own
+                borderRadius must flatten its top corners to 0 (e.g. "0 0 20px 20px") so its top
+                edge is square where it meets the topline's rounded-top bottom edge. Its height must
+                be "100%" (fills #root's flex-allotted remaining viewport space) and boxSizing
+                "border-box" (so its own padding doesn't push it past that), not "minHeight: 100vh"
+                -- see the full-viewport layout rules above for why. */

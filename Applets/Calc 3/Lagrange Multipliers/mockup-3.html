@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Lagrange Multipliers — Mockup 3: Snapping, Play, Tooltips, 3D Style</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 28px 24px 40px;
+    background: #F5F5FA;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    color: #3A3A3C;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1 { font-size: 19px; font-weight: 700; margin: 0 0 4px 0; }
+  .subtitle { color: #6E6E86; font-size: 13px; margin: 0 0 20px 0; }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .toggle-group { display: flex; align-items: center; gap: 10px; }
+
+  .toggle {
+    position: relative;
+    display: inline-flex;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+  }
+  .toggle-highlight {
+    position: absolute;
+    top: 4px; bottom: 4px;
+    width: calc(33.333% - 2.66px);
+    background: #3B4FC2;
+    border-radius: 16px;
+    transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  .toggle button {
+    position: relative;
+    z-index: 1;
+    border: none;
+    background: transparent;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #6E6E86;
+    cursor: pointer;
+    border-radius: 16px;
+    transition: color 0.3s ease;
+    width: 110px;
+  }
+  .toggle button.active { color: #FFFFFF; }
+
+  .mesh-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    color: #6E6E86;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s ease, color 0.25s ease;
+    flex-shrink: 0;
+  }
+  .mesh-btn svg { width: 18px; height: 18px; }
+  .mesh-btn.active { background: #3B4FC2; color: #FFFFFF; }
+  .mesh-btn:hover { filter: brightness(0.97); }
+
+  .zoom-controls {
+    position: absolute;
+    top: 38px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+  }
+  .zoom-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(60,60,90,0.18);
+    color: #3A3A3C;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .zoom-btn:hover { filter: brightness(0.96); }
+  .zoom-btn:active { filter: brightness(0.9); }
+
+  .path-tabs {
+    display: inline-flex;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 4px;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    gap: 2px;
+  }
+  .path-tabs button {
+    border: none;
+    background: transparent;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    color: #6E6E86;
+    cursor: pointer;
+    border-radius: 16px;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .path-tabs button.active { background: #3B4FC2; color: #FFFFFF; }
+
+  .stage {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .panel {
+    position: relative;
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    padding: 14px;
+    overflow: hidden;
+    transition: width 0.55s cubic-bezier(0.65, 0, 0.35, 1),
+                opacity 0.4s ease,
+                flex-grow 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .panel-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8A8AA3;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .panel canvas {
+    width: 100%;
+    height: 420px;
+    border-radius: 12px;
+    display: block;
+    background: #F5F5FA;
+  }
+  #panel2d canvas { cursor: default; }
+  #panel3d canvas { cursor: grab; }
+  #panel3d canvas:active { cursor: grabbing; }
+
+  .note {
+    text-align: center;
+    color: #8A8AA3;
+    font-size: 12px;
+    margin-top: 22px;
+    line-height: 1.5;
+  }
+
+  .info-panel {
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    padding: 16px 20px;
+    margin-top: 16px;
+  }
+  .info-panel input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #E4E4EF;
+    outline: none;
+    margin-top: 6px;
+  }
+  .info-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3B4FC2;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(59,79,194,0.4);
+  }
+  .info-panel input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: #3B4FC2;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(59,79,194,0.4);
+  }
+
+  .readout-panel {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+  .readout-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .readout-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8A8AA3;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .readout-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #3A3A3C;
+    font-variant-numeric: tabular-nums;
+  }
+  .readout-value.accent { color: #3B4FC2; }
+  #angleCard.tangent .readout-value { color: #4E9E7C; }
+  #angleCard.tangent { box-shadow: 0 0 0 2px #4E9E7C inset, 0 1px 3px rgba(60,60,90,0.08); }
+
+  .legend {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    font-size: 12px;
+    color: #6E6E86;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+  .summary-text {
+    text-align: center;
+    font-size: 13px;
+    color: #6E6E86;
+    margin: 14px 0 0 0;
+    transition: color 0.25s ease;
+  }
+  .summary-text.tangent { color: #4E9E7C; font-weight: 600; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+  .slider-track-wrap { position: relative; flex: 1; }
+  .slider-track-wrap input[type="range"] { position: relative; z-index: 2; }
+  .tick-layer {
+    position: absolute;
+    left: 10px; right: 10px;
+    top: calc(50% - 1px);
+    height: 2px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .tick-mark {
+    position: absolute;
+    top: -4px;
+    width: 3px;
+    height: 9px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: #4E9E7C;
+    opacity: 0.7;
+  }
+
+  .play-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(60,60,90,0.08);
+    color: #3B4FC2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .play-btn svg { width: 16px; height: 16px; }
+  .play-btn.active { background: #3B4FC2; color: #FFFFFF; }
+  .play-btn:hover { filter: brightness(0.97); }
+
+  .tooltip-bubble {
+    position: fixed;
+    background: #3A3A3C;
+    color: #FFFFFF;
+    font-size: 11.5px;
+    line-height: 1.4;
+    padding: 7px 10px;
+    border-radius: 8px;
+    max-width: 220px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+  }
+  .tooltip-bubble.visible { opacity: 1; transform: translateY(0); }
+
+  .readout-card[data-tooltip] { cursor: help; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Mockup 3 — Snapping, Play/Loop, Tooltips, Zoom</h1>
+  <p class="subtitle">Same surface, paths, gradients, and readout as Mockup 2. New: the slider snaps to tangency points (green ticks), a play button auto-sweeps for lecture use, hover tooltips narrate the controls, and the 3D panel now supports scroll/button zoom. The true-3D vector/marker style has been removed — flat is the only style now, with a billboarded marker so it still reads as a true circle from any angle.</p>
+
+  <div class="controls-row">
+    <div class="toggle-group">
+      <div class="toggle" id="toggle" data-tooltip="Switch between the 3D surface view, the 2D top-down view, or both side by side.">
+        <div class="toggle-highlight" id="toggleHighlight"></div>
+        <button data-mode="3d" class="active">3D</button>
+        <button data-mode="both">Both</button>
+        <button data-mode="2d">2D</button>
+      </div>
+      <button class="mesh-btn" id="meshBtn" data-tooltip="Toggle the level-curve mesh overlay — the same curves shown in the 2D panel, lifted onto the 3D surface.">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 8c3-2 6-2 9 0s6 2 9 0M3 13c3-2 6-2 9 0s6 2 9 0M3 18c3-2 6-2 9 0s6 2 9 0" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="path-tabs" id="pathTabs">
+      <button data-path="circle" class="active" data-tooltip="A closed loop around the origin — look for two tangency points as it circles both peaks.">Circle</button>
+      <button data-path="line" data-tooltip="A straight cross-section through the domain — typically one max and one min along its length.">Line</button>
+      <button data-path="parabola" data-tooltip="A curved, open path — watch how the tangency points shift compared to the line.">Parabola</button>
+      <button data-path="wavy" data-tooltip="A sine-based path that crosses the terrain repeatedly — usually has several tangency points.">Wavy</button>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="panel" id="panel3d">
+      <div class="panel-label">3D Surface</div>
+      <canvas id="canvas3d"></canvas>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomInBtn" data-tooltip="Zoom in (scroll wheel also works)">+</button>
+        <button class="zoom-btn" id="zoomOutBtn" data-tooltip="Zoom out (scroll wheel also works)">−</button>
+      </div>
+    </div>
+    <div class="panel" id="panel2d">
+      <div class="panel-label">2D Plane (top-down)</div>
+      <canvas id="canvas2d"></canvas>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <div class="panel-label">Position Along Path</div>
+    <div class="slider-row">
+      <button class="play-btn" id="playBtn" data-tooltip="Play: automatically sweep the point along the path, hands-free (useful for lecture).">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <polygon id="playTriangle" points="6,4 20,12 6,20"></polygon>
+          <g id="pauseBars" style="display:none;">
+            <rect x="6" y="4" width="4" height="16"></rect>
+            <rect x="14" y="4" width="4" height="16"></rect>
+          </g>
+        </svg>
+      </button>
+      <div class="slider-track-wrap">
+        <input type="range" id="posSlider" min="0" max="1" step="0.001" value="0" data-tooltip="Drag to move the point along the path. It snaps near the green ticks, where ∇f and ∇g are parallel." />
+        <div class="tick-layer" id="tickLayer"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="readout-panel">
+    <div class="readout-card" data-tooltip="The point's coordinates in the domain.">
+      <div class="readout-label">x</div><div class="readout-value" id="valX">—</div>
+    </div>
+    <div class="readout-card" data-tooltip="The point's coordinates in the domain.">
+      <div class="readout-label">y</div><div class="readout-value" id="valY">—</div>
+    </div>
+    <div class="readout-card" data-tooltip="The surface height f(x,y) at this point.">
+      <div class="readout-label">z = f(x,y)</div><div class="readout-value accent" id="valZ">—</div>
+    </div>
+    <div class="readout-card" id="angleCard" data-tooltip="Angle between ∇f and ∇g, folded to 0–90°. 0° means they're parallel — a candidate max or min of f along the path.">
+      <div class="readout-label">∠(∇f, ∇g)</div><div class="readout-value" id="valAngle">—</div>
+    </div>
+    <div class="readout-card" data-tooltip="Magnitude (length) of the surface gradient ∇f at this point.">
+      <div class="readout-label">|∇f|</div><div class="readout-value" id="valGradF">—</div>
+    </div>
+    <div class="readout-card" data-tooltip="Magnitude of the constraint gradient ∇g. Its scale is arbitrary (depends on how the path's equation is written) — the ratio |∇f|/|∇g| at a tangency point is λ.">
+      <div class="readout-label">|∇g|</div><div class="readout-value" id="valGradG">—</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:#3B4FC2;"></span>∇f (gradient of surface)</span>
+    <span><span class="swatch" style="background:#8A8AA3;"></span>∇g (gradient of constraint)</span>
+    <span><span class="swatch" style="background:#C77B94;"></span>not tangent</span>
+    <span><span class="swatch" style="background:#4E9E7C;"></span>tangent (within tolerance)</span>
+  </div>
+
+  <p class="summary-text" id="summaryText"></p>
+
+  <p class="note">Drag the 3D surface to rotate, scroll to zoom (or use the +/− buttons). Switch paths above — the slider resets to the start of the new path and re-marks the tangency ticks. The mesh button toggles the lifted level-curve overlay.</p>
+</div>
+
+<script>
+// =========================================================================
+// Shared surface + gradient definitions
+// =========================================================================
+const DOMAIN = 6; // world units
+
+const BUMP1 = { A: 3.0, u: -1.1, v: -1.0, sigma: 0.9 };
+const BUMP2 = { A: 1.8, u: 1.3, v: 1.1, sigma: 0.8 };
+
+function heightGaussianBump(u, v) {
+  const g1 = BUMP1.A * Math.exp(-(((u - BUMP1.u) ** 2 + (v - BUMP1.v) ** 2)) / (2 * BUMP1.sigma * BUMP1.sigma));
+  const g2 = BUMP2.A * Math.exp(-(((u - BUMP2.u) ** 2 + (v - BUMP2.v) ** 2)) / (2 * BUMP2.sigma * BUMP2.sigma));
+  return g1 + g2;
+}
+
+// analytic gradient of f
+function gradF(u, v) {
+  const g1 = BUMP1.A * Math.exp(-(((u - BUMP1.u) ** 2 + (v - BUMP1.v) ** 2)) / (2 * BUMP1.sigma * BUMP1.sigma));
+  const g2 = BUMP2.A * Math.exp(-(((u - BUMP2.u) ** 2 + (v - BUMP2.v) ** 2)) / (2 * BUMP2.sigma * BUMP2.sigma));
+  const du = g1 * (-(u - BUMP1.u) / (BUMP1.sigma * BUMP1.sigma)) + g2 * (-(u - BUMP2.u) / (BUMP2.sigma * BUMP2.sigma));
+  const dv = g1 * (-(v - BUMP1.v) / (BUMP1.sigma * BUMP1.sigma)) + g2 * (-(v - BUMP2.v) / (BUMP2.sigma * BUMP2.sigma));
+  return { du, dv };
+}
+
+// -------------------------------------------------------------------------
+// Constraint path presets. Each defines:
+//   closed        — whether the path loops (circle) or is a bounded curve
+//   point(t)      — t in [0,1] -> {u, v}
+//   gradG(u,v)    — analytic gradient of the implicit g(u,v)=0 defining the path
+// -------------------------------------------------------------------------
+const PATHS = {
+  circle: {
+    closed: true,
+    radius: 1.6,
+    point(t) {
+      const a = t * Math.PI * 2;
+      return { u: this.radius * Math.cos(a), v: this.radius * Math.sin(a) };
+    },
+    gradG(u, v) { return { du: 2 * u, dv: 2 * v }; },
+  },
+  line: {
+    closed: false,
+    P0: { u: -2.7, v: -2.4 },
+    P1: { u: 2.7, v: 2.3 },
+    point(t) {
+      return {
+        u: this.P0.u + (this.P1.u - this.P0.u) * t,
+        v: this.P0.v + (this.P1.v - this.P0.v) * t,
+      };
+    },
+    gradG(u, v) {
+      const dx = this.P1.u - this.P0.u, dy = this.P1.v - this.P0.v;
+      return { du: dy, dv: -dx };
+    },
+  },
+  parabola: {
+    closed: false,
+    a: 0.32, b: -1.5, uMin: -2.8, uMax: 2.8,
+    point(t) {
+      const u = this.uMin + (this.uMax - this.uMin) * t;
+      return { u, v: this.a * u * u + this.b };
+    },
+    gradG(u, v) { return { du: -2 * this.a * u, dv: 1 }; },
+  },
+  wavy: {
+    closed: false,
+    amp: 1.3, k: 1.15, uMin: -2.8, uMax: 2.8,
+    point(t) {
+      const u = this.uMin + (this.uMax - this.uMin) * t;
+      return { u, v: this.amp * Math.sin(this.k * u) };
+    },
+    gradG(u, v) { return { du: -this.amp * this.k * Math.cos(this.k * u), dv: 1 }; },
+  },
+};
+
+let currentPathId = 'circle';
+function currentPath() { return PATHS[currentPathId]; }
+function pathPoint(t) { return currentPath().point(t); }
+
+const TOLERANCE_DEG = 6; // tentative, flagged for hands-on tuning in spec
+
+function normalize(du, dv) {
+  const len = Math.sqrt(du * du + dv * dv) || 1;
+  return { du: du / len, dv: dv / len, len: Math.sqrt(du * du + dv * dv) };
+}
+
+function tangencyInfo(t) {
+  const { u, v } = pathPoint(t);
+  const gf = gradF(u, v);
+  const gg = currentPath().gradG(u, v);
+  const magF = Math.sqrt(gf.du * gf.du + gf.dv * gf.dv);
+  const magG = Math.sqrt(gg.du * gg.du + gg.dv * gg.dv);
+  let angleDeg = 90;
+  if (magF > 1e-6 && magG > 1e-6) {
+    const dot = (gf.du * gg.du + gf.dv * gg.dv) / (magF * magG);
+    const clamped = Math.max(-1, Math.min(1, dot));
+    const raw = Math.acos(clamped) * (180 / Math.PI);
+    angleDeg = Math.min(raw, 180 - raw); // 0 = parallel or anti-parallel
+  }
+  const isTangent = angleDeg <= TOLERANCE_DEG;
+  return { u, v, z: heightGaussianBump(u, v), gf, gg, magF, magG, angleDeg, isTangent };
+}
+
+// -------------------------------------------------------------------------
+// Critical points: local extrema of h(t) = f(pathPoint(t)) along each path.
+// By the Lagrange condition, extrema of f restricted to the constraint occur
+// exactly where grad f is parallel to grad g — so these are also the
+// tangency points. Found by dense sampling + parabolic refinement, cached
+// per path since the underlying surface/paths never change at runtime.
+// -------------------------------------------------------------------------
+const criticalPointsCache = {};
+function computeCriticalPoints(pathId) {
+  if (criticalPointsCache[pathId]) return criticalPointsCache[pathId];
+  const path = PATHS[pathId];
+  const N = 2000;
+  const hVals = new Array(N + 1);
+  for (let i = 0; i <= N; i++) {
+    const { u, v } = path.point(i / N);
+    hVals[i] = heightGaussianBump(u, v);
+  }
+  const results = [];
+  const start = path.closed ? 0 : 1;
+  const end = path.closed ? N : N - 1;
+  for (let i = start; i <= end; i++) {
+    const prev = hVals[(i - 1 + N + 1) % (N + 1)];
+    const cur = hVals[i];
+    const next = hVals[(i + 1) % (N + 1)];
+    const isMax = cur > prev && cur > next;
+    const isMin = cur < prev && cur < next;
+    if (isMax || isMin) {
+      // parabolic (3-point) refinement for sub-sample precision
+      const denom = (prev - 2 * cur + next);
+      const offset = denom !== 0 ? 0.5 * (prev - next) / denom : 0;
+      const tRefined = (i + Math.max(-0.5, Math.min(0.5, offset))) / N;
+      results.push({ t: Math.max(0, Math.min(1, tRefined)), kind: isMax ? 'max' : 'min' });
+    }
+  }
+  criticalPointsCache[pathId] = results;
+  return results;
+}
+
+const SNAP_RADIUS = 0.018; // in t-units; tentative, flagged for hands-on tuning
+function snapT(t, pathId) {
+  const crits = computeCriticalPoints(pathId);
+  let best = null, bestDist = SNAP_RADIUS;
+  crits.forEach(c => {
+    const d = Math.abs(c.t - t);
+    if (d < bestDist) { bestDist = d; best = c.t; }
+  });
+  return best !== null ? best : t;
+}
+
+// range for surface color ramp
+let minH = Infinity, maxH = -Infinity;
+(function computeRange() {
+  const n = 80;
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      const u = -DOMAIN / 2 + (DOMAIN * i) / n;
+      const v = -DOMAIN / 2 + (DOMAIN * j) / n;
+      const h = heightGaussianBump(u, v);
+      if (h < minH) minH = h;
+      if (h > maxH) maxH = h;
+    }
+  }
+})();
+
+// Fixed: previous ramp went almost to white (#DCDCF0) at the low end, which
+// washed out against the #F5F5FA page background. Low end is now a mid-tone
+// lavender-blue so the surface reads clearly at every height.
+function heightColor(h) {
+  const low = { r: 0x8E, g: 0x96, b: 0xD6 };
+  const high = { r: 0x2A, g: 0x39, b: 0x99 };
+  const t = maxH > minH ? (h - minH) / (maxH - minH) : 0.5;
+  return {
+    r: Math.round(low.r + (high.r - low.r) * t),
+    g: Math.round(low.g + (high.g - low.g) * t),
+    b: Math.round(low.b + (high.b - low.b) * t),
+  };
+}
+
+// -------------------------------------------------------------------------
+// Level-curve (isoline) computation via coarse marching squares.
+// Shared by the 2D contour lines and the lifted 3D mesh-netting overlay,
+// so toggling "mesh" always shows the same curves in both panels.
+// -------------------------------------------------------------------------
+const GRID = 70;
+const LEVELS = 7;
+const contourSegments = [];
+(function computeContours() {
+  const grid = [];
+  for (let i = 0; i <= GRID; i++) {
+    grid.push([]);
+    for (let j = 0; j <= GRID; j++) {
+      const u = -DOMAIN / 2 + (DOMAIN * i) / GRID;
+      const v = -DOMAIN / 2 + (DOMAIN * j) / GRID;
+      grid[i].push(heightGaussianBump(u, v));
+    }
+  }
+  function lerp(a, b, tt) { return a + (b - a) * tt; }
+  for (let lvl = 1; lvl <= LEVELS; lvl++) {
+    const thresh = minH + (maxH - minH) * (lvl / (LEVELS + 1));
+    for (let i = 0; i < GRID; i++) {
+      for (let j = 0; j < GRID; j++) {
+        const u0 = -DOMAIN / 2 + (DOMAIN * i) / GRID, u1 = -DOMAIN / 2 + (DOMAIN * (i + 1)) / GRID;
+        const v0 = -DOMAIN / 2 + (DOMAIN * j) / GRID, v1 = -DOMAIN / 2 + (DOMAIN * (j + 1)) / GRID;
+        const hA = grid[i][j], hB = grid[i + 1][j], hC = grid[i + 1][j + 1], hD = grid[i][j + 1];
+        const corners = [
+          { h: hA, u: u0, v: v0 }, { h: hB, u: u1, v: v0 },
+          { h: hC, u: u1, v: v1 }, { h: hD, u: u0, v: v1 },
+        ];
+        const pts = [];
+        for (let e = 0; e < 4; e++) {
+          const c0 = corners[e], c1 = corners[(e + 1) % 4];
+          const above0 = c0.h >= thresh, above1 = c1.h >= thresh;
+          if (above0 !== above1) {
+            const tt = (thresh - c0.h) / (c1.h - c0.h);
+            pts.push({ u: lerp(c0.u, c1.u, tt), v: lerp(c0.v, c1.v, tt) });
+          }
+        }
+        if (pts.length === 2) contourSegments.push([pts[0], pts[1]]);
+      }
+    }
+  }
+})();
+
+let meshVisible = false; // shared toggle state, read by both panels
+
+// =========================================================================
+// 3D panel
+// =========================================================================
+const threeApi = {};
+(function init3D() {
+  const canvas = document.getElementById('canvas3d');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#F5F5FA');
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+  dir.position.set(4, 6, 3);
+  scene.add(dir);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 0.35);
+  dir2.position.set(-4, 3, -3);
+  scene.add(dir2);
+
+  // surface
+  const geometry = new THREE.PlaneGeometry(DOMAIN, DOMAIN, 90, 90);
+  geometry.rotateX(-Math.PI / 2);
+  const pos = geometry.attributes.position;
+  const colors = [];
+  for (let i = 0; i < pos.count; i++) {
+    const u = pos.getX(i);
+    const v = pos.getZ(i);
+    const h = heightGaussianBump(u, v);
+    pos.setY(i, h);
+    const c = heightColor(h);
+    colors.push(c.r / 255, c.g / 255, c.b / 255);
+  }
+  pos.needsUpdate = true;
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  const material = new THREE.MeshStandardMaterial({
+    vertexColors: true, metalness: 0.05, roughness: 0.62, side: THREE.DoubleSide,
+  });
+  scene.add(new THREE.Mesh(geometry, material));
+
+  // isoline mesh-netting overlay: lifted contour segments, toggleable
+  const isolineGroup = new THREE.Group();
+  (function buildIsolines() {
+    const positions = [];
+    contourSegments.forEach(([p0, p1]) => {
+      positions.push(p0.u, heightGaussianBump(p0.u, p0.v) + 0.035, p0.v);
+      positions.push(p1.u, heightGaussianBump(p1.u, p1.v) + 0.035, p1.v);
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    const mat = new THREE.LineBasicMaterial({ color: 0xFFFFFF, transparent: true, opacity: 0.85 });
+    isolineGroup.add(new THREE.LineSegments(geo, mat));
+  })();
+  isolineGroup.visible = meshVisible;
+  scene.add(isolineGroup);
+  threeApi.setMeshVisible = (v) => { isolineGroup.visible = v; };
+
+  // constraint path ribbon — rebuilt whenever the preset path changes
+  let ribbonMesh = null;
+  function buildRibbon() {
+    if (ribbonMesh) { scene.remove(ribbonMesh); ribbonMesh.geometry.dispose(); }
+    const path = currentPath();
+    const N = 240;
+    const width = 0.09;
+    const eps = 0.001;
+    const left = [], right = [];
+    const tMax = path.closed ? 1 : 1 - eps; // avoid sampling past t=1 on open curves
+    for (let i = 0; i <= N; i++) {
+      const t = Math.min((i / N), tMax);
+      const { u, v } = path.point(t);
+      const tNext = path.closed ? t + eps : Math.min(t + eps, 1);
+      const { u: u2, v: v2 } = path.point(tNext);
+      let tx = u2 - u, tv = v2 - v;
+      const len = Math.sqrt(tx * tx + tv * tv) || 1;
+      tx /= len; tv /= len;
+      const nx = -tv * (width / 2), nv = tx * (width / 2);
+      const uL = u + nx, vL = v + nv;
+      const uR = u - nx, vR = v - nv;
+      left.push(new THREE.Vector3(uL, heightGaussianBump(uL, vL) + 0.05, vL));
+      right.push(new THREE.Vector3(uR, heightGaussianBump(uR, vR) + 0.05, vR));
+    }
+    const positions = [];
+    const indices = [];
+    for (let i = 0; i <= N; i++) {
+      positions.push(left[i].x, left[i].y, left[i].z);
+      positions.push(right[i].x, right[i].y, right[i].z);
+    }
+    for (let i = 0; i < N; i++) {
+      const a = i * 2, b = i * 2 + 1, c = i * 2 + 2, d = i * 2 + 3;
+      indices.push(a, b, c, b, d, c);
+    }
+    const ribbonGeo = new THREE.BufferGeometry();
+    ribbonGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    ribbonGeo.setIndex(indices);
+    ribbonGeo.computeVertexNormals();
+    const ribbonMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide });
+    ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
+    scene.add(ribbonMesh);
+  }
+  buildRibbon();
+  threeApi.rebuildRibbon = buildRibbon;
+
+  // ---- marker & gradient vectors: flat 2D projections lifted onto the surface ----
+  // Per Kyle's decision, the true-3D vector/marker style is removed — flat
+  // is now the only style. The marker additionally billboards to face the
+  // camera each frame (see animate() below), the same technique used for
+  // the arrowheads, so the ring+dot always reads as a true circle instead
+  // of foreshortening into an ellipse at oblique viewing angles.
+  const markerGroupFlat = new THREE.Group();
+  const ringGeo = new THREE.CircleGeometry(0.16, 28);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, side: THREE.DoubleSide, depthTest: false, transparent: true });
+  markerGroupFlat.add(new THREE.Mesh(ringGeo, ringMat));
+  const dotGeo = new THREE.CircleGeometry(0.095, 28);
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0x3A3A3C, side: THREE.DoubleSide, depthTest: false, transparent: true });
+  const dotMesh = new THREE.Mesh(dotGeo, dotMat);
+  dotMesh.position.z = 0.002; // nudge toward camera, now that both face the camera instead of lying flat
+  markerGroupFlat.add(dotMesh);
+  scene.add(markerGroupFlat);
+
+  // ---- gradient vectors: billboarded, fixed-screen-size sprite arrows ----
+  // The previous flat quads lay parallel to the local ground plane, which
+  // is exactly why they could still go edge-on and vanish from some camera
+  // angles — that's not actually billboarding, just a flat shape. A sprite
+  // always faces the camera automatically (that's inherent to THREE.Sprite,
+  // not something we compute), so drawing the whole arrow — shaft and head
+  // together — as one sprite icon guarantees it's always fully readable,
+  // matching what CalcPlot3D appears to do. sizeAttenuation:false makes the
+  // sprite's on-screen size constant in pixels regardless of camera
+  // distance, which also directly answers "fixed length so they can always
+  // be seen" — true magnitude stays available only in the readout panel,
+  // exactly as before; this only affects how the vector is drawn.
+  function makeArrowIconTexture() {
+    const w = 64, h = 200;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.fillStyle = '#ffffff';
+    const shaftW = 12, headW = 44, headH = 62;
+    cx.fillRect(w / 2 - shaftW / 2, headH, shaftW, h - headH);
+    cx.beginPath();
+    cx.moveTo(w / 2, 2);
+    cx.lineTo(w / 2 - headW / 2, headH);
+    cx.lineTo(w / 2 + headW / 2, headH);
+    cx.closePath();
+    cx.fill();
+    const tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+  const arrowIconTexture = makeArrowIconTexture();
+  const ROTATION_OFFSET = Math.PI / 2; // aligns the texture's "up" tip with our on-screen angle convention
+
+  // gf gets a visibly larger scale than gg (and is added to the scene after
+  // it) so that when the two vectors are exactly parallel — the moment that
+  // matters most — gf's color reliably wins the overlap, instead of a
+  // lateral offset that would detach the arrow from its anchor point.
+  function makeArrowSprite(color, sizeScale) {
+    const mat = new THREE.SpriteMaterial({
+      map: arrowIconTexture, color, transparent: true,
+      sizeAttenuation: false, depthTest: false,
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.center.set(0.5, 0); // pivot at the tail, so the icon extends outward from the anchor point
+    const baseSize = 0.11; // tentative fixed on-screen scale, needs Kyle's eye
+    sprite.scale.set(baseSize * (64 / 200) * sizeScale, baseSize * sizeScale, 1);
+    return { sprite, mat };
+  }
+  const ggArrow = makeArrowSprite(0x8A8AA3, 0.85);
+  const gfArrow = makeArrowSprite(0x3B4FC2, 1.25);
+  scene.add(ggArrow.sprite, gfArrow.sprite); // gf added last so it wins ties when coincident
+
+  // Anchor position doesn't depend on the camera, so it's set once per
+  // slider move (below). In-plane rotation depends on the live camera
+  // angle though, so it's recomputed every frame in the render loop.
+  const ggAnchor = new THREE.Vector3(), gfAnchor = new THREE.Vector3();
+  const ggDir = new THREE.Vector3(1, 0, 0), gfDir = new THREE.Vector3(1, 0, 0);
+  function updateArrowRotation(arrow, anchor, dir, camera, w, h) {
+    if (w <= 0 || h <= 0) return;
+    const tipWorld = anchor.clone().addScaledVector(dir, 0.5);
+    const p1 = tipWorld.project(camera);
+    const p0 = anchor.clone().project(camera);
+    const x1 = (p1.x + 1) / 2 * w, y1 = (1 - p1.y) / 2 * h;
+    const x0 = (p0.x + 1) / 2 * w, y0 = (1 - p0.y) / 2 * h;
+    arrow.mat.rotation = Math.atan2(y1 - y0, x1 - x0) + ROTATION_OFFSET;
+  }
+
+  function setState3D(t) {
+    const info = tangencyInfo(t);
+    const tangentColor = info.isTangent ? 0x4E9E7C : 0x3B4FC2;
+    const anchorY = info.z + 0.1;
+
+    markerGroupFlat.position.set(info.u, info.z + 0.09, info.v);
+
+    ggAnchor.set(info.u, anchorY, info.v);
+    gfAnchor.set(info.u, anchorY, info.v);
+    const ngg = normalize(info.gg.du, info.gg.dv);
+    const ngf = normalize(info.gf.du, info.gf.dv);
+    ggDir.set(ngg.du, 0, ngg.dv);
+    gfDir.set(ngf.du, 0, ngf.dv);
+    ggArrow.sprite.position.copy(ggAnchor);
+    gfArrow.sprite.position.copy(gfAnchor);
+    ggArrow.mat.color.set(0x8A8AA3);
+    gfArrow.mat.color.set(tangentColor);
+  }
+  setState3D(0);
+  threeApi.setState = setState3D;
+
+  // ---- zoom: mouse wheel + on-screen +/- buttons ----
+  const state = { radius: DOMAIN * 1.05, theta: Math.PI * 0.28, phi: Math.PI * 0.32, dragging: false, lastX: 0, lastY: 0 };
+  const ZOOM_MIN = DOMAIN * 0.35;
+  const ZOOM_MAX = DOMAIN * 2.4;
+  function zoomBy(factor) {
+    state.radius = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, state.radius * factor));
+  }
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomBy(e.deltaY > 0 ? 1.08 : 1 / 1.08);
+  }, { passive: false });
+  threeApi.zoomIn = () => zoomBy(1 / 1.15);
+  threeApi.zoomOut = () => zoomBy(1.15);
+  function updateCamera() {
+    const r = state.radius;
+    camera.position.x = r * Math.sin(state.phi) * Math.sin(state.theta);
+    camera.position.z = r * Math.sin(state.phi) * Math.cos(state.theta);
+    camera.position.y = r * Math.cos(state.phi);
+    camera.lookAt(0, 0.6, 0);
+  }
+  canvas.addEventListener('pointerdown', (e) => { state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerup', () => { state.dragging = false; });
+  canvas.addEventListener('pointerleave', () => { state.dragging = false; });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!state.dragging) return;
+    const dx = e.clientX - state.lastX, dy = e.clientY - state.lastY;
+    state.lastX = e.clientX; state.lastY = e.clientY;
+    state.theta -= dx * 0.008;
+    state.phi = Math.max(0.15, Math.min(Math.PI - 0.15, state.phi - dy * 0.008));
+  });
+
+  let lastW = 0, lastH = 0;
+  function resizeIfNeeded() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w > 0 && h > 0 && (w !== lastW || h !== lastH)) {
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      lastW = w; lastH = h;
+    }
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    resizeIfNeeded();
+    updateCamera();
+    markerGroupFlat.quaternion.copy(camera.quaternion); // billboard: always face the camera, so it reads as a true circle
+    updateArrowRotation(ggArrow, ggAnchor, ggDir, camera, lastW, lastH);
+    updateArrowRotation(gfArrow, gfAnchor, gfDir, camera, lastW, lastH);
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+
+// =========================================================================
+// 2D panel
+// =========================================================================
+const twoDApi = {};
+(function init2D() {
+  const canvas = document.getElementById('canvas2d');
+  const ctx = canvas.getContext('2d');
+
+  const RES = 220;
+  const off = document.createElement('canvas');
+  off.width = RES; off.height = RES;
+  const octx = off.getContext('2d');
+  const img = octx.createImageData(RES, RES);
+  for (let py = 0; py < RES; py++) {
+    for (let px = 0; px < RES; px++) {
+      const u = -DOMAIN / 2 + (DOMAIN * px) / RES;
+      const v = DOMAIN / 2 - (DOMAIN * py) / RES;
+      const h = heightGaussianBump(u, v);
+      const c = heightColor(h);
+      const idx = (py * RES + px) * 4;
+      img.data[idx] = c.r; img.data[idx + 1] = c.g; img.data[idx + 2] = c.b; img.data[idx + 3] = 255;
+    }
+  }
+  octx.putImageData(img, 0, 0);
+
+  function worldToScreen(u, v, w, h) {
+    const x = ((u + DOMAIN / 2) / DOMAIN) * w;
+    const y = ((DOMAIN / 2 - v) / DOMAIN) * h;
+    return [x, y];
+  }
+
+  let markerT = 0;
+  function setState2D(t) { markerT = t; }
+  twoDApi.setState = setState2D;
+
+  function drawArrow2D(w, h, anchorU, anchorV, du, dv, color, lineWidth) {
+    const n = normalize(du, dv);
+    const scaleWorld = 0.95; // fixed world-space arrow length for the 2D panel (no zoom here, so this is already screen-constant)
+    const tipU = anchorU + n.du * scaleWorld;
+    const tipV = anchorV + n.dv * scaleWorld;
+    const [x0, y0] = worldToScreen(anchorU, anchorV, w, h);
+    const [x1, y1] = worldToScreen(tipU, tipV, w, h);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    // arrowhead
+    const ang = Math.atan2(y1 - y0, x1 - x0);
+    const headLen = 8 + lineWidth * 1.4;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - headLen * Math.cos(ang - Math.PI / 7), y1 - headLen * Math.sin(ang - Math.PI / 7));
+    ctx.lineTo(x1 - headLen * Math.cos(ang + Math.PI / 7), y1 - headLen * Math.sin(ang + Math.PI / 7));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  let lastW = 0, lastH = 0;
+  function draw() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w <= 0 || h <= 0) return;
+    if (w !== lastW || h !== lastH) {
+      canvas.width = w * (window.devicePixelRatio || 1);
+      canvas.height = h * (window.devicePixelRatio || 1);
+      lastW = w; lastH = h;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(off, 0, 0, w, h);
+
+    if (meshVisible) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx.lineWidth = 1;
+      contourSegments.forEach(([p0, p1]) => {
+        const [x0, y0] = worldToScreen(p0.u, p0.v, w, h);
+        const [x1, y1] = worldToScreen(p1.u, p1.v, w, h);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      });
+    }
+
+    // constraint path
+    const path = currentPath();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    const N = 128;
+    const tMax = path.closed ? 1 : 1;
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * tMax;
+      const { u, v } = path.point(t);
+      const [x, y] = worldToScreen(u, v, w, h);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // gradient vectors at current marker. Canvas 2D draws in strict paint
+    // order (unlike the 3D panel's GPU depth test), so drawing gg first and
+    // gf second already guarantees gf's color is the one on top when the
+    // two vectors coincide — no lateral offset needed here, and adding one
+    // would only detach the arrows from the point they're anchored at.
+    const info = tangencyInfo(markerT);
+    drawArrow2D(w, h, info.u, info.v, info.gg.du, info.gg.dv, '#8A8AA3', 2.4);
+    drawArrow2D(w, h, info.u, info.v, info.gf.du, info.gf.dv, info.isTangent ? '#4E9E7C' : '#3B4FC2', 3.4);
+
+    // marker
+    const [mx, my] = worldToScreen(info.u, info.v, w, h);
+    ctx.beginPath();
+    ctx.arc(mx, my, 8, 0, Math.PI * 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(mx, my, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#3A3A3C';
+    ctx.fill();
+  }
+
+  function loop() { requestAnimationFrame(loop); draw(); }
+  loop();
+})();
+
+// =========================================================================
+// Readout panel
+// =========================================================================
+function updateReadout(info) {
+  document.getElementById('valX').textContent = info.u.toFixed(2);
+  document.getElementById('valY').textContent = info.v.toFixed(2);
+  document.getElementById('valZ').textContent = info.z.toFixed(2);
+  document.getElementById('valAngle').textContent = info.angleDeg.toFixed(1) + '°';
+  document.getElementById('valGradF').textContent = info.magF.toFixed(2);
+  document.getElementById('valGradG').textContent = info.magG.toFixed(2);
+  document.getElementById('angleCard').classList.toggle('tangent', info.isTangent);
+}
+
+function updateSummary(info) {
+  const el = document.getElementById('summaryText');
+  if (!el) return;
+  if (info.isTangent) {
+    el.textContent = `Tangent! \u2207f and \u2207g are parallel here (${info.angleDeg.toFixed(1)}\u00b0 apart) \u2014 a candidate max or min of f along this path.`;
+  } else {
+    el.textContent = `Not tangent \u2014 \u2207f and \u2207g are ${info.angleDeg.toFixed(1)}\u00b0 apart. Drag near a green tick (or hit Play) to find where they line up.`;
+  }
+  el.classList.toggle('tangent', info.isTangent);
+}
+
+// =========================================================================
+// View toggle (3D / Both / 2D)
+// =========================================================================
+(function initToggle() {
+  const buttons = document.querySelectorAll('#toggle button');
+  const highlight = document.getElementById('toggleHighlight');
+  const panel3d = document.getElementById('panel3d');
+  const panel2d = document.getElementById('panel2d');
+  const positions = { '3d': 0, 'both': 1, '2d': 2 };
+
+  function setMode(mode) {
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    highlight.style.transform = `translateX(${positions[mode] * 100}%)`;
+    if (mode === '3d') {
+      panel3d.style.width = '100%'; panel3d.style.opacity = '1'; panel3d.style.flexGrow = '1';
+      panel2d.style.width = '0%'; panel2d.style.opacity = '0'; panel2d.style.flexGrow = '0'; panel2d.style.padding = '14px 0';
+    } else if (mode === '2d') {
+      panel2d.style.width = '100%'; panel2d.style.opacity = '1'; panel2d.style.flexGrow = '1';
+      panel3d.style.width = '0%'; panel3d.style.opacity = '0'; panel3d.style.flexGrow = '0'; panel3d.style.padding = '14px 0';
+    } else {
+      panel3d.style.width = '50%'; panel3d.style.opacity = '1'; panel3d.style.flexGrow = '1'; panel3d.style.padding = '14px';
+      panel2d.style.width = '50%'; panel2d.style.opacity = '1'; panel2d.style.flexGrow = '1'; panel2d.style.padding = '14px';
+    }
+  }
+  buttons.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  setMode('3d');
+})();
+
+// =========================================================================
+// Mesh (isoline overlay) toggle
+// =========================================================================
+(function initMeshToggle() {
+  const btn = document.getElementById('meshBtn');
+  btn.addEventListener('click', () => {
+    meshVisible = !meshVisible;
+    btn.classList.toggle('active', meshVisible);
+    if (threeApi.setMeshVisible) threeApi.setMeshVisible(meshVisible);
+  });
+})();
+
+// =========================================================================
+// Zoom buttons (wheel-zoom itself is wired inside init3D, on the canvas)
+// =========================================================================
+(function initZoomButtons() {
+  document.getElementById('zoomInBtn').addEventListener('click', () => {
+    if (threeApi.zoomIn) threeApi.zoomIn();
+  });
+  document.getElementById('zoomOutBtn').addEventListener('click', () => {
+    if (threeApi.zoomOut) threeApi.zoomOut();
+  });
+})();
+
+// =========================================================================
+// Position slider — drives 3D marker/arrows, 2D marker/arrows, and readout
+// =========================================================================
+function applyState(t) {
+  const info = tangencyInfo(t);
+  if (threeApi.setState) threeApi.setState(t);
+  if (twoDApi.setState) twoDApi.setState(t);
+  updateReadout(info);
+  updateSummary(info);
+}
+
+function renderTicks() {
+  const tickLayer = document.getElementById('tickLayer');
+  if (!tickLayer) return;
+  tickLayer.innerHTML = '';
+  computeCriticalPoints(currentPathId).forEach(c => {
+    const tick = document.createElement('div');
+    tick.className = 'tick-mark';
+    tick.style.left = (c.t * 100) + '%';
+    tickLayer.appendChild(tick);
+  });
+}
+
+// -------------------------------------------------------------------------
+// Play/loop: sweeps the slider automatically for hands-free lecture use.
+// Closed paths (circle) loop continuously; open paths ping-pong back and
+// forth. Snapping is skipped while playing so the sweep stays smooth —
+// manual dragging (which stops play) is what triggers snap-to-tangency.
+// Sweep speed is a tentative default (full pass in ~7s), flagged for tuning.
+// -------------------------------------------------------------------------
+const PLAY_SPEED = 1 / 7; // fraction of [0,1] per second
+let isPlaying = false;
+let playDirection = 1;
+let playRAF = null;
+let lastPlayTime = null;
+
+function setPlayIcon(playing) {
+  document.getElementById('playTriangle').style.display = playing ? 'none' : '';
+  document.getElementById('pauseBars').style.display = playing ? '' : 'none';
+}
+
+function stopPlay() {
+  if (!isPlaying) return;
+  isPlaying = false;
+  if (playRAF) cancelAnimationFrame(playRAF);
+  document.getElementById('playBtn').classList.remove('active');
+  setPlayIcon(false);
+}
+
+function startPlay() {
+  isPlaying = true;
+  lastPlayTime = null;
+  document.getElementById('playBtn').classList.add('active');
+  setPlayIcon(true);
+  playRAF = requestAnimationFrame(playTick);
+}
+
+function playTick(now) {
+  if (!isPlaying) return;
+  if (lastPlayTime === null) lastPlayTime = now;
+  const dt = (now - lastPlayTime) / 1000;
+  lastPlayTime = now;
+  const slider = document.getElementById('posSlider');
+  let t = parseFloat(slider.value);
+  const path = currentPath();
+  if (path.closed) {
+    t = (t + PLAY_SPEED * dt) % 1;
+  } else {
+    t += PLAY_SPEED * dt * playDirection;
+    if (t >= 1) { t = 1; playDirection = -1; }
+    if (t <= 0) { t = 0; playDirection = 1; }
+  }
+  slider.value = t;
+  applyState(t);
+  playRAF = requestAnimationFrame(playTick);
+}
+
+// =========================================================================
+// Path preset tabs
+// =========================================================================
+(function initPathTabs() {
+  const buttons = document.querySelectorAll('#pathTabs button');
+  const slider = document.getElementById('posSlider');
+  buttons.forEach(b => {
+    b.addEventListener('click', () => {
+      if (b.dataset.path === currentPathId) return;
+      stopPlay();
+      playDirection = 1;
+      buttons.forEach(x => x.classList.toggle('active', x === b));
+      currentPathId = b.dataset.path;
+      if (threeApi.rebuildRibbon) threeApi.rebuildRibbon();
+      slider.value = 0;
+      renderTicks();
+      applyState(0);
+    });
+  });
+})();
+
+(function initSliderAndPlay() {
+  const slider = document.getElementById('posSlider');
+  const playBtn = document.getElementById('playBtn');
+
+  slider.addEventListener('pointerdown', () => stopPlay());
+  slider.addEventListener('input', () => {
+    let t = parseFloat(slider.value);
+    t = snapT(t, currentPathId);
+    slider.value = t;
+    applyState(t);
+  });
+
+  playBtn.addEventListener('click', () => {
+    if (isPlaying) stopPlay(); else startPlay();
+  });
+
+  renderTicks();
+  // wait a tick so the 3D/2D IIFEs above have populated threeApi/twoDApi
+  requestAnimationFrame(() => applyState(0));
+})();
+
+// =========================================================================
+// Hover tooltips — light narration for controls, matching the partial
+// derivatives applet's tooltip-on-hover convention.
+// =========================================================================
+(function initTooltips() {
+  const bubble = document.createElement('div');
+  bubble.className = 'tooltip-bubble';
+  document.body.appendChild(bubble);
+  document.querySelectorAll('[data-tooltip]').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      bubble.textContent = el.getAttribute('data-tooltip');
+      const rect = el.getBoundingClientRect();
+      const bw = 220; // matches CSS max-width
+      let left = rect.left + rect.width / 2 - bw / 2;
+      left = Math.max(8, Math.min(left, window.innerWidth - bw - 8));
+      bubble.style.left = left + 'px';
+      bubble.style.top = Math.max(8, rect.top - 44) + 'px';
+      requestAnimationFrame(() => bubble.classList.add('visible'));
+    });
+    el.addEventListener('mouseleave', () => bubble.classList.remove('visible'));
+  });
+})();
+</script>
+</body>
+</html>

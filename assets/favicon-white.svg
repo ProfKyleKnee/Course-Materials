@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- White twin of favicon.svg (same ring + K2 monogram geometry), for use on dark/colored
+       grounds where the indigo #3B4FC2 version wouldn't have enough contrast. Ring stroke is
+       thicker than favicon.svg's (16 vs 12) because this variant is used at very small display
+       sizes (e.g. the applet topline's ~30px badge) where a thin stroke anti-aliases into an
+       almost-invisible hairline; the extra weight keeps it legible at a glance. -->
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#FFFFFF" stroke-width="16"/>
+  <text x="100" y="134" font-family="Georgia, 'Times New Roman', serif" font-size="96" font-weight="700" fill="#FFFFFF" text-anchor="middle">K<tspan font-size="54" dy="-39">2</tspan></text>
+</svg>
