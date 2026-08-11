@@ -78,6 +78,19 @@
   .title-row .page-title { margin: 0; }
   .title-icon-badge { width: 44px; height: 44px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
   .title-icon-badge svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
+
+  /* ---------- courses with no real materials yet: a diagonal caution-tape stripe laid across
+     the course badge (sized in %, so it scales to whichever badge it's placed in — the 44px
+     title-icon-badge or the 66px cd-symbol-badge) plus an amber "In Development" pill next to
+     the title. Both driven by coursesInDevelopment in js/app.js. ---------- */
+  .badge-dev-wrap { position: relative; overflow: hidden; }
+  .badge-dev-wrap .caution-tape {
+    position: absolute; left: 50%; top: 50%; width: 150%; height: 24%; min-height: 8px;
+    transform: translate(-50%, -50%) rotate(-11deg);
+    background: repeating-linear-gradient(135deg, #1F1B16, #1F1B16 6px, #F2B705 6px, #F2B705 12px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  }
+  .in-dev-pill { display: inline-block; font-size: 10.5px; font-weight: 700; color: #8A5A00; background: #FCEBB6; padding: 2px 8px; border-radius: 8px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.02em; }
   .page-tagline { font-size: 13.5px; color: var(--muted); margin: 8px 0 0 56px; }
 
   /* ---------- Course Materials title badge: a static (non-shuffling) reuse of the home page's
@@ -113,6 +126,7 @@
   .item-title { font-size: 15.5px; font-weight: 600; margin: 6px 0 4px; }
   .item-tag { font-size: 12px; color: var(--muted); }
   .item-pill { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--accent-2); background: var(--soft); padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
+  .item-pill.in-progress-pill { color: #B7791F; background: #FCF1DA; margin-left: 4px; }
   .filetype-badge { display: inline-block; font-size: 10px; font-weight: 700; color: var(--muted); background: var(--bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 7px; margin-top: 6px; margin-right: 4px; letter-spacing: 0.03em; }
 
   .recent-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: #2E8B57; background: #E6F4EC; padding: 2px 8px; border-radius: 8px; margin-top: 6px; }
@@ -199,6 +213,12 @@
     scroll-margin-top: 10px;
   }
   .course-directory-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); border-left-color: var(--accent); }
+  /* In-development courses (see coursesInDevelopment in js/app.js) render with no onclick at
+     all, so this just matches the visuals to that — no pointer cursor, no hover lift, since
+     there's nothing to navigate into yet. */
+  .course-directory-card-locked { cursor: default; }
+  .course-directory-card-locked:hover { transform: none; box-shadow: 0 1px 3px rgba(60,60,90,0.07); border-left-color: transparent; }
+  .course-directory-card-locked .cd-symbol-badge { transform: none !important; }
   /* Every badge shares the same accent color regardless of course — the symbol itself is meant
      to be what distinguishes one course from another, not a per-course hue. Sized up and given a
      border so it reads as the card's visual anchor rather than blending into the text block. */

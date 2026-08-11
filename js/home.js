@@ -47,7 +47,7 @@ function renderHeroStats() {
     if (wrap) wrap.addEventListener('animationstart', () => animateStat(el, n), { once: true });
     else animateStat(el, n);
   };
-  set('courses', courseOrder.filter(c => items.some(i => i.course === c)).length);
+  set('courses', courseOrder.filter(c => items.some(i => i.course === c) && !coursesInDevelopment.includes(c)).length);
   typeOrder.forEach(t => set(t, items.filter(i => i.type === t).length));
 }
 renderHeroStats();
