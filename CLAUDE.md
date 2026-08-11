@@ -5,7 +5,9 @@ served directly as files. Everything below describes the current state of `main`
 `adjusting-home-page` and `Modify-Home` branches that built this up have both merged in), plus the
 real Calc 1 catalog and its source files added on the `Calc1-Content-Addition` branch, plus the
 real Calc 2 and Calc 3 catalogs and their source files added on the `Calc2&3-Content-Addition`
-branch (not yet merged to `main`).
+branch (not yet merged to `main`), plus the interactive `Applets/` system (shared header, the
+Quadric Surfaces applet fully wired up) added on the `First-Applet` branch (not yet merged to
+`main`).
 
 ---
 
@@ -21,7 +23,8 @@ branch (not yet merged to `main`).
 ├── assets/               Favicons and logo SVGs (static image files only)
 ├── css/                  Stylesheets (3 files)
 ├── js/                   Scripts (4 files)
-└── Course Materials/     Actual source files (PDF/DOCX) that data.js's items[] link to
+├── Course Materials/     Actual source files (PDF/DOCX) that data.js's items[] link to
+└── Applets/              Interactive React applets (source + shipped standalone HTML) — see §7
 ```
 
 No `.github/`, no `package.json`, no config files, no test directory, no `_layouts`/`_includes`
@@ -55,10 +58,12 @@ link only when the path isn't `'#'` or empty.
 | `apple-touch-icon.png` | iOS home-screen icon |
 | `logo-seal-white.svg` | K² seal, all strokes/fills `#FFFFFF` — used on colored grounds (banner, footer) |
 | `logo-seal-accent.svg` | Same artwork, all strokes/fills `#3B4FC2` — used on white/pale grounds: `about.html`'s photo and the home page's About-card circular badge (`.spotlight-media-circle`, whose background is a pale gradient, not a colored fill) |
+| `favicon-white.svg` | White-recolored twin of `favicon.svg` (ring + `K²` monogram only, no curved text), for the `Applets/` shared header's brand badge — see §7 |
 
 `logo-seal-white.svg` and `logo-seal-accent.svg` are byte-identical apart from the color values.
 Both are 200×200 viewBox with curved `PROFESSOR` / `MATHEMATICS` text on `<textPath>` and a serif
-`K²` monogram.
+`K²` monogram. `favicon.svg`/`favicon-white.svg` are a simpler, ring-plus-monogram-only pair (no
+curved text) meant to stay legible at much smaller sizes than the full seal.
 
 ### HTML pages
 | File | Responsibility |
@@ -459,3 +464,122 @@ State/modifier classes are bare words appended to the base: `.current`, `.open`,
 - SVG is written inline in the HTML for decoration, and as template-literal strings in
   `js/app.js` (`typeIconSVG`, `folderIcon`, `chevronLeftSVG`, `chevronRightSVG`) for icons.
 - `aria-label` / `aria-hidden` / `aria-disabled` are used on interactive and decorative elements.
+
+---
+
+## 7. Applets
+
+Interactive teaching tools (Calc 1–3 React apps), added on the `First-Applet` branch (not yet
+merged to `main`). Each applet is authored as a React app and delivered as one self-contained,
+dependency-free HTML file with React/ReactDOM bundled inline via esbuild — no CDN `<script>` tags,
+no external `bundle.js` sibling file. This keeps the site's own "no build step to *serve* anything"
+rule intact: the compiled HTML files are committed and served as-is, same as every other file in the
+repo. The build step exists only to *produce* those files from source; it isn't part of
+Course-Materials' own runtime and there's no `package.json` anywhere in this repo for it.
+
+### Folder structure
+```
+Applets/
+├── shared/                       Header code every migrated applet loads — see below
+│   ├── applet-header.css
+│   └── applet-header.js
+├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system)
+├── Calc 2/                       Same as Calc 1
+└── Calc 3/
+    ├── Quadric Surfaces/         One folder per applet once it's past mockup stage
+    │   ├── quadric_surface_explorer_5.html   Shipped bundle — this is what items[].launchUrl points to
+    │   ├── app.jsx                            React source (imports the two files below)
+    │   ├── quiz_bank.js                        Applet-specific data, imported by app.jsx
+    │   ├── saddle_icon.js                      Applet-specific data, imported by app.jsx
+    │   └── spec.md                             Design-decision log for this applet — see below
+    ├── Dot Product & Projections/  Same folder pattern, no spec.md yet
+    ├── Partial Derivatives/        Same pattern, has its own spec_2_1_1_1.md
+    └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
+```
+**Only Quadric Surfaces has been migrated** to the shared header + full-viewport layout described
+below; the other three Calc 3 applets and everything under Calc 1/Calc 2 still use their own
+one-off header (or none at all) and haven't been touched. Migrating one means: adding the shared
+header's `<link>`/`<div>`/`<script>` wiring to its HTML shell (see "Shared header" below), hand-
+matching its own JSX gradient banner to the canonical spec, and rebuilding its bundle.
+
+### Per-applet design-decision logs
+Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
+threads, and pedagogical goals — read for context, not executed. Not every applet folder has one yet
+(as of this branch, only Quadric Surfaces, Partial Derivatives, and Lagrange Multipliers do); worth
+back-filling one when doing substantial work on an applet that lacks it.
+
+### Build model
+Each applet is bundled **independently** — there is no shared build pipeline or lockfile in this
+repo, and React itself isn't committed anywhere. The `.jsx` file is the source of truth; the shipped
+HTML's inline `<script>` is esbuild's `--format=iife` output for that file with
+React/ReactDOM/the JSX runtime bundled in (visible as `// react/cjs/react.development.js`-style
+module-boundary comments inside the bundle). To rebuild after editing a `.jsx` source:
+```
+npm install react@19 react-dom@19        # in a scratch dir — not part of this repo
+npx esbuild app.jsx --bundle --outfile=bundle.js --format=iife --jsx=automatic
+```
+...then splice `bundle.js`'s contents into the shipped HTML file, replacing everything from the
+bundle's own `<script>` opening tag through to the closing `</script></body></html>` — the header
+`<link>`/`<script>` lines (below) live *before* that block and aren't touched by a rebuild. There's
+no script in this repo that automates the splice step; it's done by hand each time.
+
+### Shared header
+Every migrated applet's HTML shell loads two files from `Applets/shared/` and calls one function,
+placed right before the bundle's own `<script>` tag:
+```html
+<head>...<link rel="stylesheet" href="../../shared/applet-header.css"></head>
+<body>
+<div id="applet-header"></div>
+<div id="root"></div>
+<script src="../../shared/applet-header.js"></script>
+<script>
+  mountAppletHeader({
+    kicker: 'Calculus III · Unit 1',
+    title: 'Quadric Surface Explorer',
+    courseSiteHref: '../../../index.html',
+    logoSrc: '../../../assets/favicon-white.svg'
+  });
+</script>
+<script>/* esbuild bundle, renders React into #root */</script>
+</body>
+```
+The `../` depth on `courseSiteHref`/`logoSrc`/the `<link>`/`<script src>` paths depends on how many
+folders deep the applet's HTML file sits under `Applets/`.
+
+The header is split into two pieces that are **not** both "shared" in the same sense:
+- **Topline** (brand mark, name, "Course site" link back to `index.html`) — genuinely shared,
+  rendered by `mountAppletHeader()` from `applet-header.js`/`.css`. Editing those two files updates
+  every migrated applet at once.
+- **Gradient banner** (kicker/title, plus each applet's own tabs/toggles on the right, e.g. Quadric
+  Surfaces' Guided/Free Play/Quiz switcher) — lives in each applet's own JSX, **not** shared code,
+  because each applet is an independently-bundled React app with no shared component pipeline. Its
+  exact styling (colors, sizes, padding, decorative SVG curve) is documented as a canonical spec in
+  a comment block at the bottom of `applet-header.css` — any new or migrated applet must hand-match
+  those values in its own JSX rather than inventing its own. This split exists because a literal
+  shared React component isn't achievable without unifying the build pipeline across every applet;
+  the spec-in-a-comment approach is the practical alternative, and it's the actual durable source of
+  truth for this pattern (an earlier per-applet `spec.md` claimed it had been saved into a Claude
+  Skill file instead — it hadn't been; don't trust that claim if you encounter it).
+
+`assets/favicon-white.svg` (see §1) is the topline's brand-mark asset — a white, thicker-stroked
+twin of `favicon.svg` built specifically to stay legible at the small size the topline renders it.
+
+### Full-viewport layout contract
+Also governed by `applet-header.css` (see its own comments for the full reasoning): `html`/`body`
+become a fixed-height flex column so the header sizes to its own content and `#root` gets exactly
+the remainder of the viewport, with `#root { overflow: auto }` acting as a safety net for unusually
+short windows rather than the normal case. A migrated applet's own top-level React wrapper must
+cooperate — `height: "100%"` and `boxSizing: "border-box"`, **not** `minHeight: "100vh"` (which was
+correct back when the app *was* the entire page, but double-counts height once the topline sits
+above it, forcing a scrollbar on every window size regardless of content).
+
+### Wiring an applet into the main site
+An applet is just another `Applet`-typed row in `js/data.js`'s `items[]` (see §3) —
+`launchUrl` points at its shipped HTML file's path relative to the repo root (e.g.
+`'Applets/Calc 3/Quadric Surfaces/quadric_surface_explorer_5.html'`), and `sections` should match
+whatever chapter/section its *topic* actually covers, since it drives unit-carousel placement via
+`unitOf()` (`js/app.js:118`) — it has no inherent relationship to the applet's own filename or `id`,
+so double-check a new item's `sections` value against that topic's existing
+`LectureGuideNotes`/`Worksheet` items rather than trusting a placeholder value someone else wrote.
+`launchApplet()` (`js/app.js:214`) opens the URL via `window.open(url, '_blank', 'noopener')`,
+independent of whatever the applet's own "Course site" topline link points back to.
