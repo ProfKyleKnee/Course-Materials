@@ -337,7 +337,12 @@
     return `<div class="breadcrumb">${parts.join('')}</div>`;
   }
 
+  // ---------- tileType is an opt-in escape hatch from the generic curve+dot tile below, for an
+  // applet whose card should preview what it actually does rather than a generic mini-graph.
+  // Only 'paraboloid' exists so far (Quadric Surfaces) — add a new case here (and a matching CSS
+  // block) for any future applet that warrants the same treatment. ----------
   function tileSVG(a) {
+    if (a.tileType === 'paraboloid') return paraboloidTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -346,6 +351,20 @@
       <circle class="ring ring1" cx="118" cy="26" r="2.5"/>
       <circle class="ring ring2" cx="118" cy="26" r="2.5"/>
       <circle class="dot" r="3" style="offset-path: path('${curve}');"/>
+    </svg>`;
+  }
+
+  // Wireframe paraboloid opening upward: rim + a mid-height ellipse spin (squash on X) on hover,
+  // and a red cross-section ellipse fades in and sweeps from the rim down toward the vertex,
+  // shrinking as it goes -- echoing the applet's own fixed-z cross-section slider. Still (no hover)
+  // shows just the static bowl, no cross-section, per the ask this was built for.
+  function paraboloidTileSVG() {
+    return `<svg viewBox="0 0 100 90">
+      <path class="qs-wall" d="M14,22 C18,48 30,66 50,78"/>
+      <path class="qs-wall" d="M86,22 C82,48 70,66 50,78"/>
+      <ellipse class="qs-mid" cx="50" cy="50" rx="22" ry="6"/>
+      <ellipse class="qs-cross" cx="50" cy="24" rx="34" ry="9"/>
+      <ellipse class="qs-rim" cx="50" cy="22" rx="36" ry="10"/>
     </svg>`;
   }
 

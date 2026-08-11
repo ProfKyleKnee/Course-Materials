@@ -167,6 +167,25 @@
     100% { opacity: 0; r: 9; }
   }
 
+  /* ---------- Quadric Surfaces card tile (tileType: 'paraboloid' in js/data.js) ----------
+     Static bowl at rest; on hover the rim + mid ellipse squash on X to fake a spin around the
+     vertical axis, and a red cross-section ellipse fades in and sweeps down toward the vertex,
+     shrinking to match — a paraboloid's cross-section really does shrink as z decreases. */
+  .qs-wall { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: 0.85; }
+  .qs-rim { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: qsSpin 3.4s ease-in-out infinite; animation-play-state: paused; }
+  .qs-mid { fill: none; stroke: var(--accent-2); stroke-width: 1.4; opacity: 0.55; transform-box: fill-box; transform-origin: center; animation: qsSpin 3.4s ease-in-out infinite; animation-play-state: paused; }
+  .qs-cross { fill: rgba(216,90,110,0.18); stroke: #D85A6E; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .applet-card:hover .qs-rim, .applet-card:hover .qs-mid { animation-play-state: running; }
+  .applet-card:hover .qs-cross { animation: qsCross 3.4s ease-in-out infinite; }
+  @keyframes qsSpin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.5); } }
+  @keyframes qsCross {
+    0% { opacity: 0; cy: 24px; rx: 34px; ry: 9px; }
+    10% { opacity: 0.9; }
+    50% { cy: 58px; rx: 15px; ry: 4px; }
+    90% { opacity: 0.9; }
+    100% { opacity: 0; cy: 24px; rx: 34px; ry: 9px; }
+  }
+
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
   .jump-link:hover { color: var(--accent); }
