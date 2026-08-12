@@ -168,36 +168,34 @@
   }
 
   /* ---------- Quadric Surfaces card tile (tileType: 'paraboloid' in js/data.js) ----------
-     The bowl outline (qs-body + qs-back-rim) and the z-axis tick (qs-zaxis) are static, always
-     visible, and never animate — fixed size at all times. The two inner meridian ribs (qs-rib-l/-r)
-     are also always visible (real wireframe, not just a silhouette), and on hover sway sideways in
-     a slow opposing cycle to suggest the surface turning. The x/y axis-cross (qs-axes) sits at the
-     vertex — a paraboloid's actual x/y/z origin — visible at rest, and only *rotates in place* on
-     hover (thin lines only, so rotating it can't resize or distort anything). A red cross-section
-     ellipse — sized well inside the rim so it never reads as the rim itself changing size — fades
-     in on hover and sweeps down toward the vertex, shrinking further as it goes, matching how a
-     paraboloid's cross-section really does shrink as z decreases. Hover animations run slowly
-     (5-6s) so the tile reads as a gentle turntable, not a jitter. */
+     The bowl outline (qs-body + qs-back-rim), the z-axis tick (qs-zaxis), and the x/y axis-cross
+     (qs-axes, sitting at the vertex — a paraboloid's actual x/y/z origin) are all completely fixed
+     and never animate, at rest or on hover — nothing about the axes moves. Rotation is instead sold
+     entirely by the surface: the two inner meridian ribs (qs-rib-l/-r), always visible alongside the
+     two outer walls as real wireframe, sway sideways in a slow opposing cycle on hover to suggest
+     the paraboloid itself turning around its own fixed axis. The red cross-section ellipse's rx/ry
+     at each keyframe are read directly off the right wall's own bezier curve at that height (see
+     paraboloidTileSVG's comment for the wall's control points), so its edges always sit exactly on
+     the walls rather than floating at an arbitrary size — it fades in near the rim, sweeps down
+     close to the vertex while narrowing to match the taper, and back, echoing the applet's own
+     fixed-z slider. Hover animations run slowly (5-6s) so the tile reads as a gentle turntable. */
   .qs-body { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; }
   .qs-back-rim { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: 0.55; }
   .qs-rib { fill: none; stroke: var(--accent-2); stroke-width: 1.3; opacity: 0.6; }
   .qs-zaxis { stroke: var(--eyebrow); stroke-width: 1.2; opacity: 0.5; }
   .qs-cross { fill: rgba(216,90,110,0.2); stroke: #D85A6E; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
-  .qs-axes { transform-box: fill-box; transform-origin: center; }
   .qs-axes line { stroke: var(--accent-2); stroke-width: 1.3; opacity: 0.7; }
   .applet-card:hover .qs-cross { animation: qsCross 5.4s ease-in-out infinite; }
-  .applet-card:hover .qs-axes { animation: qsAxesSpin 6s linear infinite; }
   .applet-card:hover .qs-rib-l { animation: qsRibSwayL 6s ease-in-out infinite; }
   .applet-card:hover .qs-rib-r { animation: qsRibSwayR 6s ease-in-out infinite; }
-  @keyframes qsAxesSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  @keyframes qsRibSwayL { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(11px); } }
-  @keyframes qsRibSwayR { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-11px); } }
+  @keyframes qsRibSwayL { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(13px); } }
+  @keyframes qsRibSwayR { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-13px); } }
   @keyframes qsCross {
-    0% { opacity: 0; cy: 30px; rx: 24px; ry: 6.5px; }
+    0% { opacity: 0; cy: 33px; rx: 34px; ry: 9.5px; }
     10% { opacity: 0.9; }
-    50% { cy: 58px; rx: 12px; ry: 3px; }
+    50% { cy: 74px; rx: 6px; ry: 1.7px; }
     90% { opacity: 0.9; }
-    100% { opacity: 0; cy: 30px; rx: 24px; ry: 6.5px; }
+    100% { opacity: 0; cy: 33px; rx: 34px; ry: 9.5px; }
   }
 
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }

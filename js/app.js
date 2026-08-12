@@ -356,17 +356,18 @@
 
   // Wireframe paraboloid opening upward. The bowl itself (qs-body: front rim arc + both walls, one
   // continuous closed path so there's no gap between rim and walls; qs-back-rim: the far half of
-  // the rim, so the opening reads as a full ellipse) never animates -- always the same size. Two
-  // inner meridian ribs (qs-rib-l/-r), alongside the two outer walls, give the surface an actual
-  // wireframe mesh instead of just a silhouette; on hover they sway sideways in a slow, opposing
-  // cycle to suggest the surface turning around its own vertical axis (a plain smooth bowl can't
-  // convincingly show rotation with no surface detail at all, which is why this replaces the
-  // flat-line hack an earlier version relied on). Axes sit at the vertex, matching where a
-  // paraboloid's own x/y/z origin actually is (not at the rim, which was wrong) -- z runs straight
-  // through from base to top, and the x/y cross lies flat at the vertex and rotates in place on
-  // hover, unable to distort anything since it's just two lines. The red cross-section starts
-  // noticeably smaller than the rim and sweeps from near the rim down toward the vertex, shrinking
-  // further as it goes, fading in only on hover -- echoing the applet's own fixed-z slider.
+  // the rim, so the opening reads as a full ellipse), the z-axis tick, and the x/y axis-cross at the
+  // vertex (a paraboloid's actual x/y/z origin, not the rim) are all completely fixed -- nothing
+  // about the axes or the outline ever animates, matching the ask that the axes read as stationary.
+  // Rotation is instead sold by the surface itself: two inner meridian ribs (qs-rib-l/-r), alongside
+  // the two outer walls, give an actual wireframe mesh, and on hover they sway sideways in a slow,
+  // opposing cycle to suggest the paraboloid turning around its own fixed vertical axis (a plain
+  // smooth bowl can't convincingly show rotation with no surface detail at all). The right wall's
+  // bezier is `M86,22 C82,48 70,66 50,78` (control points P0=(86,22) P1=(82,48) P2=(70,66)
+  // P3=(50,78)); the red cross-section ellipse's rx/ry at each keyframe (css/styles.css) are read
+  // directly off points along that curve, so its left/right edges always sit exactly on the walls
+  // rather than floating at an arbitrary size, sweeping from near the rim down toward the vertex
+  // and back, only on hover.
   function paraboloidTileSVG() {
     return `<svg viewBox="0 0 100 90">
       <path class="qs-body" d="M14,22 A36,10 0 0 1 86,22 C82,48 70,66 50,78 C30,66 18,48 14,22 Z"/>
@@ -374,7 +375,7 @@
       <path class="qs-rib qs-rib-r" d="M68,30.7 C66,50 60,66 50,78"/>
       <line class="qs-zaxis" x1="50" y1="8" x2="50" y2="78"/>
       <path class="qs-back-rim" d="M14,22 A36,10 0 0 0 86,22"/>
-      <ellipse class="qs-cross" cx="50" cy="30" rx="24" ry="6.5"/>
+      <ellipse class="qs-cross" cx="50" cy="33" rx="34" ry="9.5"/>
       <g class="qs-axes">
         <line x1="36" y1="78" x2="64" y2="78"/>
         <line x1="50" y1="73" x2="50" y2="83"/>
