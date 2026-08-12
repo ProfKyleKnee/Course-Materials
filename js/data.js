@@ -1228,7 +1228,8 @@
       playlistUrl: '#', updated: '2026-05-25' },
     { id: 'a-c3-41', course: 'Calculus III', type: 'Applet', sections: ['1.7'],
       title: 'Quadric Surfaces Explorer', desc: 'Interactive tool for rotating and slicing quadric surfaces to see their cross-sections.',
-      curve: 'M14,52 C34,14 56,14 74,32 S 100,52 118,22', launchUrl: 'Applets/Calc 3/Quadric Surfaces/quadric_surface_explorer_5.html', updated: '2026-08-11' },
+      curve: 'M14,52 C34,14 56,14 74,32 S 100,52 118,22', tileType: 'paraboloid',
+      launchUrl: 'Applets/Calc 3/Quadric Surfaces/quadric_surface_explorer_5.html', updated: '2026-08-11' },
 
     { id: 'g-pc-12', course: 'Precalculus', type: 'LectureGuideNotes', sections: ['1.2'], sectionLabel: 'The Unit Circle',
       title: '1.2 The Unit Circle — Guide & Notes', desc: 'Guide and notes on unit circle values and their use in trigonometric functions.',

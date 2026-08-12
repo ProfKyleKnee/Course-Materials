@@ -337,7 +337,12 @@
     return `<div class="breadcrumb">${parts.join('')}</div>`;
   }
 
+  // ---------- tileType is an opt-in escape hatch from the generic curve+dot tile below, for an
+  // applet whose card should preview what it actually does rather than a generic mini-graph.
+  // Only 'paraboloid' exists so far (Quadric Surfaces) — add a new case here (and a matching CSS
+  // block) for any future applet that warrants the same treatment. ----------
   function tileSVG(a) {
+    if (a.tileType === 'paraboloid') return paraboloidTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -348,6 +353,171 @@
       <circle class="dot" r="3" style="offset-path: path('${curve}');"/>
     </svg>`;
   }
+
+  // ---------- Quadric Surfaces card tile: real 3D wireframe, not a hand-faked 2D icon ----------
+  // qsProject() is the same rotate-then-tilt formula as project() in
+  // Applets/Calc 3/Quadric Surfaces/app.jsx (swap x/y, rotate by a fixed azimuth, tilt by a fixed
+  // elevation, drop the depth-sorted axis) -- ported here so the tile is built from actual 3D math
+  // instead of guessed 2D curves. Camera angle is fixed at load time (QS_THETA/QS_PHI below); the
+  // rim, body outline, back-rim, and all three axes are computed from it once and never change.
+  // Rotation is instead sold by three interior meridian "ribs", each spun live around the surface's
+  // own azimuthal angle (see qsStartSpin below) -- since the camera never moves, the axes and outer
+  // silhouette stay completely still while only the mesh visibly turns, same as spinning a physical
+  // bowl in place rather than orbiting a camera around it.
+  //
+  // The camera tilt here (QS_THETA=0.5, QS_PHI=-0.45) is deliberately NOT the applet's own default
+  // (theta:0.541, phi:-0.065) -- that tilt is nearly edge-on and reads fine at the applet's full
+  // size (where per-face mesh shading carries the 3D read), but projects the rim almost flat at a
+  // 50px icon with only line art to work with. QS_PHI is steeper than the applet's own so the
+  // opening still reads as open, but shallow enough that the xy-plane still appears close to the
+  // line of sight rather than being viewed from nearly overhead (a much steeper phi was tried
+  // first and looked too top-down). QS_T/QS_ZLEN/QS_XYLEN mirror the applet's own Elliptic
+  // Paraboloid constants (T=2.4 rim radius; z axis drawn a bit past the rim's own height so it
+  // visibly pokes through, same idea as the applet's own zAxisLength convention), with the z/x/y
+  // axis lengths trimmed down from an earlier, steeper-phi version of this tile -- a shallower phi
+  // projects more of each axis's true length onto the screen, so shorter world-space lengths were
+  // needed to keep the whole composition (axes + rim) similarly proportioned. All three axes stay
+  // visually distinct from one another (a 0 or fully-front-on theta makes two of them project onto
+  // the same screen line -- checked numerically before picking 0.5).
+  var QS_THETA = 0.5, QS_PHI = -0.45;
+  var QS_T = 2.4, QS_ZLEN = 7, QS_XYLEN = 2.4;
+  var QS_SCALE = 12.92, QS_OX = 50, QS_OY = 89.4; // world units -> icon px, viewBox "0 0 100 108"
+
+  function qsProject(x, y, z) {
+    const tmp = x;
+    x = y;
+    y = tmp;
+    const xr = x * Math.cos(QS_THETA) - y * Math.sin(QS_THETA);
+    const yr = x * Math.sin(QS_THETA) + y * Math.cos(QS_THETA);
+    const y2 = yr * Math.cos(QS_PHI) - z * Math.sin(QS_PHI);
+    const z2 = yr * Math.sin(QS_PHI) + z * Math.cos(QS_PHI);
+    return { x: QS_OX + xr * QS_SCALE, y: QS_OY - z2 * QS_SCALE, depth: y2 };
+  }
+  function qsSurfacePoint(r, th) {
+    const u = r * Math.cos(th), v = r * Math.sin(th);
+    return qsProject(u, v, u * u + v * v);
+  }
+  function qsMeridianPoints(th, steps) {
+    const pts = [];
+    for (let i = 0; i <= steps; i++) pts.push(qsSurfacePoint(QS_T * i / steps, th));
+    return pts;
+  }
+  function qsPathFrom(pts) {
+    return 'M' + pts.map((p) => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join('L');
+  }
+  function qsMeridianPath(th) {
+    return qsPathFrom(qsMeridianPoints(th, 7));
+  }
+  function qsCrossPath(zVal) {
+    const r = Math.sqrt(Math.max(0, zVal));
+    const pts = [];
+    for (let i = 0; i <= 40; i++) {
+      const th = 2 * Math.PI * i / 40;
+      pts.push(qsProject(r * Math.cos(th), r * Math.sin(th), zVal));
+    }
+    return qsPathFrom(pts) + 'Z';
+  }
+  // Leftmost/rightmost screen points of the rim -- the two meridians that split it into a
+  // near (front) and far (back) arc, i.e. the bowl's own silhouette. Computed once and cached:
+  // QS_THETA/QS_PHI/QS_T never change at runtime, so this is always the same answer.
+  var qsSilCache = null;
+  function qsSilhouette() {
+    if (qsSilCache) return qsSilCache;
+    let leftTh = 0, rightTh = 0, minX = Infinity, maxX = -Infinity;
+    for (let i = 0; i < 360; i++) {
+      const th = 2 * Math.PI * i / 360;
+      const p = qsSurfacePoint(QS_T, th);
+      if (p.x < minX) { minX = p.x; leftTh = th; }
+      if (p.x > maxX) { maxX = p.x; rightTh = th; }
+    }
+    qsSilCache = { left: leftTh, right: rightTh };
+    return qsSilCache;
+  }
+  function qsRimArc(fromTh, toTh, steps) {
+    let span = toTh - fromTh;
+    while (span <= 0) span += 2 * Math.PI;
+    const pts = [];
+    for (let i = 0; i <= steps; i++) pts.push(qsSurfacePoint(QS_T, fromTh + span * i / steps));
+    return pts;
+  }
+  function qsAvgDepth(pts) {
+    return pts.reduce((s, p) => s + p.depth, 0) / pts.length;
+  }
+  // Filled body silhouette: the near half of the rim, plus the two silhouette meridians walking
+  // down to the vertex and back up -- one continuous closed path, so (unlike an earlier version)
+  // there's no separate floating rim shape that can visually disconnect from the walls.
+  function qsBodyPath() {
+    const { left, right } = qsSilhouette();
+    const a = qsRimArc(left, right, 20), b = qsRimArc(right, left, 20);
+    const front = qsAvgDepth(a) >= qsAvgDepth(b) ? a : b.slice().reverse();
+    const downRight = qsMeridianPoints(right, 6).slice().reverse();
+    const upLeft = qsMeridianPoints(left, 6);
+    return qsPathFrom(front.concat(downRight.slice(1)).concat(upLeft.slice(1))) + 'Z';
+  }
+  function qsBackRimPath() {
+    const { left, right } = qsSilhouette();
+    const a = qsRimArc(left, right, 20), b = qsRimArc(right, left, 20);
+    return qsPathFrom(qsAvgDepth(a) < qsAvgDepth(b) ? a : b);
+  }
+  var QS_RIB_PHASES = [0, 2 * Math.PI / 3, 4 * Math.PI / 3];
+  function paraboloidTileSVG() {
+    const vertex = qsProject(0, 0, 0), zTop = qsProject(0, 0, QS_ZLEN);
+    const xPos = qsProject(QS_XYLEN, 0, 0), xNeg = qsProject(-QS_XYLEN, 0, 0);
+    const yPos = qsProject(0, QS_XYLEN, 0), yNeg = qsProject(0, -QS_XYLEN, 0);
+    const ribs = QS_RIB_PHASES.map((th) => `<path class="qs-rib" d="${qsMeridianPath(th)}"/>`).join('');
+    return `<svg class="qs-tile" viewBox="0 0 100 108">
+      <path class="qs-body" d="${qsBodyPath()}"/>
+      <path class="qs-back-rim" d="${qsBackRimPath()}"/>
+      ${ribs}
+      <line class="qs-zaxis" x1="${vertex.x.toFixed(1)}" y1="${vertex.y.toFixed(1)}" x2="${zTop.x.toFixed(1)}" y2="${zTop.y.toFixed(1)}"/>
+      <line class="qs-axis" x1="${xNeg.x.toFixed(1)}" y1="${xNeg.y.toFixed(1)}" x2="${xPos.x.toFixed(1)}" y2="${xPos.y.toFixed(1)}"/>
+      <line class="qs-axis" x1="${yNeg.x.toFixed(1)}" y1="${yNeg.y.toFixed(1)}" x2="${yPos.x.toFixed(1)}" y2="${yPos.y.toFixed(1)}"/>
+      <path class="qs-cross" d="${qsCrossPath(0.15)}"/>
+    </svg>`;
+  }
+  // Live rotation, only while a paraboloid tile's card is hovered: each frame recomputes the three
+  // ribs' paths at a slowly advancing phase (qsMeridianPath again -- the exact same function used
+  // for the resting frame, just called continuously) and the cross-section's path/opacity, then
+  // writes them straight to the DOM. requestAnimationFrame only runs while qsSpins has an entry for
+  // that svg, so nothing is computed for cards that aren't being looked at.
+  var qsSpins = new Map();
+  function qsStartSpin(svg) {
+    if (qsSpins.has(svg)) return;
+    const ribEls = svg.querySelectorAll('.qs-rib');
+    const crossEl = svg.querySelector('.qs-cross');
+    const start = performance.now();
+    function frame(now) {
+      const t = (now - start) / 1000;
+      const phase = t * (2 * Math.PI / 9); // one full turn every 9s
+      ribEls.forEach((el, i) => el.setAttribute('d', qsMeridianPath(phase + QS_RIB_PHASES[i])));
+      const cyclePos = (t % 5.4) / 5.4;
+      const sweep = cyclePos < 0.5 ? cyclePos / 0.5 : (1 - cyclePos) / 0.5; // 0 -> 1 -> 0
+      const zVal = Math.max(0.15, 5.6 - sweep * 5.3); // near the rim down toward the vertex, and back
+      const fade = cyclePos < 0.08 ? cyclePos / 0.08 : cyclePos > 0.92 ? (1 - cyclePos) / 0.08 : 1;
+      crossEl.setAttribute('d', qsCrossPath(zVal));
+      crossEl.style.opacity = Math.min(1, fade) * 0.9;
+      qsSpins.set(svg, requestAnimationFrame(frame));
+    }
+    qsSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function qsStopSpin(svg) {
+    const id = qsSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    qsSpins.delete(svg);
+    svg.querySelectorAll('.qs-rib').forEach((el, i) => el.setAttribute('d', qsMeridianPath(QS_RIB_PHASES[i])));
+    const crossEl = svg.querySelector('.qs-cross');
+    if (crossEl) crossEl.style.opacity = '';
+  }
+  document.addEventListener('mouseover', (e) => {
+    const svg = e.target.closest && e.target.closest('.applet-card svg.qs-tile');
+    if (svg) qsStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.qs-tile');
+    if (svg) qsStopSpin(svg);
+  });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
   // courseCarouselsHTML calls these with no second argument, so top-level pages get no accent bar ----------
