@@ -1526,13 +1526,19 @@ import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
       setCameFromQuiz(false);
       setTab("quiz");
     }
-    return /* @__PURE__ */ jsx("div", { style: { height: "100%", boxSizing: "border-box", background: "#E8E8F2", padding: "0 24px 24px", fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", color: C.text }, children: /* @__PURE__ */ jsxs("div", { style: { maxWidth: 1200, margin: "0 auto", background: C.bg, borderRadius: "0 0 20px 20px", boxShadow: "0 4px 24px rgba(60,60,90,0.14)", overflow: "hidden" }, children: [
-      /* @__PURE__ */ jsxs("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px", background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)" }, children: [
-        /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", gap: 2 }, children: [
-          /* @__PURE__ */ jsx("div", { style: { fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }, children: "Calculus III \xB7 Unit 1" }),
-          /* @__PURE__ */ jsx("div", { style: { fontSize: 19, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }, children: "Quadric Surface Explorer" })
+    return /* @__PURE__ */ jsxs("div", { style: { height: "100%", boxSizing: "border-box", background: "#E8E8F2", padding: "24px 24px 0", display: "flex", flexDirection: "column", fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", color: C.text }, children: [
+      /* @__PURE__ */ jsxs("div", { style: { maxWidth: 1200, width: "100%", margin: "0 auto", background: C.bg, borderRadius: "20px", boxShadow: "0 4px 24px rgba(60,60,90,0.14)", overflow: "hidden", flexShrink: 0 }, children: [
+      /* @__PURE__ */ jsxs("div", { style: { position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px", background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)" }, children: [
+        /* @__PURE__ */ jsx("svg", { viewBox: "0 0 1200 130", preserveAspectRatio: "none", style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }, children: /* @__PURE__ */ jsx("path", { d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke: "white", strokeWidth: "2.5", fill: "none" }) }),
+        /* @__PURE__ */ jsxs("div", { style: { display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }, children: [
+          /* @__PURE__ */ jsx("a", { href: "../../../browse.html#/applets", style: { display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.88)", textDecoration: "none", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap", padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.12)" }, children: "← All Applets" }),
+          /* @__PURE__ */ jsx("div", { style: { width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" } }),
+          /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", gap: 2 }, children: [
+            /* @__PURE__ */ jsx("div", { style: { fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }, children: "Calculus III \xB7 Unit 1" }),
+            /* @__PURE__ */ jsx("div", { style: { fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }, children: "Quadric Surface Explorer" })
+          ] })
         ] }),
-        /* @__PURE__ */ jsxs("div", { ref: tabGroupRef, style: { position: "relative", display: "flex", gap: 4, background: "rgba(255,255,255,0.14)", padding: 4, borderRadius: 20 }, children: [
+        /* @__PURE__ */ jsxs("div", { ref: tabGroupRef, style: { position: "relative", zIndex: 1, display: "flex", gap: 4, background: "rgba(255,255,255,0.14)", padding: 4, borderRadius: 20 }, children: [
           /* @__PURE__ */ jsx("div", { style: { position: "absolute", top: 4, left: 0, bottom: 4, width: thumbStyle.width, transform: `translateX(${thumbStyle.left}px)`, background: "#FFFFFF", borderRadius: 16, transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), width 0.32s cubic-bezier(0.4,0,0.2,1)", zIndex: 0 } }),
           TAB_ORDER.map((key) => /* @__PURE__ */ jsx(
             "button",
@@ -1566,7 +1572,12 @@ import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
         /* @__PURE__ */ jsx("div", { ref: freeplayPanelRef, style: { display: tab === "freeplay" ? "block" : "none" }, children: /* @__PURE__ */ jsx(FreePlayTab, { funcText, setFuncText, fromQuiz: cameFromQuiz, onReturnToQuiz: handleReturnToQuiz, matchHeight: baselineHeight }) }),
         /* @__PURE__ */ jsx("div", { ref: quizPanelRef, style: { display: tab === "quiz" ? "block" : "none" }, children: /* @__PURE__ */ jsx(QuizTab, { onExplore: handleExplore }) })
       ] })
-    ] }) });
+      ] }),
+      /* @__PURE__ */ jsxs("div", { style: { marginTop: "auto", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 11, padding: "18px 20px 26px", fontSize: 13.5, color: C.muted }, children: [
+        /* @__PURE__ */ jsx("span", { style: { width: 40, height: 40, borderRadius: "50%", background: C.card, border: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }, children: /* @__PURE__ */ jsx("img", { src: "../../../assets/favicon.svg", alt: "", width: "28", height: "28" }) }),
+        "Professor Kyle Knee \xB7 Harper College Mathematics"
+      ] })
+    ] });
   }
   var root = createRoot(document.getElementById("root"));
   root.render(/* @__PURE__ */ jsx(App, {}));

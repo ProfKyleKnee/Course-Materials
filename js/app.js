@@ -215,7 +215,7 @@
     const item = items.find(i => i.id === id);
     if (!item) return;
     if (!item.launchUrl || item.launchUrl === '#') return; // no-op: applet not yet linked
-    window.open(item.launchUrl, '_blank', 'noopener');
+    window.location.href = item.launchUrl; // same tab, so the browser back button returns here
   }
 
   // Renders a file/playlist link. Real URLs render as a normal working link.
@@ -510,7 +510,8 @@
     if (crossEl) crossEl.style.opacity = '';
   }
   document.addEventListener('mouseover', (e) => {
-    const svg = e.target.closest && e.target.closest('.applet-card svg.qs-tile');
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.qs-tile');
     if (svg) qsStartSpin(svg);
   });
   document.addEventListener('mouseout', (e) => {
@@ -670,7 +671,8 @@
     }
   }
   document.addEventListener('mouseover', (e) => {
-    const svg = e.target.closest && e.target.closest('.applet-card svg.pd-tile');
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.pd-tile');
     if (svg) pdStartSpin(svg);
   });
   document.addEventListener('mouseout', (e) => {
@@ -763,19 +765,30 @@
     const all = items.filter(i => i.type === typeVal);
     const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
-    return coursesPresent.map(c => {
+    return `<div class="course-carousel-list">${coursesPresent.map(c => {
       const inCourse = all.filter(a => a.course === c).sort(sectionCompare);
+      const sym = courseSymbol[c] || { text: '', size: '18px' };
+      const glyphHTML = `<div class="cc-glyph">${sym.text ? `<span style="font-size:${sym.size};">${sym.text}</span>` : ''}</div>`;
       if (!inCourse.length) {
         return `<div class="carousel-block" id="grp-${slug(c)}">
-          <div class="carousel-header"><div class="carousel-title" style="cursor:default;color:var(--muted);">${c}</div></div>
+          <div class="carousel-header">
+            <div class="carousel-title-group">
+              ${glyphHTML}
+              <div class="carousel-title-row"><span class="carousel-title" style="cursor:default;color:var(--muted);">${c}</span><span class="carousel-count">No ${typeLabel[typeVal].toLowerCase()} yet</span></div>
+            </div>
+          </div>
           <div class="empty-group-state">No ${typeLabel[typeVal].toLowerCase()} for this course yet.</div>
         </div>`;
       }
       const rowId = `car-${typeVal}-${slug(c)}`;
+      const countLabel = inCourse.length === 1 ? `1 ${typeLabel[typeVal].toLowerCase().replace(/s$/, '')}` : `${inCourse.length} ${typeLabel[typeVal].toLowerCase()}`;
       return `
         <div class="carousel-block" id="grp-${slug(c)}">
           <div class="carousel-header">
-            <div class="carousel-title" onclick="openTier3('type','${c}','${typeVal}')">${c}</div>
+            <div class="carousel-title-group">
+              ${glyphHTML}
+              <div class="carousel-title-row"><span class="carousel-title" onclick="openTier3('type','${c}','${typeVal}')">${c}</span><span class="carousel-count">${countLabel}</span></div>
+            </div>
             <div class="carousel-seeall" onclick="openTier3('type','${c}','${typeVal}')">See all (${inCourse.length}) →</div>
           </div>
           <div class="carousel-wrap">
@@ -784,7 +797,7 @@
             ${arrowBtnHTML(rowId, 1)}
           </div>
         </div>`;
-    }).join('');
+    }).join('')}</div>`;
   }
 
   // ---------- v16/v18: tier 3 — unit chip filter row + unit carousels, with isolate-to-full-grid.
@@ -938,14 +951,12 @@
     if (state.level === 'typeBrowse') {
       const t = state.type;
       const all = items.filter(i => i.type === t);
-      const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
       const pageTitle = t === 'Applet' ? 'All Applets' : typeLabel[t];
       const unitLabel = t === 'Applet' ? 'applet' : (t === 'LectureVideo' ? 'video section' : 'item');
       const countText = `${all.length} ${unitLabel}${all.length === 1 ? '' : 's'} across ${courseOrder.filter(c => all.some(a => a.course === c)).length} courses`;
       page.innerHTML = `
         ${crumbHTML()}
         ${titleBlockHTML(t, pageTitle)}
-        ${jumpRowHTML(coursesPresent)}
         <div class="result-count">${countText}</div>
         ${courseCarouselsHTML(t)}
       `;

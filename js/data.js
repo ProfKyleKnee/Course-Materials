@@ -984,7 +984,7 @@
       title: 'Ch. 3 Recommended Book Problems', desc: 'Reference sheet: ch. 3 recommended book problems.',
       guideFile: null, notesFile: 'Course Materials/Calc 3/Notes/Ch. 3 (Partial Derivatives)/Ch.3 Recommended Book Problems.pdf', updated: '2026-01-12' },
     { id: 'a-c3-33', course: 'Calculus III', type: 'Applet', sections: ['3.3'],
-      title: 'First & Second Partial Derivatives', desc: 'Explore tangent-line slope, concavity, and mixed partials on a live 3D surface.',
+      title: '1st & 2nd Partial Derivatives', desc: 'Explore tangent-line slope, concavity, and mixed partials on a live 3D surface.',
       tileType: 'partialDerivatives',
       launchUrl: 'Applets/Calc 3/Partial Derivatives/partial-derivatives-standalone_3.html', updated: '2026-08-11' },
     { id: 'g-c3-4.1', course: 'Calculus III', type: 'LectureGuideNotes', sections: ['4.1'], sectionLabel: 'Double Integrals',
