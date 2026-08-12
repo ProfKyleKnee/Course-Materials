@@ -365,18 +365,23 @@
   // silhouette stay completely still while only the mesh visibly turns, same as spinning a physical
   // bowl in place rather than orbiting a camera around it.
   //
-  // The camera tilt here (QS_THETA=0.5, QS_PHI=-0.8) is deliberately NOT the applet's own default
+  // The camera tilt here (QS_THETA=0.5, QS_PHI=-0.45) is deliberately NOT the applet's own default
   // (theta:0.541, phi:-0.065) -- that tilt is nearly edge-on and reads fine at the applet's full
   // size (where per-face mesh shading carries the 3D read), but projects the rim almost flat at a
-  // 50px icon with only line art to work with. QS_PHI is steeper so the opening actually reads as
-  // open. QS_T/QS_ZLEN/QS_XYLEN mirror the applet's own Elliptic Paraboloid constants (T=2.4 rim
-  // radius; z axis drawn a bit past the rim's own height so it visibly poke through, same idea as
-  // the applet's own zAxisLength convention) with the z/x/y axis lengths tuned so all three clear
-  // the rim and stay visually distinct from one another (a 0 or fully-front-on theta makes two of
-  // the three axes project onto the same screen line -- checked numerically before picking 0.5).
-  var QS_THETA = 0.5, QS_PHI = -0.8;
-  var QS_T = 2.4, QS_ZLEN = 9.5, QS_XYLEN = 3.1;
-  var QS_SCALE = 12.92, QS_OX = 50, QS_OY = 88; // world units -> icon px, viewBox "0 0 100 120"
+  // 50px icon with only line art to work with. QS_PHI is steeper than the applet's own so the
+  // opening still reads as open, but shallow enough that the xy-plane still appears close to the
+  // line of sight rather than being viewed from nearly overhead (a much steeper phi was tried
+  // first and looked too top-down). QS_T/QS_ZLEN/QS_XYLEN mirror the applet's own Elliptic
+  // Paraboloid constants (T=2.4 rim radius; z axis drawn a bit past the rim's own height so it
+  // visibly pokes through, same idea as the applet's own zAxisLength convention), with the z/x/y
+  // axis lengths trimmed down from an earlier, steeper-phi version of this tile -- a shallower phi
+  // projects more of each axis's true length onto the screen, so shorter world-space lengths were
+  // needed to keep the whole composition (axes + rim) similarly proportioned. All three axes stay
+  // visually distinct from one another (a 0 or fully-front-on theta makes two of them project onto
+  // the same screen line -- checked numerically before picking 0.5).
+  var QS_THETA = 0.5, QS_PHI = -0.45;
+  var QS_T = 2.4, QS_ZLEN = 7, QS_XYLEN = 2.4;
+  var QS_SCALE = 12.92, QS_OX = 50, QS_OY = 89.4; // world units -> icon px, viewBox "0 0 100 108"
 
   function qsProject(x, y, z) {
     const tmp = x;
@@ -460,7 +465,7 @@
     const xPos = qsProject(QS_XYLEN, 0, 0), xNeg = qsProject(-QS_XYLEN, 0, 0);
     const yPos = qsProject(0, QS_XYLEN, 0), yNeg = qsProject(0, -QS_XYLEN, 0);
     const ribs = QS_RIB_PHASES.map((th) => `<path class="qs-rib" d="${qsMeridianPath(th)}"/>`).join('');
-    return `<svg class="qs-tile" viewBox="0 0 100 120">
+    return `<svg class="qs-tile" viewBox="0 0 100 108">
       <path class="qs-body" d="${qsBodyPath()}"/>
       <path class="qs-back-rim" d="${qsBackRimPath()}"/>
       ${ribs}
