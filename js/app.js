@@ -355,25 +355,29 @@
   }
 
   // Wireframe paraboloid opening upward. The bowl itself (qs-body: front rim arc + both walls, one
-  // continuous closed path, so there's no gap between rim and walls like an earlier version had;
-  // qs-back-rim: the far half of the rim, drawn separately so the opening still reads as a full
-  // ellipse) never animates in any way -- always the same size, matching the ask that the outline
-  // stay static. qs-wire is a static mid-height latitude line, just texture. The x/y axis-cross
-  // (qs-axes) is visible at rest too, and only *rotates in place* on hover -- it can't resize
-  // anything since it's just two thin lines, unlike squashing the rim did in an earlier version.
-  // The red cross-section starts noticeably smaller than the rim (so it never reads as "the rim
-  // shrinking") and sweeps from near the rim down toward the vertex, shrinking further as it goes,
-  // fading in only on hover -- echoing the applet's own fixed-z slider.
+  // continuous closed path so there's no gap between rim and walls; qs-back-rim: the far half of
+  // the rim, so the opening reads as a full ellipse) never animates -- always the same size. Two
+  // inner meridian ribs (qs-rib-l/-r), alongside the two outer walls, give the surface an actual
+  // wireframe mesh instead of just a silhouette; on hover they sway sideways in a slow, opposing
+  // cycle to suggest the surface turning around its own vertical axis (a plain smooth bowl can't
+  // convincingly show rotation with no surface detail at all, which is why this replaces the
+  // flat-line hack an earlier version relied on). Axes sit at the vertex, matching where a
+  // paraboloid's own x/y/z origin actually is (not at the rim, which was wrong) -- z runs straight
+  // through from base to top, and the x/y cross lies flat at the vertex and rotates in place on
+  // hover, unable to distort anything since it's just two lines. The red cross-section starts
+  // noticeably smaller than the rim and sweeps from near the rim down toward the vertex, shrinking
+  // further as it goes, fading in only on hover -- echoing the applet's own fixed-z slider.
   function paraboloidTileSVG() {
     return `<svg viewBox="0 0 100 90">
       <path class="qs-body" d="M14,22 A36,10 0 0 1 86,22 C82,48 70,66 50,78 C30,66 18,48 14,22 Z"/>
-      <path class="qs-wire" d="M30,50 A20,5 0 0 1 70,50"/>
-      <line class="qs-zaxis" x1="50" y1="10" x2="50" y2="78"/>
+      <path class="qs-rib qs-rib-l" d="M32,30.7 C34,50 40,66 50,78"/>
+      <path class="qs-rib qs-rib-r" d="M68,30.7 C66,50 60,66 50,78"/>
+      <line class="qs-zaxis" x1="50" y1="8" x2="50" y2="78"/>
       <path class="qs-back-rim" d="M14,22 A36,10 0 0 0 86,22"/>
       <ellipse class="qs-cross" cx="50" cy="30" rx="24" ry="6.5"/>
       <g class="qs-axes">
-        <line x1="20" y1="22" x2="80" y2="22"/>
-        <line x1="50" y1="14" x2="50" y2="30"/>
+        <line x1="36" y1="78" x2="64" y2="78"/>
+        <line x1="50" y1="73" x2="50" y2="83"/>
       </g>
     </svg>`;
   }
