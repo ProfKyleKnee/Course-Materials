@@ -343,6 +343,7 @@
   // block) for any future applet that warrants the same treatment. ----------
   function tileSVG(a) {
     if (a.tileType === 'paraboloid') return paraboloidTileSVG();
+    if (a.tileType === 'partialDerivatives') return partialDerivTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -517,6 +518,166 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.qs-tile');
     if (svg) qsStopSpin(svg);
+  });
+
+  // ---------- Partial Derivatives card tile: real wavy-surface mesh + a live tangent line ----------
+  // pdProject/pdF/pdFx/PD_Z_SCALE are the exact same camera and surface math as
+  // Applets/Calc 3/Partial Derivatives/partial-derivatives.jsx (f, fx, toScene, and the applet's
+  // real default camera: position (6.2,4.4,6.2), lookAt (0,0.3,0), fov 38) -- a true perspective
+  // projection of that camera, not a guessed 2D curve, same rationale as the Quadric tile above.
+  // Unlike Quadric, the mesh itself is shaded (not just outlined): each quad gets a height-based
+  // color lerp (SURF_LOW->SURF_HIGH, matching the applet's own vertex-color gradient) times a flat
+  // per-face Lambertian factor approximating the applet's real lights (ambient 0.55, key light at
+  // (5,9,4) x0.9, fill light at (-6,3,-4) x0.35) -- a flat height-only fill read as too plain at
+  // this size, since the surface's actual bumps are extremely shallow relative to the domain.
+  var PD_DOMAIN_MIN = -3, PD_DOMAIN_MAX = 3, PD_SEG = 19, PD_Z_SCALE = 1.6;
+  var PD_CAM_POS = [6.2, 4.4, 6.2], PD_CAM_TARGET = [0, 0.3, 0], PD_FOV_DEG = 38;
+  var PD_VIEW_W = 100, PD_VIEW_H = 108;
+  function pdF(x, y) { return 0.2 * Math.sin(x) * Math.cos(y); }
+  function pdFx(x, y) { return 0.2 * Math.cos(x) * Math.cos(y); }
+  function pdToScene(x, y, z) { return [x, z * PD_Z_SCALE, -y]; }
+  function pdSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+  function pdCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+  function pdDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+  function pdNorm(a) { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+  var PD_KEY_DIR = pdNorm([5, 9, 4]), PD_FILL_DIR = pdNorm([-6, 3, -4]);
+  var pdProjectCache = null;
+  function pdProject() {
+    if (pdProjectCache) return pdProjectCache;
+    const forward = pdNorm(pdSub(PD_CAM_TARGET, PD_CAM_POS));
+    const right = pdNorm(pdCross(forward, [0, 1, 0]));
+    const camUp = pdCross(right, forward);
+    const tanHalf = Math.tan((PD_FOV_DEG * Math.PI / 180) / 2);
+    const aspect = PD_VIEW_W / PD_VIEW_H;
+    pdProjectCache = function (x, y, z) {
+      const rel = pdSub([x, y, z], PD_CAM_POS);
+      const xc = pdDot(rel, right), yc = pdDot(rel, camUp), depth = pdDot(rel, forward);
+      return {
+        x: PD_VIEW_W / 2 + (xc / (depth * tanHalf * aspect)) * (PD_VIEW_W / 2),
+        y: PD_VIEW_H / 2 - (yc / (depth * tanHalf)) * (PD_VIEW_H / 2),
+        depth: depth,
+      };
+    };
+    return pdProjectCache;
+  }
+  function pdShadeFactor(faceNormal) {
+    let n = faceNormal;
+    if (pdDot(n, [0, 1, 0]) < 0) n = [-n[0], -n[1], -n[2]];
+    return 0.55 + Math.max(0, pdDot(n, PD_KEY_DIR)) * 0.9 + Math.max(0, pdDot(n, PD_FILL_DIR)) * 0.35;
+  }
+  var PD_SURF_LOW = [0xb7, 0xbf, 0xef], PD_SURF_HIGH = [0x5f, 0x6c, 0xc9];
+  function pdQuadColor(t, shade) {
+    const c = PD_SURF_LOW.map((lo, i) => Math.max(0, Math.min(255, Math.round((lo + (PD_SURF_HIGH[i] - lo) * t) * shade))));
+    return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+  }
+  // Mesh geometry/shading never changes (static camera, fixed surface), so the quad markup is
+  // built once and cached -- only the tangent line + dot are rewritten per animation frame.
+  var pdMeshCache = null;
+  function pdMeshHTML() {
+    if (pdMeshCache) return pdMeshCache;
+    const proj = pdProject();
+    const pts = [], zVals = [];
+    for (let j = 0; j < PD_SEG; j++) {
+      pts.push([]);
+      for (let i = 0; i < PD_SEG; i++) {
+        const x = PD_DOMAIN_MIN + (PD_DOMAIN_MAX - PD_DOMAIN_MIN) * i / (PD_SEG - 1);
+        const y = PD_DOMAIN_MIN + (PD_DOMAIN_MAX - PD_DOMAIN_MIN) * j / (PD_SEG - 1);
+        const z = pdF(x, y);
+        pts[j].push(pdToScene(x, y, z));
+        zVals.push(z);
+      }
+    }
+    const zMin = Math.min.apply(null, zVals), zMax = Math.max.apply(null, zVals);
+    const quads = [];
+    for (let j = 0; j < PD_SEG - 1; j++) {
+      for (let i = 0; i < PD_SEG - 1; i++) {
+        const a = pts[j][i], b = pts[j][i + 1], c = pts[j + 1][i + 1], d = pts[j + 1][i];
+        const pa = proj(a[0], a[1], a[2]), pb = proj(b[0], b[1], b[2]), pc = proj(c[0], c[1], c[2]), pd = proj(d[0], d[1], d[2]);
+        const avgZ = (zVals[j * PD_SEG + i] + zVals[j * PD_SEG + i + 1] + zVals[(j + 1) * PD_SEG + i + 1] + zVals[(j + 1) * PD_SEG + i]) / 4;
+        const t = (avgZ - zMin) / ((zMax - zMin) || 1);
+        const depth = (pa.depth + pb.depth + pc.depth + pd.depth) / 4;
+        const shade = pdShadeFactor(pdNorm(pdCross(pdSub(b, a), pdSub(d, a))));
+        quads.push({ pts: [pa, pb, pc, pd], color: pdQuadColor(t, shade), depth: depth });
+      }
+    }
+    quads.sort((p, q) => q.depth - p.depth); // far first, painter's algorithm (camera never moves)
+    pdMeshCache = quads.map((q) =>
+      '<polygon class="pd-quad" points="' + q.pts.map((p) => p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ') + '" fill="' + q.color + '"/>'
+    ).join('');
+    return pdMeshCache;
+  }
+  // Resting frame matches the applet's own default point (x=1, y=1).
+  var PD_X0 = 1, PD_REST_Y = 1;
+  function pdTangentPoints(y) {
+    const proj = pdProject();
+    const z0 = pdF(PD_X0, y), slope = pdFx(PD_X0, y), delta = 0.9;
+    const p1 = pdToScene(PD_X0 - delta, y, z0 - delta * slope);
+    const p2 = pdToScene(PD_X0 + delta, y, z0 + delta * slope);
+    const pc = pdToScene(PD_X0, y, z0);
+    return { p1: proj(p1[0], p1[1], p1[2]), p2: proj(p2[0], p2[1], p2[2]), pc: proj(pc[0], pc[1], pc[2]) };
+  }
+  function partialDerivTileSVG() {
+    const rest = pdTangentPoints(PD_REST_Y);
+    return `<svg class="pd-tile" viewBox="0 0 ${PD_VIEW_W} ${PD_VIEW_H}">
+      ${pdMeshHTML()}
+      <line class="pd-tangent" x1="${rest.p1.x.toFixed(1)}" y1="${rest.p1.y.toFixed(1)}" x2="${rest.p2.x.toFixed(1)}" y2="${rest.p2.y.toFixed(1)}"/>
+      <circle class="pd-dot" cx="${rest.pc.x.toFixed(1)}" cy="${rest.pc.y.toFixed(1)}"/>
+    </svg>`;
+  }
+  // Live animation, only while a Partial Derivatives card is hovered: sweeps y with x held fixed
+  // at PD_X0, so the tangent line (always oriented in the x-direction) visibly rotates as its slope
+  // (f_x) changes with y -- that changing slope is f_xy. No dashed/reference curves needed to sell
+  // it; the rotating tangent alone carries the idea, same "animate content only, camera stays put"
+  // treatment as the Quadric tile's spinning ribs.
+  var pdSpins = new Map();
+  function pdStartSpin(svg) {
+    if (pdSpins.has(svg)) return;
+    const tangentEl = svg.querySelector('.pd-tangent');
+    const dotEl = svg.querySelector('.pd-dot');
+    const start = performance.now();
+    function frame(now) {
+      const t = ((now - start) / 1000) % 6; // 6s ping-pong cycle
+      const cyclePos = t / 6;
+      const sweep = cyclePos < 0.5 ? cyclePos / 0.5 : (1 - cyclePos) / 0.5; // 0 -> 1 -> 0
+      const y = PD_DOMAIN_MIN + (PD_DOMAIN_MAX - PD_DOMAIN_MIN) * sweep;
+      const pts = pdTangentPoints(y);
+      tangentEl.setAttribute('x1', pts.p1.x.toFixed(1));
+      tangentEl.setAttribute('y1', pts.p1.y.toFixed(1));
+      tangentEl.setAttribute('x2', pts.p2.x.toFixed(1));
+      tangentEl.setAttribute('y2', pts.p2.y.toFixed(1));
+      dotEl.setAttribute('cx', pts.pc.x.toFixed(1));
+      dotEl.setAttribute('cy', pts.pc.y.toFixed(1));
+      pdSpins.set(svg, requestAnimationFrame(frame));
+    }
+    pdSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function pdStopSpin(svg) {
+    const id = pdSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    pdSpins.delete(svg);
+    const rest = pdTangentPoints(PD_REST_Y);
+    const tangentEl = svg.querySelector('.pd-tangent');
+    const dotEl = svg.querySelector('.pd-dot');
+    if (tangentEl) {
+      tangentEl.setAttribute('x1', rest.p1.x.toFixed(1));
+      tangentEl.setAttribute('y1', rest.p1.y.toFixed(1));
+      tangentEl.setAttribute('x2', rest.p2.x.toFixed(1));
+      tangentEl.setAttribute('y2', rest.p2.y.toFixed(1));
+    }
+    if (dotEl) {
+      dotEl.setAttribute('cx', rest.pc.x.toFixed(1));
+      dotEl.setAttribute('cy', rest.pc.y.toFixed(1));
+    }
+  }
+  document.addEventListener('mouseover', (e) => {
+    const svg = e.target.closest && e.target.closest('.applet-card svg.pd-tile');
+    if (svg) pdStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.pd-tile');
+    if (svg) pdStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —

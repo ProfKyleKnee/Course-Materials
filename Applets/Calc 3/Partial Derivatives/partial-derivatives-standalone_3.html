@@ -4,12 +4,23 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>First &amp; Second Partial Derivatives — Calculus III</title>
+<link rel="stylesheet" href="../../shared/applet-header.css">
 <style>
   html, body { margin: 0; padding: 0; }
 </style>
 </head>
 <body>
+<div id="applet-header"></div>
 <div id="root"></div>
+<script src="../../shared/applet-header.js"></script>
+<script>
+  mountAppletHeader({
+    kicker: 'Calculus III · Unit 2',
+    title: 'First & Second Partial Derivatives',
+    courseSiteHref: '../../../index.html',
+    logoSrc: '../../../assets/favicon-white.svg'
+  });
+</script>
 <script>
 /**
  * @license React
@@ -560,10 +571,57 @@ function updateArrow(mesh, tip, dirUnit, camera, halfWidth, length, refDist) {
   posAttr.setXYZ(2, tip.x, tip.y, tip.z);
   posAttr.needsUpdate = true;
 }
+// ---- mode-switch transition helpers (point/tangent/curves tween to their new positions instead
+// of snapping) ----
+function easeInOutCubic(t) {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+function lerpVec3(a, b, t) {
+  return new THREE.Vector3(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t);
+}
+// Curve arrays only interpolate point-by-point when both the outgoing and incoming curve have the
+// same point count (i.e. both mixed-mode curves, or both the always-present live curve) -- when a
+// curve is appearing/disappearing (ref/path curves only exist in mixed modes), there's nothing
+// meaningful to morph from/to, so it snaps straight to the target instead of animating.
+function lerpCurveArray(fromArr, toArr, t) {
+  if (fromArr && toArr && fromArr.length === toArr.length && fromArr.length > 0) {
+    return toArr.map((p, i) => lerpVec3(fromArr[i], p, t));
+  }
+  return toArr;
+}
+// The ref/path curves only exist in mixed modes, so a transition into/out of a mixed mode can't
+// morph point-by-point (there's no "from" or "to" shape on the other side). Instead they fade:
+// appearing curves hold the target shape and fade opacity in from 0, disappearing curves hold the
+// outgoing shape and fade out to 0 -- only when both sides are mixed (fromLen === toLen) do they
+// still morph positionally, at full opacity throughout, same as before.
+function transitionCurveAndOpacity(fromArr, toArr, t) {
+  const fromLen = fromArr ? fromArr.length : 0;
+  const toLen = toArr ? toArr.length : 0;
+  if (fromLen > 0 && toLen > 0 && fromLen === toLen) {
+    return { points: lerpCurveArray(fromArr, toArr, t), opacity: 1 };
+  }
+  if (fromLen === 0 && toLen > 0) return { points: toArr, opacity: t };
+  if (fromLen > 0 && toLen === 0) return { points: fromArr, opacity: 1 - t };
+  return { points: toArr, opacity: 0 };
+}
+function cloneCurveState(s) {
+  return {
+    t1: s.t1.clone(),
+    t2: s.t2.clone(),
+    pt: s.pt.clone(),
+    refCurve: s.refCurve.map(p => p.clone()),
+    liveCurve: s.liveCurve.map(p => p.clone()),
+    pathCurve: s.pathCurve.map(p => p.clone())
+  };
+}
 function PartialDerivativeMockup() {
   const mountRef = useRef(null);
   const meshesRef = useRef({});
   const refDistRef = useRef(1);
+  // curveWorldRef holds the current TARGET state (where the point/tangent/curves should end up);
+  // displayCurveRef holds what's actually drawn each frame -- during a mode-switch transition these
+  // differ, with displayCurveRef tweening from its old value toward curveWorldRef (see
+  // transitionRef below and its use in animate()).
   const curveWorldRef = useRef({
     t1: new THREE.Vector3(),
     t2: new THREE.Vector3(),
@@ -572,6 +630,16 @@ function PartialDerivativeMockup() {
     liveCurve: [],
     pathCurve: []
   });
+  const displayCurveRef = useRef({
+    t1: new THREE.Vector3(),
+    t2: new THREE.Vector3(),
+    pt: new THREE.Vector3(),
+    refCurve: [],
+    liveCurve: [],
+    pathCurve: []
+  });
+  const transitionRef = useRef({ active: false, start: 0, duration: 450, from: null, to: null });
+  const prevModeRef = useRef("fx");
   const axisWorldRef = useRef({
     x: null,
     y: null,
@@ -687,7 +755,20 @@ function PartialDerivativeMockup() {
     m.refCurve = makeRibbonMesh(60, DIM_CURVE);
     m.liveCurve = makeRibbonMesh(60, LIGHT_BLUE);
     m.pathCurve = makeRibbonMesh(PATH_CURVE_N, PATH_RED);
+    // Both fade in/out when transitioning into/out of a mixed mode (see transitionCurveAndOpacity
+    // and its use in animate()) -- transparent must be on for their material's opacity to actually
+    // blend instead of being ignored.
+    m.refCurve.material.transparent = true;
+    m.pathCurve.material.transparent = true;
     m.tangent = makeRibbonMesh(2, INDIGO);
+    // Unlike every other ribbon, the tangent line always renders on top regardless of what's in
+    // front of it in 3D space -- a straight tangent line only touches the true surface at the
+    // point of tangency, so its extended ends legitimately dip below the (curved) surface nearby,
+    // and strict depth-tested occlusion was hiding exactly the part students most need to see.
+    // depthWrite is also off so this doesn't corrupt the depth buffer for anything drawn after it.
+    m.tangent.material.depthTest = false;
+    m.tangent.material.depthWrite = false;
+    m.tangent.renderOrder = 999;
     m.xAxis = makeRibbonMesh(2, AXIS_COLOR);
     m.yAxis = makeRibbonMesh(2, AXIS_COLOR);
     m.zAxis = makeRibbonMesh(2, AXIS_COLOR);
@@ -739,6 +820,38 @@ function PartialDerivativeMockup() {
     });
     const _axisDir = new THREE.Vector3();
     const animate = () => {
+      const trans = transitionRef.current;
+      let display;
+      let refOpacity = 1,
+        pathOpacity = 1;
+      if (trans.active) {
+        const raw = Math.min(1, (performance.now() - trans.start) / trans.duration);
+        const te = easeInOutCubic(raw);
+        const refT = transitionCurveAndOpacity(trans.from.refCurve, trans.to.refCurve, te);
+        const pathT = transitionCurveAndOpacity(trans.from.pathCurve, trans.to.pathCurve, te);
+        refOpacity = refT.opacity;
+        pathOpacity = pathT.opacity;
+        display = {
+          t1: lerpVec3(trans.from.t1, trans.to.t1, te),
+          t2: lerpVec3(trans.from.t2, trans.to.t2, te),
+          pt: lerpVec3(trans.from.pt, trans.to.pt, te),
+          refCurve: refT.points,
+          liveCurve: lerpCurveArray(trans.from.liveCurve, trans.to.liveCurve, te),
+          pathCurve: pathT.points
+        };
+        displayCurveRef.current = display;
+        if (raw >= 1) {
+          trans.active = false;
+          // A disappearing ref/path curve intentionally keeps rendering its old (non-empty) shape
+          // throughout the fade so there's something to fade out -- but that means it never
+          // actually converges to the target's empty array on its own. Snap straight to the real
+          // target on completion so a finished transition can't leave a stale curve sitting at
+          // full opacity (opacity itself resets to 1 by default once no transition is active).
+          displayCurveRef.current = trans.to;
+        }
+      } else {
+        display = displayCurveRef.current;
+      }
       const {
         t1,
         t2,
@@ -746,12 +859,16 @@ function PartialDerivativeMockup() {
         refCurve,
         liveCurve,
         pathCurve
-      } = curveWorldRef.current;
+      } = display;
       const axes = axisWorldRef.current;
       const refDist = refDistRef.current;
-      const mixed = MODES[modeRef.current].mixed;
-      m.refCurve.visible = mixed;
-      m.pathCurve.visible = mixed;
+      // Visibility follows whether there's actually anything to draw (not just the current mode's
+      // `mixed` flag) so a curve stays visible and rendered mid-fade even after its owning mode has
+      // already changed underneath it -- see transitionCurveAndOpacity above.
+      m.refCurve.visible = refCurve.length > 0;
+      m.pathCurve.visible = pathCurve.length > 0;
+      m.refCurve.material.opacity = refOpacity;
+      m.pathCurve.material.opacity = pathOpacity;
       if (refCurve.length) updateRibbon(m.refCurve, refCurve, 0.013, camera, refDist);
       if (liveCurve.length) updateRibbon(m.liveCurve, liveCurve, 0.0195, camera, refDist);
       if (pathCurve.length) updateRibbon(m.pathCurve, pathCurve, 0.017, camera, refDist, dashPattern);
@@ -832,6 +949,22 @@ function PartialDerivativeMockup() {
       liveCurve: livePts,
       pathCurve: pathPts
     };
+    // Only tween on an actual mode switch (a discrete jump between pill buttons) -- dragging the
+    // slider or typing a fixed value already moves continuously, so those should keep updating the
+    // display state instantly rather than lagging behind a tween.
+    if (prevModeRef.current !== mode) {
+      transitionRef.current = {
+        active: true,
+        start: performance.now(),
+        duration: 450,
+        from: cloneCurveState(displayCurveRef.current),
+        to: curveWorldRef.current
+      };
+    } else {
+      transitionRef.current.active = false;
+      displayCurveRef.current = curveWorldRef.current;
+    }
+    prevModeRef.current = mode;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, xVal, yVal, curveAnchor]);
   const cfg = MODES[mode];
@@ -977,18 +1110,27 @@ function PartialDerivativeMockup() {
   }[mode];
   return /*#__PURE__*/React.createElement("div", {
     style: {
+      height: "100%",
+      boxSizing: "border-box",
+      background: "#E8E8F2",
+      padding: "0 24px 24px",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-      background: "#F5F5FA",
-      minHeight: "100vh",
-      padding: 24,
       color: TEXT
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      maxWidth: 980,
-      margin: "0 auto"
+      maxWidth: 1200,
+      margin: "0 auto",
+      background: "#F5F5FA",
+      borderRadius: "0 0 20px 20px",
+      boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
+      overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement(Banner, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "20px 24px 24px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 20
@@ -1310,7 +1452,7 @@ function PartialDerivativeMockup() {
     }
   }, /*#__PURE__*/React.createElement(ModeLabel, {
     m: mode
-  }))), summary)));
+  }))), summary))));
 }
 function InfoTip({
   text
@@ -1368,28 +1510,33 @@ function InfoTip({
 function Banner() {
   return /*#__PURE__*/React.createElement("div", {
     style: {
-      background: "linear-gradient(120deg, #4655D4 0%, #303C99 100%)",
-      borderRadius: 22,
-      padding: "16px 22px",
-      marginBottom: 14,
-      boxShadow: "0 4px 14px rgba(48,60,153,0.25)"
+      display: "flex",
+      alignItems: "center",
+      padding: "16px 28px",
+      background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      color: "rgba(255,255,255,0.72)",
-      fontSize: 12,
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: 0.6,
-      marginBottom: 3
+      display: "flex",
+      flexDirection: "column",
+      gap: 2
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "rgba(255,255,255,0.65)",
+      letterSpacing: "0.08em",
+      textTransform: "uppercase"
     }
   }, "Calculus III · Unit 2"), /*#__PURE__*/React.createElement("div", {
     style: {
+      fontSize: 19,
+      fontWeight: 700,
       color: "#FFFFFF",
-      fontSize: 21,
-      fontWeight: 700
+      letterSpacing: "-0.005em"
     }
-  }, "First & Second Partial Derivatives"));
+  }, "First & Second Partial Derivatives")));
 }
 function Readout({
   label,
