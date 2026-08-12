@@ -1,0 +1,102 @@
+:root {
+    --bg: #F5F5FA; --card: #FFFFFF; --accent: #3B4FC2; --accent-light: #6478D6;
+    --text: #3A3A3C; --muted: #6E6E86; --eyebrow: #8A8AA3; --border: #DCDCF0;
+    --warn-neg: #C77B94; --current: #3FA66A; --dot: #6E6E86;
+  }
+  html, body { background: var(--bg); color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; color: var(--text); padding: 28px; }
+  .page { max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 19px; font-weight: 700; margin: 0; }
+
+  /* Header: title + tagline, flat tab row (no numbering, no progress semantics) */
+  .header-card { border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.08); overflow: hidden; margin-bottom: 14px; }
+  .banner { background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 20px 28px; }
+  .banner-text { margin-bottom: 16px; }
+  .kicker { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .banner h1 { font-size: 23px; font-weight: 700; color: #fff; letter-spacing: -0.005em; margin: 0; }
+  .banner .tagline { margin: 6px 0 0; font-size: 15px; color: rgba(255,255,255,0.82); }
+  .tab-pill-group { position: relative; display: flex; gap: 2px; background: rgba(255,255,255,0.14); border-radius: 16px; padding: 4px; flex-wrap: wrap; }
+  .tab-thumb { position: absolute; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); transition: left 0.32s cubic-bezier(0.4,0,0.2,1), top 0.32s cubic-bezier(0.4,0,0.2,1), width 0.32s cubic-bezier(0.4,0,0.2,1), height 0.32s cubic-bezier(0.4,0,0.2,1); }
+  .tab-pill-btn { position: relative; z-index: 1; flex: 1; min-width: 90px; border: none; background: transparent; border-radius: 12px; padding: 8px 8px; text-align: center; cursor: pointer; font-family: inherit; }
+  .tab-pill-btn .name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.78); }
+  .tab-pill-btn .skill { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 3px; line-height: 1.3; }
+  .tab-pill-btn.active .name { color: var(--accent); }
+  .tab-pill-btn.active .skill { color: var(--muted); }
+  .tab-pill-btn.disabled { cursor: not-allowed; opacity: 0.55; }
+
+  .domain-note { color: var(--muted); font-size: 13px; }
+  .panel-section.domain { padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .domain-row { cursor: pointer; border-radius: 8px; padding: 3px 6px; margin: 0 -6px; transition: background 0.2s ease; }
+  .domain-row:hover { background: #EFEFF9; }
+  .domain-row.active { background: #EEF0FB; }
+
+  .main-grid { display: grid; grid-template-columns: 62fr 38fr; gap: 18px; align-items: start; }
+  .graph-card, .panel-card { background: var(--card); border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); padding: 20px; }
+  .graph-card { position: relative; }
+  svg.graph { width: 100%; height: 380px; display: block; background: #FCFCFE; border-radius: 14px; overflow: visible; }
+
+  .instruction-text { text-align: center; font-size: 14px; color: var(--muted); margin-bottom: 10px; font-weight: 500; }
+  .instruction-text b { color: var(--text); }
+
+  /* Utility row: speed presets + Reveal Graph, sits above the playback row */
+  .util-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; }
+  .speed-group { display: flex; background: var(--bg); border-radius: 20px; padding: 3px; gap: 2px; }
+  .speed-opt { padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+  .speed-opt.active { background: var(--accent); color: #fff; }
+  .reveal-btn { border-radius: 20px; padding: 8px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; background: #fff; border: 1.5px solid var(--accent); color: var(--accent); }
+  .reveal-btn:hover { background: #EFEFF9; }
+
+  .controls-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .play-btn {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    border: none; cursor: pointer; padding: 0;
+  }
+  .play-btn svg { width: 18px; height: 18px; }
+  .play-btn.pulsing { animation: pulse 2.2s infinite; }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(59,79,194,0.45); }
+    70%  { box-shadow: 0 0 0 14px rgba(59,79,194,0); }
+    100% { box-shadow: 0 0 0 0 rgba(59,79,194,0); }
+  }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 50%; background: #fff; border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; padding: 0;
+  }
+  .icon-btn:hover { background: #EFEFF9; }
+
+  .progress-track { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--eyebrow); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
+  .slider-row { display: flex; gap: 8px; }
+  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; }
+  .slider-row input[type="range"]:disabled { opacity: 0.35; }
+
+  .panel-section { margin-bottom: 24px; }
+  .panel-section:last-child { margin-bottom: 0; }
+  .panel-title { font-size: 14px; font-weight: 700; color: var(--text); padding-bottom: 5px; border-bottom: 2.5px solid #3A3A3C; display: inline-block; margin-bottom: 12px; }
+
+  .number-line { width: 100%; height: 64px; overflow: visible; }
+  .sign-rows { display: flex; flex-direction: column; gap: 6px; }
+  .sign-row { display: flex; font-size: 14px; gap: 6px; }
+  .sign-label { font-weight: 700; width: 108px; flex-shrink: 0; }
+  .sign-label.pos { color: #3B4FC2; }
+  .sign-label.neg { color: var(--warn-neg); }
+  .sign-value { color: var(--text); }
+
+  .footer-note { margin-top: 18px; font-size: 12px; color: var(--eyebrow); text-align: center; }
+
+  .point-group { cursor: pointer; }
+  .point-group circle.dot { transition: fill 0.2s ease; }
+  .ring { animation: ringPulseOnce 0.8s ease-out 2; opacity: 0.6; }
+  .ring.delay { animation-delay: 0.35s; }
+  @keyframes ringPulseOnce {
+    0%   { r: 7; opacity: 0.6; }
+    100% { r: 17; opacity: 0; }
+  }
+  .label-badge { opacity: 1; transition: opacity 0.3s ease; animation: labelRise 0.3s ease-out; }
+  .label-badge.fading { opacity: 0; }
+  @keyframes labelRise {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+  }
