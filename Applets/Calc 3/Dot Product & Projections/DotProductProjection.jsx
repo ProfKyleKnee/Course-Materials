@@ -585,18 +585,39 @@ export default function DotProductProjection() {
   const perpPerDashMs = DRAW_IN_MS / perpDashCount;
   const perpDashFadeMs = Math.max(60, Math.min(150, perpPerDashMs * 0.6));
 
+  // Full-viewport layout contract, matching Applets/shared/applet-header.css's canonical spec:
+  // height:"100%" (not minHeight:"100vh") so the app fills whatever #root's flex-allotted remaining
+  // viewport space is. There's no separate shared topline anymore (see Banner() below), so the card
+  // gets full 24px inset on the sides/top and full 20px rounding on all corners -- Banner sits flush
+  // at its top. The outer wrapper is a flex column (not a plain block) specifically so PageCredit
+  // can pin itself to the bottom via marginTop:"auto" -- see PageCredit()'s own comment.
   return (
     <div
       style={{
+        height: "100%",
+        boxSizing: "border-box",
+        background: "#E8E8F2",
+        padding: "24px 24px 0",
+        display: "flex",
+        flexDirection: "column",
         fontFamily: "-apple-system, BlinkMacSystemFont, Inter, sans-serif",
         color: COLORS.text,
-        background: COLORS.bg,
-        padding: 24,
-        borderRadius: 22,
-        maxWidth: 1120,
-        margin: "0 auto",
       }}
     >
+      <div
+        style={{
+          maxWidth: 1200,
+          width: "100%",
+          margin: "0 auto",
+          background: COLORS.bg,
+          borderRadius: "20px",
+          boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
+        <Banner />
+        <div style={{ padding: "20px 24px 24px" }}>
       <style>{`
         @keyframes sweepIn {
           from { stroke-dashoffset: var(--len); opacity: 0; }
@@ -964,7 +985,7 @@ export default function DotProductProjection() {
 
             {showComponent && !Number.isNaN(comp) && (
               <div style={{ background: "white", border: `1px solid ${COLORS.border}`, borderRadius: 18, padding: "12px 10px", textAlign: "center", overflow: "hidden" }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 6, color: caliperColor, whiteSpace: "nowrap" }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 6, color: COLORS.eyebrow, whiteSpace: "nowrap" }}>
                   comp<sub><Vec>{ontoLabel}</Vec></sub>(<Vec>{fromLabel}</Vec>)=&#8214;proj<sub><Vec>{ontoLabel}</Vec></sub>(<Vec>{fromLabel}</Vec>)&#8214;
                 </div>
                 <div style={{ fontSize: 21, fontWeight: 700, color: caliperColor }}>{fmt(comp)}</div>
@@ -978,6 +999,7 @@ export default function DotProductProjection() {
             dotVal={dotVal}
             proj={proj}
             comp={comp}
+            caliperColor={caliperColor}
             showProjection={showProjection}
             showComponent={showComponent}
             fromLabel={fromLabel}
@@ -987,6 +1009,114 @@ export default function DotProductProjection() {
           />
         </div>
       </div>
+        </div>
+      </div>
+      <PageCredit />
+    </div>
+  );
+}
+
+// Matches the canonical gradient-banner spec documented at the bottom of
+// Applets/shared/applet-header.css, hand-matched here since each applet's banner lives in its own
+// JSX -- same values Quadric Surfaces' and Partial Derivatives' banners use. "All Applets" lives
+// inline on the banner's left; the decorative curve carries over from the old topline+banner pair.
+function Banner() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        padding: "16px 28px",
+        background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        viewBox="0 0 1200 130"
+        preserveAspectRatio="none"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }}
+      >
+        <path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" stroke="white" strokeWidth="2.5" fill="none" />
+      </svg>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
+        <a
+          href="../../../browse.html#/applets"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            color: "rgba(255,255,255,0.88)",
+            textDecoration: "none",
+            fontSize: 12.5,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            padding: "6px 10px",
+            borderRadius: 8,
+            background: "rgba(255,255,255,0.12)",
+          }}
+        >
+          ← All Applets
+        </a>
+        <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.65)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Calculus III · Unit 1
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }}>
+            Dot Product &amp; Projections
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Page-level brand credit, centered below the app card (see the "final header direction" note in
+// Applets/shared/applet-header.css) -- lives here rather than inside Banner() since it belongs to
+// the whole page, not specifically to the banner or the card. marginTop:"auto" on its wrapper usage
+// above pins it to the bottom of the outer flex column when there's leftover vertical space, and
+// lets it fall in normal flow right after the card (never disappearing) when the app's own content
+// is tall enough to fill the viewport on its own.
+function PageCredit() {
+  return (
+    <div
+      style={{
+        marginTop: "auto",
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 11,
+        padding: "18px 20px 26px",
+        fontSize: 13.5,
+        color: COLORS.muted,
+      }}
+    >
+      <span
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          background: "#FFFFFF",
+          border: `1px solid ${COLORS.border}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }
@@ -1027,7 +1157,7 @@ function ReadoutCard({ eyebrow, children }) {
   );
 }
 
-function DerivationPanel({ a, b, dotVal, proj, comp, showProjection, showComponent, fromLabel, ontoLabel, fromVec, ontoVec }) {
+function DerivationPanel({ a, b, dotVal, proj, comp, caliperColor, showProjection, showComponent, fromLabel, ontoLabel, fromVec, ontoVec }) {
   const [open, setOpen] = useState(true);
   const nOnto2 = ontoVec.x * ontoVec.x + ontoVec.y * ontoVec.y;
   return (
@@ -1053,7 +1183,7 @@ function DerivationPanel({ a, b, dotVal, proj, comp, showProjection, showCompone
             </div>
           )}
           {showComponent && (
-            <div style={{ fontSize: 14, lineHeight: 1.5, color: COLORS.green }}>
+            <div style={{ fontSize: 14, lineHeight: 1.5, color: caliperColor }}>
               <span style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em", color: COLORS.eyebrow, fontWeight: 700, marginBottom: 3 }}>
                 Scalar Component
               </span>

@@ -344,6 +344,7 @@
   function tileSVG(a) {
     if (a.tileType === 'paraboloid') return paraboloidTileSVG();
     if (a.tileType === 'partialDerivatives') return partialDerivTileSVG();
+    if (a.tileType === 'dotProduct') return dpTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -680,6 +681,173 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.pd-tile');
     if (svg) pdStopSpin(svg);
+  });
+
+  // ---------- Dot Product & Projections card tile: two vectors from a shared tail, replaying the
+  // applet's own "rotate up, reveal the perpendicular, fade in the projection" story in miniature.
+  // b stays fixed pointing right the whole time (the "onto" vector); a is the only thing that moves,
+  // sweeping from 15deg to 60deg above it (dpFrameState's rotate phase) before the dashed
+  // perpendicular fades in, then the solid projection vector — mirroring the real applet's perpPhase
+  // sequence (dashes first, then the solid proj<sub>b</sub>(a) vector), just without the real app's
+  // dash-by-dash reveal or right-angle mark, which don't read at this size. Resting frame (a at
+  // 15deg, dashed/proj both invisible) is drawn once at render time; live motion is JS-driven via
+  // requestAnimationFrame, only while a card is hovered, same as the Quadric/Partial Derivatives
+  // tiles above. Phase lengths are specified in absolute ms (DP_DUR) rather than hand-computed
+  // fractions, since every fraction depends on the total cycle length and hand-adjusting one phase
+  // used to mean re-deriving all the others -- DP_PHASE below just sums DP_DUR into cumulative
+  // fractions of whatever DP_CYCLE_MS comes out to. `close` is set equal to `rotate` so the angle
+  // collapses at exactly the same pace it opened at (the version this replaced had the open phase
+  // take ~2.5s against a ~0.3s close, which read as lopsided); `hold1` is kept short so the dashed
+  // perpendicular starts fading in almost immediately once a finishes rotating; `hold2` (the pause
+  // once the projection vector is fully visible, before it and the dashes fade back out) is kept
+  // short too, so the angle doesn't sit idle for long after the reveal finishes.
+  var DP_TAIL = { x: 15, y: 84 };
+  var DP_LEN = 62;
+  var DP_A_MIN_DEG = 15, DP_A_MAX_DEG = 60;
+  var DP_ARROW_LEN = 6, DP_ARROW_HALF_W = 3.4;
+  var DP_DUR = { rotate: 1054, hold1: 124, perpFade: 744, projFade: 744, hold2: 700, fadeOut: 400, close: 1054 };
+  var DP_CYCLE_MS = DP_DUR.rotate + DP_DUR.hold1 + DP_DUR.perpFade + DP_DUR.projFade + DP_DUR.hold2 + DP_DUR.fadeOut + DP_DUR.close;
+  var DP_PHASE = (function () {
+    let t = DP_DUR.rotate;
+    const rotateEnd = t / DP_CYCLE_MS;
+    t += DP_DUR.hold1;
+    const hold1End = t / DP_CYCLE_MS;
+    t += DP_DUR.perpFade;
+    const perpEnd = t / DP_CYCLE_MS;
+    t += DP_DUR.projFade;
+    const projEnd = t / DP_CYCLE_MS;
+    t += DP_DUR.hold2;
+    const hold2End = t / DP_CYCLE_MS;
+    t += DP_DUR.fadeOut;
+    const outEnd = t / DP_CYCLE_MS;
+    return { rotateEnd, hold1End, perpEnd, projEnd, hold2End, outEnd };
+  })();
+  function dpEaseInOutSine(t) {
+    return t <= 0 ? 0 : t >= 1 ? 1 : (1 - Math.cos(t * Math.PI)) / 2;
+  }
+  function dpPoint(angleDeg, len) {
+    const rad = (angleDeg * Math.PI) / 180;
+    return { x: DP_TAIL.x + len * Math.cos(rad), y: DP_TAIL.y - len * Math.sin(rad) };
+  }
+  function dpProjX(angleDeg) {
+    return DP_TAIL.x + DP_LEN * Math.cos((angleDeg * Math.PI) / 180);
+  }
+  function dpFrameState(cyclePos) {
+    const P = DP_PHASE;
+    if (cyclePos < P.rotateEnd) {
+      const s = dpEaseInOutSine(cyclePos / P.rotateEnd);
+      return { angle: DP_A_MIN_DEG + (DP_A_MAX_DEG - DP_A_MIN_DEG) * s, perpOpacity: 0, projOpacity: 0 };
+    }
+    if (cyclePos < P.hold1End) return { angle: DP_A_MAX_DEG, perpOpacity: 0, projOpacity: 0 };
+    if (cyclePos < P.perpEnd) {
+      const s = (cyclePos - P.hold1End) / (P.perpEnd - P.hold1End);
+      return { angle: DP_A_MAX_DEG, perpOpacity: s, projOpacity: 0 };
+    }
+    if (cyclePos < P.projEnd) {
+      const s = (cyclePos - P.perpEnd) / (P.projEnd - P.perpEnd);
+      return { angle: DP_A_MAX_DEG, perpOpacity: 1, projOpacity: s };
+    }
+    if (cyclePos < P.hold2End) return { angle: DP_A_MAX_DEG, perpOpacity: 1, projOpacity: 1 };
+    if (cyclePos < P.outEnd) {
+      const s = (cyclePos - P.hold2End) / (P.outEnd - P.hold2End);
+      return { angle: DP_A_MAX_DEG, perpOpacity: 1 - s, projOpacity: 1 - s };
+    }
+    const s = (cyclePos - P.outEnd) / (1 - P.outEnd);
+    return { angle: DP_A_MAX_DEG - (DP_A_MAX_DEG - DP_A_MIN_DEG) * dpEaseInOutSine(s), perpOpacity: 0, projOpacity: 0 };
+  }
+  // A shared right-pointing triangle, positioned per-vector via `transform: translate(...) rotate(...)`
+  // rather than a full orient="auto" SVG <marker> (which would need a page-unique id) -- simpler and
+  // sufficient at this size. The projection vector's own direction never changes (b is fixed along
+  // +x, and a's component along it is always positive over the 15-60deg range this tile animates
+  // through), so its arrow only ever needs translating; a's arrow also needs rotating to match a's
+  // current angle each frame -- see dpVecAngleToRotateDeg below for why that's simply the negated
+  // angle rather than a full atan2 computation.
+  function dpArrowPoints() {
+    return `-${DP_ARROW_LEN},-${DP_ARROW_HALF_W} 0,0 -${DP_ARROW_LEN},${DP_ARROW_HALF_W}`;
+  }
+  // dpPoint's screen direction for a given angleDeg is (cos(rad), -sin(rad)) -- y negated because
+  // screen y grows downward while angleDeg is measured the usual upward-positive way. The default
+  // arrow shape points along +x (angle 0 on screen), so rotating it by -angleDeg in SVG's own
+  // (also y-down) rotate() lines it up with that same direction exactly.
+  function dpVecAngleToRotateDeg(angleDeg) {
+    return -angleDeg;
+  }
+  function dpTileSVG() {
+    const aTip = dpPoint(DP_A_MIN_DEG, DP_LEN);
+    const aLineEnd = dpPoint(DP_A_MIN_DEG, DP_LEN - DP_ARROW_LEN);
+    const bTip = dpPoint(0, DP_LEN);
+    const bLineEnd = dpPoint(0, DP_LEN - DP_ARROW_LEN);
+    const projX = dpProjX(DP_A_MIN_DEG);
+    return `<svg class="dp-tile" viewBox="0 0 100 100">
+      <circle class="dp-tail-dot" cx="${DP_TAIL.x}" cy="${DP_TAIL.y}" r="2.2"/>
+      <line class="dp-perp" x1="${aTip.x.toFixed(1)}" y1="${aTip.y.toFixed(1)}" x2="${projX.toFixed(1)}" y2="${DP_TAIL.y}"/>
+      <line class="dp-vec-b" x1="${DP_TAIL.x}" y1="${DP_TAIL.y}" x2="${bLineEnd.x.toFixed(1)}" y2="${bLineEnd.y.toFixed(1)}"/>
+      <polygon class="dp-vec-b-arrow" points="${dpArrowPoints()}" transform="translate(${bTip.x.toFixed(1)},${bTip.y.toFixed(1)}) rotate(${dpVecAngleToRotateDeg(0)})"/>
+      <line class="dp-vec-a" x1="${DP_TAIL.x}" y1="${DP_TAIL.y}" x2="${aLineEnd.x.toFixed(1)}" y2="${aLineEnd.y.toFixed(1)}"/>
+      <polygon class="dp-vec-a-arrow" points="${dpArrowPoints()}" transform="translate(${aTip.x.toFixed(1)},${aTip.y.toFixed(1)}) rotate(${dpVecAngleToRotateDeg(DP_A_MIN_DEG)})"/>
+      <line class="dp-proj" x1="${DP_TAIL.x}" y1="${DP_TAIL.y}" x2="${(projX - DP_ARROW_LEN).toFixed(1)}" y2="${DP_TAIL.y}"/>
+      <polygon class="dp-proj-arrow" points="${dpArrowPoints()}" transform="translate(${projX.toFixed(1)},${DP_TAIL.y})"/>
+    </svg>`;
+  }
+  var dpSpins = new Map();
+  function dpStartSpin(svg) {
+    if (dpSpins.has(svg)) return;
+    const aEl = svg.querySelector('.dp-vec-a');
+    const aArrowEl = svg.querySelector('.dp-vec-a-arrow');
+    const perpEl = svg.querySelector('.dp-perp');
+    const projEl = svg.querySelector('.dp-proj');
+    const arrowEl = svg.querySelector('.dp-proj-arrow');
+    const start = performance.now();
+    const cycleMs = DP_CYCLE_MS;
+    function frame(now) {
+      const cyclePos = ((now - start) % cycleMs) / cycleMs;
+      const st = dpFrameState(cyclePos);
+      const aTip = dpPoint(st.angle, DP_LEN);
+      const aLineEnd = dpPoint(st.angle, DP_LEN - DP_ARROW_LEN);
+      const projX = dpProjX(st.angle);
+      aEl.setAttribute('x2', aLineEnd.x.toFixed(1));
+      aEl.setAttribute('y2', aLineEnd.y.toFixed(1));
+      aArrowEl.setAttribute('transform', `translate(${aTip.x.toFixed(1)},${aTip.y.toFixed(1)}) rotate(${dpVecAngleToRotateDeg(st.angle).toFixed(1)})`);
+      perpEl.setAttribute('x1', aTip.x.toFixed(1));
+      perpEl.setAttribute('y1', aTip.y.toFixed(1));
+      perpEl.setAttribute('x2', projX.toFixed(1));
+      perpEl.style.opacity = st.perpOpacity;
+      projEl.setAttribute('x2', (projX - DP_ARROW_LEN).toFixed(1));
+      projEl.style.opacity = st.projOpacity;
+      arrowEl.setAttribute('transform', `translate(${projX.toFixed(1)},${DP_TAIL.y})`);
+      arrowEl.style.opacity = st.projOpacity;
+      dpSpins.set(svg, requestAnimationFrame(frame));
+    }
+    dpSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function dpStopSpin(svg) {
+    const id = dpSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    dpSpins.delete(svg);
+    const aEl = svg.querySelector('.dp-vec-a');
+    const aArrowEl = svg.querySelector('.dp-vec-a-arrow');
+    const perpEl = svg.querySelector('.dp-perp');
+    const projEl = svg.querySelector('.dp-proj');
+    const arrowEl = svg.querySelector('.dp-proj-arrow');
+    const restTip = dpPoint(DP_A_MIN_DEG, DP_LEN);
+    const restLineEnd = dpPoint(DP_A_MIN_DEG, DP_LEN - DP_ARROW_LEN);
+    const restProjX = dpProjX(DP_A_MIN_DEG);
+    if (aEl) { aEl.setAttribute('x2', restLineEnd.x.toFixed(1)); aEl.setAttribute('y2', restLineEnd.y.toFixed(1)); }
+    if (aArrowEl) { aArrowEl.setAttribute('transform', `translate(${restTip.x.toFixed(1)},${restTip.y.toFixed(1)}) rotate(${dpVecAngleToRotateDeg(DP_A_MIN_DEG)})`); }
+    if (perpEl) { perpEl.setAttribute('x1', restTip.x.toFixed(1)); perpEl.setAttribute('y1', restTip.y.toFixed(1)); perpEl.setAttribute('x2', restProjX.toFixed(1)); perpEl.style.opacity = ''; }
+    if (projEl) { projEl.setAttribute('x2', (restProjX - DP_ARROW_LEN).toFixed(1)); projEl.style.opacity = ''; }
+    if (arrowEl) { arrowEl.setAttribute('transform', `translate(${restProjX.toFixed(1)},${DP_TAIL.y})`); arrowEl.style.opacity = ''; }
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.dp-tile');
+    if (svg) dpStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.dp-tile');
+    if (svg) dpStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
