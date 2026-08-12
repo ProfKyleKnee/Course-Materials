@@ -354,22 +354,26 @@
     </svg>`;
   }
 
-  // Wireframe paraboloid opening upward: rim + walls stay a fixed size always (a symmetric bowl's
-  // silhouette doesn't actually change shape as it spins around its own vertical axis, so resizing
-  // it was never right). "Spinning the x/y axes" is instead a flat axis-cross lying in the rim's
-  // plane that rotates in place -- literal, and can't distort anything since it's just two lines.
-  // The red cross-section ellipse fades in and sweeps from the rim down toward the vertex,
-  // shrinking as it goes, echoing the applet's own fixed-z slider. Both only run on hover; at rest
-  // it's just the plain bowl, nothing else visible.
+  // Wireframe paraboloid opening upward. The bowl itself (qs-body: front rim arc + both walls, one
+  // continuous closed path, so there's no gap between rim and walls like an earlier version had;
+  // qs-back-rim: the far half of the rim, drawn separately so the opening still reads as a full
+  // ellipse) never animates in any way -- always the same size, matching the ask that the outline
+  // stay static. qs-wire is a static mid-height latitude line, just texture. The x/y axis-cross
+  // (qs-axes) is visible at rest too, and only *rotates in place* on hover -- it can't resize
+  // anything since it's just two thin lines, unlike squashing the rim did in an earlier version.
+  // The red cross-section starts noticeably smaller than the rim (so it never reads as "the rim
+  // shrinking") and sweeps from near the rim down toward the vertex, shrinking further as it goes,
+  // fading in only on hover -- echoing the applet's own fixed-z slider.
   function paraboloidTileSVG() {
     return `<svg viewBox="0 0 100 90">
-      <path class="qs-wall" d="M14,22 C18,48 30,66 50,78"/>
-      <path class="qs-wall" d="M86,22 C82,48 70,66 50,78"/>
-      <ellipse class="qs-cross" cx="50" cy="24" rx="34" ry="9"/>
-      <ellipse class="qs-rim" cx="50" cy="22" rx="36" ry="10"/>
+      <path class="qs-body" d="M14,22 A36,10 0 0 1 86,22 C82,48 70,66 50,78 C30,66 18,48 14,22 Z"/>
+      <path class="qs-wire" d="M30,50 A20,5 0 0 1 70,50"/>
+      <line class="qs-zaxis" x1="50" y1="10" x2="50" y2="78"/>
+      <path class="qs-back-rim" d="M14,22 A36,10 0 0 0 86,22"/>
+      <ellipse class="qs-cross" cx="50" cy="30" rx="24" ry="6.5"/>
       <g class="qs-axes">
-        <line x1="18" y1="22" x2="82" y2="22"/>
-        <line x1="50" y1="13" x2="50" y2="31"/>
+        <line x1="20" y1="22" x2="80" y2="22"/>
+        <line x1="50" y1="14" x2="50" y2="30"/>
       </g>
     </svg>`;
   }

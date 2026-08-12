@@ -168,27 +168,29 @@
   }
 
   /* ---------- Quadric Surfaces card tile (tileType: 'paraboloid' in js/data.js) ----------
-     Static bowl at rest, nothing else visible or animating. On hover: a flat x/y axis-cross lying
-     in the rim's plane rotates in place (thin lines only, so it can't distort the bowl the way
-     resizing the rim did in an earlier version — a symmetric bowl's own silhouette doesn't actually
-     change as it spins around its own vertical axis, so the rim/walls never animate their size),
-     and a red cross-section ellipse fades in and sweeps down toward the vertex, shrinking to match
-     — a paraboloid's cross-section really does shrink as z decreases. */
-  .qs-wall { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: 0.85; }
-  .qs-rim { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; }
-  .qs-cross { fill: rgba(216,90,110,0.18); stroke: #D85A6E; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
-  .qs-axes { opacity: 0; transform-box: fill-box; transform-origin: center; }
-  .qs-axes line { stroke: var(--accent-2); stroke-width: 1.4; }
+     The bowl outline (qs-body + qs-back-rim), its mid-height wireframe line (qs-wire), and the
+     z-axis tick (qs-zaxis) are all static, always visible, and never animate — fixed size at all
+     times. The x/y axis-cross (qs-axes) is also visible at rest, and only *rotates in place* on
+     hover (thin lines only, so rotating it can't resize or distort anything). A red cross-section
+     ellipse — sized well inside the rim so it never reads as the rim itself changing size — fades
+     in on hover and sweeps down toward the vertex, shrinking further as it goes, matching how a
+     paraboloid's cross-section really does shrink as z decreases. */
+  .qs-body { fill: rgba(59,79,194,0.08); stroke: var(--accent); stroke-width: 2; }
+  .qs-back-rim { fill: none; stroke: var(--accent); stroke-width: 1.6; opacity: 0.55; }
+  .qs-wire { fill: none; stroke: var(--accent-2); stroke-width: 1.2; opacity: 0.5; }
+  .qs-zaxis { stroke: var(--eyebrow); stroke-width: 1.2; opacity: 0.5; }
+  .qs-cross { fill: rgba(216,90,110,0.2); stroke: #D85A6E; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .qs-axes { transform-box: fill-box; transform-origin: center; }
+  .qs-axes line { stroke: var(--accent-2); stroke-width: 1.3; opacity: 0.7; }
   .applet-card:hover .qs-cross { animation: qsCross 3.4s ease-in-out infinite; }
-  .applet-card:hover .qs-axes { animation: qsAxesSpin 3.4s linear infinite, qsAxesFade 3.4s ease-in-out infinite; }
+  .applet-card:hover .qs-axes { animation: qsAxesSpin 3.4s linear infinite; }
   @keyframes qsAxesSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  @keyframes qsAxesFade { 0%, 100% { opacity: 0; } 15%, 85% { opacity: 0.65; } }
   @keyframes qsCross {
-    0% { opacity: 0; cy: 24px; rx: 34px; ry: 9px; }
+    0% { opacity: 0; cy: 30px; rx: 24px; ry: 6.5px; }
     10% { opacity: 0.9; }
-    50% { cy: 58px; rx: 15px; ry: 4px; }
+    50% { cy: 58px; rx: 12px; ry: 3px; }
     90% { opacity: 0.9; }
-    100% { opacity: 0; cy: 24px; rx: 34px; ry: 9px; }
+    100% { opacity: 0; cy: 30px; rx: 24px; ry: 6.5px; }
   }
 
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
