@@ -7,7 +7,12 @@ real Calc 1 catalog and its source files added on the `Calc1-Content-Addition` b
 real Calc 2 and Calc 3 catalogs and their source files added on the `Calc2&3-Content-Addition`
 branch (not yet merged to `main`), plus the interactive `Applets/` system (shared header, the
 Quadric Surfaces applet fully wired up) added on the `First-Applet` branch (not yet merged to
-`main`).
+`main`), plus a round of Applets/browse-page polish on the `small-fixes` branch (not yet merged to
+`main`): Partial Derivatives migrated to the same full-viewport layout as Quadric Surfaces, both
+applets' headers rebuilt from a two-bar shared-topline design down to a single gradient banner with
+a page-level brand credit row, same-tab applet launches, a course-glyph redesign of the top-level
+Applets/Lecture Videos course-carousel headers, and a three.js version regression fix on Partial
+Derivatives — see §7 for all of it.
 
 ---
 
@@ -58,7 +63,7 @@ link only when the path isn't `'#'` or empty.
 | `apple-touch-icon.png` | iOS home-screen icon |
 | `logo-seal-white.svg` | K² seal, all strokes/fills `#FFFFFF` — used on colored grounds (banner, footer) |
 | `logo-seal-accent.svg` | Same artwork, all strokes/fills `#3B4FC2` — used on white/pale grounds: `about.html`'s photo and the home page's About-card circular badge (`.spotlight-media-circle`, whose background is a pale gradient, not a colored fill) |
-| `favicon-white.svg` | White-recolored twin of `favicon.svg` (ring + `K²` monogram only, no curved text), for the `Applets/` shared header's brand badge — see §7 |
+| `favicon-white.svg` | White-recolored twin of `favicon.svg` (ring + `K²` monogram only, no curved text), built for the `Applets/` shared topline's brand badge. That topline is now unused by both migrated applets (see §7), so this file currently has no live consumer — kept in case a future applet's header still wants a mark on a dark/colored ground. |
 
 `logo-seal-white.svg` and `logo-seal-accent.svg` are byte-identical apart from the color values.
 Both are 200×200 viewBox with curved `PROFESSOR` / `MATHEMATICS` text on `<textPath>` and a serif
@@ -337,14 +342,32 @@ banner's structure or the menu's positioning changes.
 ### Sidebar alignment
 On the two pages that show `#sidebar-card` (`typeBrowse` and `tier3`, for the three sidebar types —
 see the DOM contract above), `alignSidebarToJumpRow()` in `js/app.js` pushes the sidebar's resting
-position down with an inline `marginTop` so its top edge lines up with the page's `.jump-row` (course
-chips on `typeBrowse`, the Standard/Blended/unit chip rows on `tier3`) instead of the very top of the
-main column. It measures via `getBoundingClientRect()` deltas rather than `offsetTop`, since neither
-`#page` nor `.page-shell` is a positioned ancestor — `offsetTop` on the jump row would otherwise
-resolve relative to the document, not to the sidebar's own position. It's called once after each of
-those two render branches sets `page.innerHTML`, and again on `window resize` (matching the
-`.page-shell` 900px breakpoint where the sidebar drops below the main column instead of sitting
-beside it, at which point the margin is cleared).
+position down with an inline `marginTop` so its top edge lines up with the page's `.jump-row` instead
+of the very top of the main column. It measures via `getBoundingClientRect()` deltas rather than
+`offsetTop`, since neither `#page` nor `.page-shell` is a positioned ancestor — `offsetTop` on the
+jump row would otherwise resolve relative to the document, not to the sidebar's own position. It's
+called once after each of those two render branches sets `page.innerHTML`, and again on `window
+resize` (matching the `.page-shell` 900px breakpoint where the sidebar drops below the main column
+instead of sitting beside it, at which point the margin is cleared). `typeBrowse` no longer renders
+a `.jump-row` at all (the course chip filter row was removed from the top-level Applets/Lecture
+Videos pages — see "Course-carousel headers" below), so on that page the function's `if (!jumpRow ...)
+{ sidebar.style.marginTop = ''; return; }` branch always fires and the sidebar just sits at the top
+of the main column; the function still does real work on `tier3`, where the Standard/Blended/unit
+chip rows still exist.
+
+### Course-carousel headers (`typeBrowse` pages)
+`courseCarouselsHTML()` (`js/app.js:764`) drives the per-course sections on the top-level Applets and
+Lecture Videos pages (both share this one function via the `typeVal` param). Each course section's
+header is now a `courseSymbol` glyph in a `.cc-glyph` badge (44×44px — the same glyphs the course-
+directory-card badge uses, reused here deliberately instead of introducing per-course color, since
+color already means something specific via `--unit-color` on a course's own `tier3` page) next to the
+course name and an inline item count (`"N applets"` / `"N worksheets"` etc., singularized for count
+1). The whole per-course block list is wrapped in a `.course-carousel-list` container specifically so
+a hairline divider (`.course-carousel-list > .carousel-block + .carousel-block`) can separate course
+sections from each other without also affecting `tier3`'s own unit carousels, which share the same
+`.carousel-block` class but aren't wrapped in that container. The old `.jump-row` course-chip filter
+row above this list (rendered via `jumpRowHTML()`) was removed from `typeBrowse` entirely — see
+"Sidebar alignment" above for the knock-on effect on sidebar positioning.
 
 ### In-development course lock
 `js/app.js` defines `isInDevelopment(course)`, `devTapeHTML(course)`, and `devPillHTML(course)`,
@@ -493,14 +516,17 @@ Applets/
     │   ├── saddle_icon.js                      Applet-specific data, imported by app.jsx
     │   └── spec.md                             Design-decision log for this applet — see below
     ├── Dot Product & Projections/  Same folder pattern, no spec.md yet
-    ├── Partial Derivatives/        Same pattern, has its own spec_2_1_1_1.md
+    ├── Partial Derivatives/        Migrated — partial-derivatives-standalone_3.html is the shipped
+    │                                 bundle, partial-derivatives.jsx the source; has its own
+    │                                 spec_2_1_1_1.md
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
-**Only Quadric Surfaces has been migrated** to the shared header + full-viewport layout described
-below; the other three Calc 3 applets and everything under Calc 1/Calc 2 still use their own
-one-off header (or none at all) and haven't been touched. Migrating one means: adding the shared
-header's `<link>`/`<div>`/`<script>` wiring to its HTML shell (see "Shared header" below), hand-
-matching its own JSX gradient banner to the canonical spec, and rebuilding its bundle.
+**Quadric Surfaces and Partial Derivatives have been migrated** to the full-viewport layout
+described below; the other two Calc 3 applets and everything under Calc 1/Calc 2 still use their
+own one-off header (or none at all) and haven't been touched. Migrating one means: hand-matching its
+own JSX gradient banner and page-level credit row to the canonical spec (see "Header pattern" below)
+and rebuilding its bundle. Neither migrated applet uses the old shared-topline HTML/JS wiring
+anymore — see "Header pattern" for why.
 
 ### Per-applet design-decision logs
 Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
@@ -511,67 +537,105 @@ back-filling one when doing substantial work on an applet that lacks it.
 ### Build model
 Each applet is bundled **independently** — there is no shared build pipeline or lockfile in this
 repo, and React itself isn't committed anywhere. The `.jsx` file is the source of truth; the shipped
-HTML's inline `<script>` is esbuild's `--format=iife` output for that file with
-React/ReactDOM/the JSX runtime bundled in (visible as `// react/cjs/react.development.js`-style
-module-boundary comments inside the bundle). To rebuild after editing a `.jsx` source:
+HTML's inline `<script>` is the compiled output for that file. There's no script in this repo that
+automates the splice-into-HTML step; it's done by hand each time, replacing everything from the
+bundle's own `<script>` opening tag through to the closing `</script></body></html>` — the header
+`<link>`/`<script>` lines (see "Header pattern" below) live *before* that block and aren't touched by
+a rebuild.
+
+**Quadric Surfaces** (`import`-based source, real ES module imports for React/react-dom/its two
+sibling data files) uses the straightforward esbuild bundle recipe:
 ```
 npm install react@19 react-dom@19        # in a scratch dir — not part of this repo
 npx esbuild app.jsx --bundle --outfile=bundle.js --format=iife --jsx=automatic
 ```
-...then splice `bundle.js`'s contents into the shipped HTML file, replacing everything from the
-bundle's own `<script>` opening tag through to the closing `</script></body></html>` — the header
-`<link>`/`<script>` lines (below) live *before* that block and aren't touched by a rebuild. There's
-no script in this repo that automates the splice step; it's done by hand each time.
+This inlines React/ReactDOM/the JSX runtime into one IIFE (visible as esbuild's own
+`// src/...`-style module-boundary comments inside the bundle).
 
-### Shared header
-Every migrated applet's HTML shell loads two files from `Applets/shared/` and calls one function,
-placed right before the bundle's own `<script>` tag:
+**Partial Derivatives** is different and easy to get wrong: `partial-derivatives.jsx` references
+`React`, `ReactDOM`, and `THREE` as bare globals (no `import` statements at all — see the file's own
+top-of-file comment), because its shipped bundle is a straight concatenation of the raw UMD
+production builds of **React 18.3.1**, **ReactDOM 18.3.1**, and **three.js 0.149.x** (pre-r150, the
+last version with a plain global/UMD `build/three.min.js` — modern three.js only ships ESM/CJS) with
+a classic-transform JSX compile of the source appended after them:
+```
+npm install react@18.3.1 react-dom@18.3.1 three@0.149.0     # scratch dir, not part of this repo
+npx esbuild partial-derivatives.jsx --jsx=transform --jsx-factory=React.createElement \
+  --jsx-fragment=React.Fragment --minify --outfile=app.compiled.js
+```
+...then concatenate, in this order: `node_modules/react/umd/react.production.min.js`,
+`node_modules/react-dom/umd/react-dom.production.min.js`, `node_modules/three/build/three.min.js`,
+`app.compiled.js`. **Do not** rebuild this applet's three.js from a current npm install (whether via
+the real `three` package's ESM build bundled into a global, or any other recent version) — three.js
+r150+ turned on sRGB color management and physically-correct light falloff by default, which
+silently darkens and desaturates the surface's vertex-colored mesh and its `AmbientLight`/
+`DirectionalLight` intensities, since none of those numbers in the source were tuned for that
+lighting model. This exact regression shipped once already on the `small-fixes` branch and had to be
+diagnosed and reverted by comparing against a git-history screenshot of the original bundle — pin
+the version instead of re-deriving this fix.
+
+### Header pattern
+Both migrated applets' HTML shells load only the shared CSS file, for its full-viewport layout
+rules — nothing else is shared HTML/JS anymore:
 ```html
 <head>...<link rel="stylesheet" href="../../shared/applet-header.css"></head>
 <body>
-<div id="applet-header"></div>
 <div id="root"></div>
-<script src="../../shared/applet-header.js"></script>
-<script>
-  mountAppletHeader({
-    kicker: 'Calculus III · Unit 1',
-    title: 'Quadric Surface Explorer',
-    courseSiteHref: '../../../index.html',
-    logoSrc: '../../../assets/favicon-white.svg'
-  });
-</script>
-<script>/* esbuild bundle, renders React into #root */</script>
+<script>/* compiled bundle, renders React into #root */</script>
 </body>
 ```
-The `../` depth on `courseSiteHref`/`logoSrc`/the `<link>`/`<script src>` paths depends on how many
-folders deep the applet's HTML file sits under `Applets/`.
+An earlier version of this pattern (still visible in `applet-header.js` and most of
+`applet-header.css`) had a **shared topline** — a separate navy strip above the gradient banner,
+rendered by calling `mountAppletHeader({...})` against a `<div id="applet-header">`, with a "Course
+site" link back to `index.html`. That two-bar design was retired after live A/B trials on both
+migrated applets found it read as visually heavy; `applet-header.js`'s `mountAppletHeader()` and
+`applet-header.css`'s `.aph-*` rules still exist (in case a future applet's layout genuinely wants a
+separate topline) but neither migrated applet calls or loads them anymore — don't assume a new
+applet should wire them back up without checking whether the single-banner pattern below fits first.
 
-The header is split into two pieces that are **not** both "shared" in the same sense:
-- **Topline** (brand mark, name, "Course site" link back to `index.html`) — genuinely shared,
-  rendered by `mountAppletHeader()` from `applet-header.js`/`.css`. Editing those two files updates
-  every migrated applet at once.
-- **Gradient banner** (kicker/title, plus each applet's own tabs/toggles on the right, e.g. Quadric
-  Surfaces' Guided/Free Play/Quiz switcher) — lives in each applet's own JSX, **not** shared code,
-  because each applet is an independently-bundled React app with no shared component pipeline. Its
-  exact styling (colors, sizes, padding, decorative SVG curve) is documented as a canonical spec in
-  a comment block at the bottom of `applet-header.css` — any new or migrated applet must hand-match
-  those values in its own JSX rather than inventing its own. This split exists because a literal
-  shared React component isn't achievable without unifying the build pipeline across every applet;
-  the spec-in-a-comment approach is the practical alternative, and it's the actual durable source of
-  truth for this pattern (an earlier per-applet `spec.md` claimed it had been saved into a Claude
-  Skill file instead — it hadn't been; don't trust that claim if you encounter it).
+Every migrated applet now builds its **entire header as one gradient banner**, inside its own JSX
+(still not literally shared code, for the same reason as before — each applet is an independently-
+bundled React app with no shared component pipeline). The canonical spec for this banner, its
+"All Applets" back-link, and the page-level brand-credit row below the card is documented as a
+comment block at the bottom of `applet-header.css` ("final header direction") — any new or migrated
+applet must hand-match those values in its own JSX rather than inventing its own. Bullet summary
+(see that comment block for exact style values):
+- **Banner**: `linear-gradient(135deg, #3B4FC2, #4A5CD6)`, a decorative SVG curve behind everything,
+  an inline "← All Applets" link (`href="<repo-root>/browse.html#/applets"`) on the left next to a
+  1px divider and the kicker/title stack (title `fontSize: 24`), and — only if the applet has its
+  own tabs/toggles, e.g. Quadric Surfaces' Guided/Free Play/Quiz switcher — those on the right.
+  Nothing else goes in the banner.
+- **Outer wrapper**: `display: "flex", flexDirection: "column", height: "100%"`, `padding: "24px 24px
+  0"` (no bottom padding — the credit row below supplies its own), holding the card (`flexShrink: 0`,
+  full `20px` rounding on all four corners now that there's no topline to flatten the top corners
+  against) as its first child.
+- **PageCredit**: a second flex child *after* the card, not inside it — `marginTop: "auto"` so it
+  pins to the bottom of the outer wrapper on tall viewports but still falls in normal flow right
+  after the card (never disappearing) when the app's own content is tall enough to fill the viewport
+  on its own. Centered (not left/right — it belongs to the whole page, not to whichever element sits
+  above it), a 40×40 circular chip holding `assets/favicon.svg` at 28×28 (the accent-colored mark,
+  since this chip sits on a light background — not `assets/favicon-white.svg`, which was sized for a
+  dark topline this pattern no longer has), followed by "Professor Kyle Knee · Harper College
+  Mathematics" spelled out in full. Two prior, smaller sizes for this mark (22×22/14×14, then a
+  corner-watermark placement inside the banner itself) were both tried and rejected as illegible —
+  don't shrink it back down or move it back into the banner without checking with the user first.
 
-`assets/favicon-white.svg` (see §1) is the topline's brand-mark asset — a white, thicker-stroked
-twin of `favicon.svg` built specifically to stay legible at the small size the topline renders it.
+This pattern's history (spec-in-a-comment, not a literal shared component) traces back to the same
+reasoning as the original topline/banner split: a real shared React component isn't achievable
+without unifying the build pipeline across every applet, so the comment block is the practical
+alternative and the actual durable source of truth (an earlier per-applet `spec.md` claimed it had
+been saved into a Claude Skill file instead — it hadn't been; don't trust that claim if you encounter
+it).
 
 ### Full-viewport layout contract
 Also governed by `applet-header.css` (see its own comments for the full reasoning): `html`/`body`
-become a fixed-height flex column so the header sizes to its own content and `#root` gets exactly
-the remainder of the viewport, with `#root { overflow: auto }` acting as a safety net for unusually
-short windows rather than the normal case. A migrated applet's own top-level React wrapper must
-cooperate — `height: "100%"` and `boxSizing: "border-box"`, **not** `minHeight: "100vh"` (which was
-correct back when the app *was* the entire page, but double-counts height once the topline sits
-above it, forcing a scrollbar on every window size regardless of content).
+become a fixed-height flex column so `#root` gets exactly the viewport's height (there's no separate
+header element outside `#root` anymore — see "Header pattern" above), with `#root { overflow: auto }`
+acting as a safety net for unusually short windows or unusually tall content rather than the normal
+case. A migrated applet's own top-level React wrapper must cooperate — `height: "100%"` and
+`boxSizing: "border-box"`, **not** `minHeight: "100vh"` (which was correct back when the app *was*
+the entire page, but forces a scrollbar on every window size regardless of content once anything
+else shares the viewport with it).
 
 ### Wiring an applet into the main site
 An applet is just another `Applet`-typed row in `js/data.js`'s `items[]` (see §3) —
@@ -581,5 +645,9 @@ whatever chapter/section its *topic* actually covers, since it drives unit-carou
 `unitOf()` (`js/app.js:118`) — it has no inherent relationship to the applet's own filename or `id`,
 so double-check a new item's `sections` value against that topic's existing
 `LectureGuideNotes`/`Worksheet` items rather than trusting a placeholder value someone else wrote.
-`launchApplet()` (`js/app.js:214`) opens the URL via `window.open(url, '_blank', 'noopener')`,
-independent of whatever the applet's own "Course site" topline link points back to.
+`launchApplet()` (`js/app.js:214`) navigates via `window.location.href = url` — **same tab**, not
+`window.open(..., '_blank')` — specifically so the browser's own back button returns to wherever the
+user launched the applet from (the Applets grid, a course's unit carousel, etc.) instead of leaving
+an orphaned tab. Each migrated applet's own "All Applets" banner link (see "Header pattern" above) is
+a second, independent way back to `browse.html#/applets` specifically, regardless of where the user
+actually came from.

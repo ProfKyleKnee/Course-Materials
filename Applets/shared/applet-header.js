@@ -13,7 +13,7 @@ function appletHeaderHTML(config) {
         </div>
         <a class="aph-topline-link" href="${config.courseSiteHref}">
           <svg class="aph-back-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-          Course site
+          All Applets
         </a>
       </div>
     </div>

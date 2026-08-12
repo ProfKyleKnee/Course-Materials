@@ -1,17 +1,11 @@
-/* ---------- shared applet header: topline strip, loaded by every applet's static HTML shell ----------
-   Structural counterpart to js/applet-header.js's appletHeaderHTML(). Only the topline (brand mark,
-   name, course-site link) is genuinely shared here — the gradient banner below it (kicker/title/tab
-   zone) lives in each applet's own React source, since these are independently-bundled apps with no
-   shared build pipeline. Its canonical styling is documented at the bottom of this file so every
-   applet's JSX can be hand-matched to the same values. */
-
-/* Fuses visually with the applet's own card below it: same #E8E8F2 page background and 24px inset
-   as the card's own outer wrapper (see the canonical banner spec below), zero bottom padding so
-   there's no gap, and top-only 20px rounding so the topline's bottom edge sits flush against the
-   card's now-flattened top corners. .aph-topline's own max-width (currently 1200px, matching the
-   Quadric Surfaces card) must equal whatever maxWidth the applet's own card wrapper uses -- if an
-   applet's own card wrapper doesn't match this exact background/maxWidth/padding math, the two
-   won't line up. Keep them in sync by hand. */
+/* ---------- shared applet header ----------
+   Only the full-viewport layout rules below (html/body/#root) are still shared/loaded code. The
+   .aph-topline two-bar pattern (navy strip above the gradient banner) that used to live here has
+   been retired -- see "final header direction" below. The rules are kept, unused, in case a future
+   applet with a genuinely different layout still wants a separate topline strip; mountAppletHeader()
+   in applet-header.js (and the #applet-header div/script wiring it expects) are likewise unused by
+   Quadric Surfaces and Partial Derivatives now, for the same reason. Struct-wise, mountAppletHeader()
+   still works if a future applet's HTML shell wires it back up. */
 .aph-header-wrap { background: #E8E8F2; padding: 24px 24px 0; }
 .aph-topline { box-sizing: border-box; max-width: 1200px; margin: 0 auto; background: #2E3A8C; color: #D6DBF7; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 20px; font-size: 13px; border-radius: 20px 20px 0 0; flex-wrap: wrap; }
 .aph-topline-brand { display: flex; align-items: center; gap: 9px; }
@@ -24,36 +18,61 @@
 /* ---------- full-viewport layout, no forced page scroll ----------
    html/body become a fixed-height flex column: the header sizes to its own content and #root gets
    whatever's left. This replaces each applet's old "minHeight: 100vh" on its own React wrapper --
-   that math was correct back when the app WAS the whole page, but once the topline sits above it,
-   100vh-for-the-app plus the topline's own height guarantees the page is always taller than the
-   viewport, forcing a scrollbar no matter how little content there is. #root's own overflow:auto is
-   a safety net only (a very short window with a lot of content can still scroll inside it) -- it is
-   not meant to be the normal case. See the canonical banner spec below for the matching JSX change
-   each applet's own outer wrapper needs (minHeight:"100vh" -> height:"100%"). */
+   that math was correct back when the app WAS the whole page, but a fixed header above it plus
+   100vh-for-the-app guarantees the page is always taller than the viewport, forcing a scrollbar no
+   matter how little content there is. #root's own overflow:auto is a safety net only (a very short
+   window with a lot of content can still scroll inside it) -- it is not meant to be the normal case.
+   See the canonical banner spec below for the matching JSX change each applet's own outer wrapper
+   needs (minHeight:"100vh" -> height:"100%"). */
 html, body { height: 100%; margin: 0; }
 body { display: flex; flex-direction: column; overflow: hidden; }
 .aph-header-wrap { flex-shrink: 0; }
 #root { flex: 1 1 auto; min-height: 0; overflow: auto; }
 
-/* ---------- canonical gradient-banner spec (NOT loaded from here — hand-match in each applet's JSX) ----------
-   Wrapper:     background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 16px 18px;
-                display: flex; align-items: center; justify-content: space-between; gap: 16px;
-                position: relative; overflow: hidden;
+/* ---------- final header direction (NOT loaded from here — hand-match in each applet's JSX) ----------
+   Settled after three live trials on Quadric Surfaces and Partial Derivatives: a footer brand-credit
+   strip, a corner watermark inside the banner, and finally a centered credit row below the whole app
+   card -- the third one won (the corner watermark still felt too small/crowded even enlarged). Every
+   migrated applet builds its whole header as a single gradient banner in its own JSX; there is no
+   separate shared topline anymore, and brand identity lives in its own PageCredit-style component
+   below the card, not in the banner at all.
+
+   Banner wrapper: background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: "16px 28px";
+                display flex, alignItems center, justifyContent space-between, gap 16, position
+                relative, overflow hidden.
    Decor line:  absolutely-positioned SVG, viewBox "0 0 1200 130" preserveAspectRatio="none",
                 path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke white, stroke-width 2.5,
-                opacity 0.14, pointer-events none, sits behind the text/tab content.
-   Kicker:      fontSize 11, fontWeight 700, color rgba(255,255,255,0.65), letterSpacing 0.08em,
-                textTransform uppercase. Text convention: "<Course> · Unit <n>".
-   Title:       fontSize 19, fontWeight 700, color #FFFFFF, letterSpacing -0.005em.
+                opacity 0.14, pointer-events none, sits behind everything else (z-index 0 by paint order).
+   Left group:  flex row, gap 14, position relative + zIndex 1 (to sit above the decor line):
+                - "All Applets" link: href "<repo-root>/browse.html#/applets", inline-flex, gap 5,
+                  color rgba(255,255,255,0.88), no text-decoration, fontSize 12.5, fontWeight 600,
+                  padding "6px 10px", borderRadius 8, background rgba(255,255,255,0.12), text
+                  "← All Applets".
+                - 1px vertical divider: width 1, alignSelf stretch, background rgba(255,255,255,0.22).
+                - Kicker/title stack: flex column, gap 2. Kicker: fontSize 11, fontWeight 700, color
+                  rgba(255,255,255,0.65), letterSpacing 0.08em, textTransform uppercase, text
+                  convention "<Course> · Unit <n>". Title: fontSize 24, fontWeight 700, color #FFFFFF,
+                  letterSpacing -0.005em.
    Right zone:  left empty unless the applet has its own tabs/toggles (e.g. a sliding-pill tab
-                switcher) — the shared header never puts anything here.
-   Outer card:  for the fused look (topline butted directly against the banner, no gap), the
-                applet's own top-level React wrapper must match .aph-header-wrap's math exactly:
-                same #E8E8F2 page background, same maxWidth/0-auto margin on the inner card as
-                .aph-topline uses, and the outer page padding must drop its *top* value to 0 (keep 24px on the other
-                three sides) since the topline already supplies that inset. The inner card's own
-                borderRadius must flatten its top corners to 0 (e.g. "0 0 20px 20px") so its top
-                edge is square where it meets the topline's rounded-top bottom edge. Its height must
-                be "100%" (fills #root's flex-allotted remaining viewport space) and boxSizing
-                "border-box" (so its own padding doesn't push it past that), not "minHeight: 100vh"
-                -- see the full-viewport layout rules above for why. */
+                switcher) — nothing else goes here.
+   Outer wrapper: the applet's own top-level React wrapper: background #E8E8F2 page background,
+                padding "24px 24px 0" (no bottom padding -- PageCredit supplies its own), display
+                flex + flexDirection column (so PageCredit can pin itself via marginTop:"auto"),
+                height "100%" (fills #root's flex-allotted remaining viewport space), boxSizing
+                "border-box".
+   Card:        first flex child of the outer wrapper: maxWidth 1200, width "100%", margin "0 auto",
+                borderRadius "20px" on all four corners, one boxShadow for the whole applet,
+                flexShrink 0. Banner sits flush at its own top edge inside it, matching its rounding.
+   PageCredit:  second (last) flex child of the outer wrapper, NOT inside the card: marginTop "auto"
+                (pins to the bottom of the outer wrapper when there's leftover vertical space; falls
+                in normal flow right after the card, never disappearing, when the app's own content
+                already fills the viewport), flexShrink 0, flex row, alignItems center, justifyContent
+                center (centered — not left/right, since it belongs to the whole page rather than to
+                the card's left or right edge), gap 11, padding "18px 20px 26px", fontSize 13.5, color
+                a muted text tone (e.g. MUTED_TEXT/C.muted). A 40x40 circular chip (white background,
+                1px border in the app's own border color) holding assets/favicon.svg (the accent-
+                colored mark, since this chip sits on a light background, not assets/favicon-white.svg)
+                at 28x28 — sized up from an initial 22x22/14x14 pass that read as illegible, so don't
+                shrink this back down without checking with the user first — followed by the text
+                "Professor Kyle Knee · Harper College Mathematics" in full — no abbreviating
+                "Professor" or the college name. */

@@ -2,6 +2,11 @@
 // Reconstructed JSX source (decompiled from the compiled production build,
 // partial-derivatives-standalone.html). Requires React 18, ReactDOM 18, three.js
 // (loaded as globals in the standalone build's UMD script tags).
+// IMPORTANT: pin three.js to a pre-r150 release (e.g. 0.149.x, last version with a UMD/global
+// build). r150+ turned on sRGB color management and physically-correct light falloff by default,
+// which silently darkens/desaturates SURF_LOW/SURF_HIGH's vertex-colored surface and the
+// AmbientLight/DirectionalLight intensities below, since none of those numbers were tuned for that
+// lighting model. Rebuilding against a newer three.js reproduces this exact regression.
 const { useRef, useEffect, useState } = React;
 
 const f = (x, y) => 0.2 * Math.sin(x) * Math.cos(y);
@@ -1037,19 +1042,21 @@ function PartialDerivativeMockup() {
       </React.Fragment>
     ),
   }[mode];
-  // Full-viewport layout contract + fused-card outer wrapper, matching Applets/shared/applet-header.css's
-  // canonical spec (see CLAUDE.md "Shared header"/"Full-viewport layout contract"): height:"100%" (not
-  // minHeight:"100vh", since the topline sits above this now), #E8E8F2 page background, top padding
-  // dropped to 0 since the topline already supplies that inset, and a single maxWidth:1200 card (matching
-  // .aph-topline's own hardcoded maxWidth so the two line up) whose top corners are square and bottom
-  // corners rounded, holding one boxShadow for the whole applet -- Banner sits flush at its top.
+  // Full-viewport layout contract, matching Applets/shared/applet-header.css's canonical spec:
+  // height:"100%" (not minHeight:"100vh") so the app fills whatever #root's flex-allotted remaining
+  // viewport space is. There's no separate shared topline anymore (see Banner() below), so the card
+  // gets full 24px inset on the sides/top and full 20px rounding on all corners -- Banner sits flush
+  // at its top. The outer wrapper is a flex column (not a plain block) specifically so PageCredit
+  // can pin itself to the bottom via marginTop:"auto" -- see PageCredit()'s own comment.
   return (
     <div
       style={{
         height: "100%",
         boxSizing: "border-box",
         background: "#E8E8F2",
-        padding: "0 24px 24px",
+        padding: "24px 24px 0",
+        display: "flex",
+        flexDirection: "column",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
         color: TEXT,
       }}
@@ -1057,11 +1064,13 @@ function PartialDerivativeMockup() {
       <div
         style={{
           maxWidth: 1200,
+          width: "100%",
           margin: "0 auto",
           background: "#F5F5FA",
-          borderRadius: "0 0 20px 20px",
+          borderRadius: "20px",
           boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
           overflow: "hidden",
+          flexShrink: 0,
         }}
       >
         <Banner />
@@ -1464,6 +1473,7 @@ function PartialDerivativeMockup() {
         </div>
         </div>
       </div>
+      <PageCredit />
     </div>
   );
 }
@@ -1532,6 +1542,12 @@ function InfoTip({ text }) {
 // Matches the canonical gradient-banner spec documented at the bottom of
 // Applets/shared/applet-header.css, hand-matched here since each applet's banner lives in its own
 // JSX (see CLAUDE.md's "Shared header" section) -- same values Quadric Surfaces' own banner uses.
+// Final header direction (settled after comparing three live trials -- a footer brand-credit strip,
+// a corner watermark inside the banner, and this one, a centered credit row below the app card):
+// the old separate navy topline is gone for good, and the corner watermark tried before this wasn't
+// legible enough even at a larger size without crowding the banner -- see the page-level credit row
+// at the bottom of the outer wrapper below instead. "All Applets" lives inline on the banner's left,
+// and the decorative curve carries over from the old topline+banner pair.
 function Banner() {
   return (
     <div
@@ -1540,37 +1556,106 @@ function Banner() {
         alignItems: "center",
         padding: "16px 28px",
         background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
+      <svg
+        viewBox="0 0 1200 130"
+        preserveAspectRatio="none"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }}
       >
-        <div
+        <path
+          d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75"
+          stroke="white"
+          strokeWidth="2.5"
+          fill="none"
+        />
+      </svg>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
+        <a
+          href="../../../browse.html#/applets"
           style={{
-            fontSize: 11,
-            fontWeight: 700,
-            color: "rgba(255,255,255,0.65)",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            color: "rgba(255,255,255,0.88)",
+            textDecoration: "none",
+            fontSize: 12.5,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            padding: "6px 10px",
+            borderRadius: 8,
+            background: "rgba(255,255,255,0.12)",
           }}
         >
-          Calculus III · Unit 2
-        </div>
-        <div
-          style={{
-            fontSize: 19,
-            fontWeight: 700,
-            color: "#FFFFFF",
-            letterSpacing: "-0.005em",
-          }}
-        >
-          First & Second Partial Derivatives
+          ← All Applets
+        </a>
+        <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.65)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Calculus III · Unit 2
+          </div>
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            First & Second Partial Derivatives
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+// Page-level brand credit, centered below the app card (see the "final header direction" note
+// above Banner()) -- lives here rather than inside Banner() since it belongs to the whole page, not
+// specifically to the banner or the card. marginTop:"auto" on its wrapper usage below pins it to the
+// bottom of the outer flex column when there's leftover vertical space, and lets it fall in normal
+// flow right after the card (never disappearing) when the app's own content is tall enough to fill
+// the viewport on its own.
+function PageCredit() {
+  return (
+    <div
+      style={{
+        marginTop: "auto",
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 11,
+        padding: "18px 20px 26px",
+        fontSize: 13.5,
+        color: MUTED_TEXT,
+      }}
+    >
+      <span
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          background: "#FFFFFF",
+          border: `1px solid ${BORDER}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }
