@@ -594,9 +594,6 @@ function TaylorSeriesApplet() {
     const panLastRef = useRef(null);
     const graphColRef = useRef(null);
     const [graphColWidth, setGraphColWidth] = useState(0);
-    const shellRef = useRef(null);
-    const [zoomScale, setZoomScale] = useState(1);
-    const zoomRef = useRef(1);
     // measure graph column width (so the n-slider box can match it when the rail is open)
     useEffect(() => {
         const el = graphColRef.current;
@@ -608,45 +605,6 @@ function TaylorSeriesApplet() {
         });
         ro.observe(el);
         return () => ro.disconnect();
-    }, []);
-    // measure the app-shell's natural (un-zoomed) layout height, for fit-to-viewport sizing.
-    // Using CSS `zoom` (not transform) so the browser reserves the correctly-shrunk space itself --
-    // no manually-computed wrapper height, which is what caused the earlier clipping bug.
-    const naturalHRef = useRef(700);
-    const NATURAL_WIDTH = 1500;
-    function recomputeZoom() {
-        const availW = Math.max(320, window.innerWidth - 40);
-        const availH = Math.max(320, window.innerHeight - 40);
-        const s = Math.min(1, availW / NATURAL_WIDTH, availH / naturalHRef.current) * 0.85;
-        // legibility floor, but never past what the available width can actually fit
-        const widthCap = (availW / NATURAL_WIDTH) * 0.85;
-        const clamped = Math.min(widthCap, Math.max(0.55, s));
-        if (Math.abs(clamped - zoomRef.current) > 0.01) {
-            zoomRef.current = clamped;
-            setZoomScale(clamped);
-        }
-    }
-    useEffect(() => {
-        const el = shellRef.current;
-        if (!el || typeof ResizeObserver === "undefined")
-            return;
-        const ro = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                naturalHRef.current = entry.contentRect.height / zoomRef.current;
-            }
-            recomputeZoom();
-        });
-        ro.observe(el);
-        return () => ro.disconnect();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        function onResize() {
-            recomputeZoom();
-        }
-        window.addEventListener("resize", onResize);
-        return () => window.removeEventListener("resize", onResize);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     const preset = PRESETS.find((p) => p.key === presetKey);
     const exprSrc = presetKey === "custom" ? customExpr : preset.exprFor(k);
@@ -1010,9 +968,12 @@ function TaylorSeriesApplet() {
     if (polyTerms.length && shownIdx[0] === 0 && constExact !== null) {
         polyTerms[0] = { text: constExact, sign: "+" };
     }
-    return (React.createElement("div", { className: "ts-wrap" },
+    return (React.createElement("div", { className: "ts-page-root" },
+        React.createElement("div", { className: "ts-card" },
+        React.createElement(Banner, null),
+        React.createElement("div", { className: "ts-wrap" },
         React.createElement("style", null, CSS),
-        React.createElement("div", { className: "ts-app-shell", ref: shellRef, style: { width: NATURAL_WIDTH, zoom: zoomScale } },
+        React.createElement("div", { className: "ts-app-shell" },
             React.createElement("div", { className: "ts-fn-row" },
                 React.createElement("div", { className: "ts-fn-prefix" },
                     React.createElement("span", null, "f(x) ="),
@@ -1177,19 +1138,57 @@ function TaylorSeriesApplet() {
                         React.createElement("div", { className: "ts-tick-row" }, Array.from({ length: N_MAX }).map((_, i) => (React.createElement("div", { className: "ts-tick", key: i })))),
                         React.createElement("div", { className: "ts-fill", style: { width: `${((nRaw - 1) * 100) / (N_MAX - 1)}%` } }),
                         React.createElement("input", { type: "range", min: 1, max: N_MAX, step: 0.01, value: nRaw, onChange: (e) => setNRaw(parseFloat(e.target.value)), className: "ts-range-overlay" }),
-                        React.createElement("div", { className: "ts-handle thin", style: { left: `${((nRaw - 1) * 100) / (N_MAX - 1)}%` } })))))));
+                        React.createElement("div", { className: "ts-handle thin", style: { left: `${((nRaw - 1) * 100) / (N_MAX - 1)}%` } }))))))),
+        React.createElement(PageCredit, null)));
+}
+function Banner() {
+    return (React.createElement("div", { style: {
+            display: "flex", alignItems: "center", padding: "16px 28px",
+            background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+            position: "relative", overflow: "hidden", borderRadius: "20px 20px 0 0"
+        } },
+        React.createElement("svg", { viewBox: "0 0 1200 130", preserveAspectRatio: "none",
+            style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" } },
+            React.createElement("path", { d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke: "white", strokeWidth: "2.5", fill: "none" })),
+        React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 } },
+            React.createElement("a", { href: "../../../browse.html#/applets", style: {
+                    display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.88)",
+                    textDecoration: "none", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap",
+                    padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.12)"
+                } }, "← All Applets"),
+            React.createElement("div", { style: { width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" } }),
+            React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 2 } },
+                React.createElement("div", { style: {
+                        fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)",
+                        letterSpacing: "0.08em", textTransform: "uppercase"
+                    } }, "Calculus II · Unit 4"),
+                React.createElement("div", { style: { fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" } }, "Taylor Series Explorer")))));
+}
+function PageCredit() {
+    return (React.createElement("div", { style: {
+            marginTop: "auto", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 11, padding: "18px 20px 26px", fontSize: 13.5, color: "#8A8AA3"
+        } },
+        React.createElement("span", { style: {
+                width: 40, height: 40, borderRadius: "50%", background: "#FFFFFF", border: "1px solid #DCDCF0",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+            } },
+            React.createElement("img", { src: "../../../assets/favicon.svg", alt: "", width: "28", height: "28" })),
+        "Professor Kyle Knee · Harper College Mathematics"));
 }
 const CSS = `
+.ts-page-root{height:100%;box-sizing:border-box;background:#E8E8F2;padding:12px 24px 0;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;}
+.ts-card{border-radius:20px;box-shadow:0 4px 24px rgba(60,60,90,0.14);overflow:hidden;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;}
 .ts-wrap *{box-sizing:border-box;}
-.ts-wrap{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;background:#F5F5FA;padding:20px;border-radius:20px;width:100%;display:flex;justify-content:center;box-sizing:border-box;}
-.ts-app-shell{background:#FFFFFF;border-radius:20px;box-shadow:0 1px 3px rgba(60,60,90,0.08);padding:24px;box-sizing:border-box;margin:0 auto;}
+.ts-wrap{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;background:#F5F5FA;padding:14px;width:100%;display:flex;justify-content:center;box-sizing:border-box;flex:1 1 auto;min-height:0;}
+.ts-app-shell{background:#FFFFFF;border-radius:20px;box-shadow:0 1px 3px rgba(60,60,90,0.08);padding:16px;box-sizing:border-box;margin:0 auto;width:100%;max-width:1500px;display:flex;flex-direction:column;min-height:0;}
 .ts-caption{font-size:9.5px;color:#8A8AA3;line-height:1.3;margin-top:5px;}
 .ts-ellipsis{color:#8A8AA3;font-weight:700;}
 .ts-interval-box.small{flex:none;width:88px;}
 .ts-interval-box.wide{width:100%;}
 .ts-shrink-btn{border:1px solid #DCDCF0;border-radius:14px;padding:5px 10px;font-size:10.5px;background:white;color:#3A3A3C;white-space:nowrap;cursor:pointer;font-family:inherit;}
 .ts-shrink-btn:hover{background:#F0F0F8;}
-.ts-fn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.ts-fn-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;flex-shrink:0;}
 .ts-fn-prefix{display:flex;border:1px solid #DCDCF0;border-radius:20px;overflow:hidden;font-size:13px;align-items:center;}
 .ts-fn-prefix span{background:#F0F0F8;padding:6px 10px;color:#6E6E86;font-weight:600;white-space:nowrap;}
 .ts-fake-input{border:none;padding:6px 10px;font-size:13px;width:110px;font-family:inherit;color:#3A3A3C;outline:none;}
@@ -1197,18 +1196,19 @@ const CSS = `
 .ts-preset-pill{border:1px solid #DCDCF0;border-radius:20px;padding:5px 12px;font-size:12px;background:white;cursor:pointer;font-family:inherit;color:#3A3A3C;}
 .ts-preset-pill.active{background:#3B4FC2;color:white;border-color:#3B4FC2;}
 .ts-danger-text{font-size:11.5px;color:#C77B94;font-weight:600;}
-.ts-main-row{display:grid;gap:16px;transition:grid-template-columns 0.28s ease;}
+.ts-main-row{display:grid;gap:16px;transition:grid-template-columns 0.28s ease;flex:1 1 auto;min-height:0;}
 .ts-main-row.off{grid-template-columns:1fr;}
 .ts-main-row.on{grid-template-columns:1fr 220px;}
-.ts-graph-box{background:#FBFBFE;border:1px solid #DCDCF0;border-radius:12px 12px 0 0;padding:8px;position:relative;}
-.ts-graph-box svg{display:block;width:100%;height:530px;touch-action:none;}
+.ts-graph-col{display:flex;flex-direction:column;min-height:0;}
+.ts-graph-box{background:#FBFBFE;border:1px solid #DCDCF0;border-radius:12px 12px 0 0;padding:8px;position:relative;flex:1 1 auto;min-height:280px;display:flex;}
+.ts-graph-box svg{display:block;width:100%;height:100%;touch-action:none;}
 .ts-zoom-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:5px;z-index:2;}
 .ts-zoom-btn{width:24px;height:24px;border-radius:50%;background:white;border:1px solid #DCDCF0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6E6E86;font-weight:600;cursor:pointer;padding:0;}
 .ts-err-btn{width:24px;height:24px;border-radius:6px;background:white;border:1px solid #DCDCF0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#6E6E86;cursor:pointer;padding:0;}
 .ts-err-btn.on{background:#3B4FC2;color:white;border-color:#3B4FC2;}
 .ts-x0-box{position:absolute;left:6px;bottom:14px;display:inline-flex;align-items:center;gap:5px;background:#FBFBFE;border:1.5px solid #6478D6;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#3B4FC2;z-index:2;}
 .ts-x0-box input{border:none;background:transparent;width:40px;text-align:center;font-weight:700;color:#3B4FC2;font-size:12px;font-family:inherit;outline:none;}
-.ts-poly-box{background:white;border:1px solid #DCDCF0;border-top:none;border-radius:0 0 12px 12px;padding:12px 16px;font-size:14px;font-variant-numeric:tabular-nums;min-height:20px;}
+.ts-poly-box{background:white;border:1px solid #DCDCF0;border-top:none;border-radius:0 0 12px 12px;padding:12px 16px;font-size:14px;font-variant-numeric:tabular-nums;min-height:20px;flex-shrink:0;}
 .ts-term-new{background:rgba(59,79,194,0.12);border-radius:5px;padding:1px 5px;color:#3B4FC2;font-weight:700;}
 .ts-rail{display:flex;flex-direction:column;gap:8px;}
 .ts-mini-readout{background:white;border:1px solid #DCDCF0;border-radius:9px;padding:6px 8px;text-align:center;}
@@ -1238,7 +1238,7 @@ const CSS = `
 .ts-interval-box span{background:#F0F0F8;padding:4px 8px;color:#6E6E86;font-weight:600;white-space:nowrap;flex-shrink:0;}
 .ts-interval-box input{border:none;padding:4px 8px;width:100%;font-size:12px;font-family:inherit;outline:none;}
 .ts-helper-text{font-size:11px;color:#6E6E86;margin-top:8px;line-height:1.4;}
-.ts-n-hero{background:linear-gradient(180deg,#FFFFFF,#FBFBFE);border:1.5px solid #6478D6;border-radius:14px;padding:16px 18px;margin-top:16px;}
+.ts-n-hero{background:linear-gradient(180deg,#FFFFFF,#FBFBFE);border:1.5px solid #6478D6;border-radius:14px;padding:16px 18px;margin-top:10px;flex-shrink:0;}
 .ts-n-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
 .ts-n-label{font-size:13px;font-weight:700;color:#3B4FC2;letter-spacing:0.03em;}
 .ts-n-val{font-size:20px;font-weight:800;color:#3B4FC2;font-variant-numeric:tabular-nums;}
