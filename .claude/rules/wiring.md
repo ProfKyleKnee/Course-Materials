@@ -217,9 +217,13 @@ ripple markers **hardcoded at `cx="118" cy="26"`** (`css/styles.css`) — this o
 open curve that starts on the left and ends near that point (the default curve and the Unit Circle
 Explorer's both follow this convention). A closed curve, a curve that ends elsewhere, or an animation
 that isn't "trace a path once" (e.g. a rotating radius line, like Polar Graphing & Integration's
-`polarRose` tileType) needs its own `tileType` — a dedicated `<type>TileSVG()` render function plus a
-`<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s `mouseover`/`mouseout`
-(see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()` or `prTileSVG()`/`prStartSpin()`/`prStopSpin()` in
-`js/app.js` for the pattern), registered in `tileSVG()`'s dispatch and given a matching CSS comment
-block in `css/styles.css`. Don't force a non-conforming curve through the generic tile just to avoid
+`polarRose` tileType, or a morphing path, like Taylor Series & Remainder Explorer's `taylorSeries`
+tileType — sin x drawn once as a dashed "target" while a single polynomial path lerps its sampled
+points between precomputed degree shapes and rewrites its own `d` attribute every frame, rather than
+crossfading separately-drawn paths) needs its own `tileType` — a dedicated `<type>TileSVG()` render
+function plus a `<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s
+`mouseover`/`mouseout` (see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()`, `prTileSVG()`/
+`prStartSpin()`/`prStopSpin()`, or `tsTileSVG()`/`tsStartSpin()`/`tsStopSpin()` in `js/app.js` for the
+pattern), registered in `tileSVG()`'s dispatch and given a matching CSS comment block in
+`css/styles.css`. Don't force a non-conforming curve through the generic tile just to avoid
 writing a new `tileType`.

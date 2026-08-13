@@ -24,8 +24,8 @@ Applets/
 ├── Calc 2/
 │   ├── Polar Graphing/            Migrated — polar-graphing-applet.html is the shipped bundle,
 │   │                                 app.jsx the source; has its own spec_4.md
-│   └── Taylor Series & Taylor's Theorem/  Not migrated — taylor-series-explorer_6.html + jsx +
-│                                     spec_4.md, own one-off header
+│   └── Taylor Series & Taylor's Theorem/  Migrated — taylor-series-explorer_6.html is the shipped
+│                                     bundle, TaylorSeriesApplet.jsx the source; has its own spec_4.md
 └── Calc 3/
     ├── Quadric Surfaces/         One folder per applet once it's past mockup stage
     │   ├── quadric_surface_explorer_5.html   Shipped bundle — this is what items[].launchUrl points to
@@ -39,9 +39,9 @@ Applets/
     │                                 spec_2_1_1_1.md
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
-**Quadric Surfaces, Partial Derivatives, and Polar Graphing & Integration have been migrated** to
-the full-viewport layout described below; Calc 3's other two applets, Calc 2's Taylor Series
-applet, and everything under Calc 1 still use their own one-off header (or none at all) and haven't
+**Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, and Taylor Series & Remainder
+Explorer have been migrated** to the full-viewport layout described below; Calc 3's other two
+applets and everything under Calc 1 still use their own one-off header (or none at all) and haven't
 been touched. Migrating one means: hand-matching its own JSX gradient banner and page-level credit
 row to the canonical spec (see "Header pattern" below) and rebuilding its bundle. None of the
 migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header pattern" for why.
@@ -108,6 +108,34 @@ output shape already used elsewhere in that same file (nested `React.createEleme
 since a single miscounted closing paren breaks the whole script silently (produces a blank page with
 a `SyntaxError: missing ) after argument list` console error, not a helpful line-pointed one). Prefer
 a real esbuild rebuild over hand-editing whenever the toolchain is actually available.
+
+**Taylor Series & Remainder Explorer** is built the same way as Polar Graphing & Integration
+(classic-transform JSX compile concatenated after React/ReactDOM 18.3.1 UMD builds, no `three`
+dependency) — see that applet's own `spec_4.md` for its math-engine specifics (Taylor-mode automatic
+differentiation, not symbolic/finite-difference). Its post-migration layout/sizing fixes (see spec_4
+for the full list) were also hand-edited in parallel across `TaylorSeriesApplet.jsx` and the shipped
+HTML, same no-toolchain-available constraint as Polar Graphing.
+
+**Three full-viewport gotchas worth checking on any migrated applet**, all first caught (and fixed)
+on Taylor Series Explorer:
+- The **card** itself (the flex child holding the banner *and* the content, not just an inner content
+  wrapper) needs its own explicit `max-width: 1200px; margin: 0 auto` — capping only an inner wrapper
+  while the outer card is unconstrained lets the gradient banner stretch full-bleed across the page
+  while the content beneath it looks correctly inset, which reads as broken even though each piece is
+  individually "capped" somewhere.
+- Any element sized by CSS Grid or Flexbox that's expected to *shrink* on short viewports needs an
+  explicit `min-height: 0` — the default `min-height: auto` refuses to shrink below the element's own
+  content height, so instead of resizing it silently overflows past an `overflow: hidden` ancestor
+  (invisible clipping) or, worse, an absolutely-positioned child anchored inside it (e.g. a draggable
+  badge pinned to its parent's bottom edge) gets dragged up into whatever sits below once the parent's
+  real height collapses toward zero, overlapping content that never should have touched.
+- The graph `<svg>`'s fixed `viewBox` needs `preserveAspectRatio="none"` whenever the app's own pan/
+  zoom math already computes x- and y-scale independently from the rendered box (check for two
+  separate `scaleX`/`scaleY` values derived from `getBoundingClientRect()` in the panning code) —
+  without it, the browser's default `xMidYMid meet` letterboxes the content to preserve the viewBox's
+  native aspect ratio, which both visually pushes fixed-position overlay text (e.g. a top-left corner
+  label) away from the box's actual top-left corner, and — if ever assumed otherwise — would silently
+  desync pointer coordinates from data coordinates in the letterboxed margin.
 
 ## Header pattern
 Every migrated applet's HTML shell loads only the shared CSS file, for its full-viewport layout
