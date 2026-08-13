@@ -207,6 +207,19 @@
   .dp-proj-arrow { fill: #C98F3E; opacity: 0; }
   .dp-tail-dot { fill: var(--text); }
 
+  /* ---------- Polar Graphing & Integration card tile (tileType: 'polarRose' in js/data.js) ----------
+     Mirrors the applet's own Graphing-mode animation: the curve is TRACED OUT progressively (a
+     stroke-dashoffset reveal along the real path geometry) as a dashed radius line sweeps through
+     theta, rather than the generic curve+traveling-dot tile's dot gliding along an already-complete
+     path -- a closed polar rose also has no single "start"/"end" point for that generic tile's
+     hardcoded ring markers to land on anyway. .pr-rose's `d` is a static path (computed once in
+     js/app.js's prRosePathD) shown fully solid at rest; prStartSpin (js/app.js) drives the
+     dasharray/dashoffset reveal plus pr-radius/pr-dot every frame while hovered, matching the
+     dp-tile pattern above. */
+  .pr-rose { stroke-width: 2; }
+  .pr-radius { stroke: var(--eyebrow); stroke-width: 1.3; stroke-dasharray: 3,2.4; }
+  .pr-dot { r: 3; fill: var(--accent); }
+
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
   .jump-link:hover { color: var(--accent); }

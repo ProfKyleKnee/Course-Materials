@@ -115,9 +115,20 @@
     return 0;
   }
 
+  // Calc 2's Chapters 4 (Power Series) and 5 (Parametric & Polar) are one pedagogical unit
+  // (Unit 4) in the Blended Sessions folder structure (Course Materials/Calc 2/Blended
+  // Sessions/Unit 4/ holds both 4.x and 5.x worksheets) -- unlike Calc 1's overrides below, this
+  // is a real grouping merge, not just a display-label renumbering, so it lives in unitOf() itself
+  // and folds every Chapter 5 item into the Chapter 4 carousel/label on Calc II's Applets/
+  // Worksheets/Lecture Guides/Lecture Videos pages.
+  const unitMergeOverrides = {
+    'Calculus II': { '5': '4' },
+  };
   function unitOf(item) {
     const s = (item.sections && item.sections[0]) || '0';
-    return s.split('.')[0] || '0';
+    const chapter = s.split('.')[0] || '0';
+    const merge = unitMergeOverrides[item.course];
+    return (merge && merge[chapter]) || chapter;
   }
 
   // Calc 1's textbook chapters (2-5) don't line up with its pedagogical unit numbers (1-4) --
@@ -345,6 +356,7 @@
     if (a.tileType === 'paraboloid') return paraboloidTileSVG();
     if (a.tileType === 'partialDerivatives') return partialDerivTileSVG();
     if (a.tileType === 'dotProduct') return dpTileSVG();
+    if (a.tileType === 'polarRose') return prTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -848,6 +860,88 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.dp-tile');
     if (svg) dpStopSpin(svg);
+  });
+
+  // ---------- Polar Graphing & Integration card tile: echoes the applet's own Graphing-mode
+  // animation -- the curve being TRACED OUT (drawn progressively as a radius line sweeps through
+  // theta), not just a dot gliding along an already-complete curve -- rather than the generic
+  // curve+traveling-dot tile; see the matching CSS comment in styles.css for why. No area-shading
+  // animation, by design; the tile only needs to read as "this is the graphing view". At rest the
+  // full rose is shown solid (stroke-dasharray/-offset cleared) so the tile still reads clearly
+  // without hovering; hovering switches .pr-rose into a stroke-dashoffset reveal driven by the real
+  // path geometry (getTotalLength/getPointAtLength) so the reveal front, the radius line, and the
+  // dot are always the exact same point -- not a separately-computed theta that could drift out of
+  // sync with how much of the curve is actually drawn. ----------
+  var PR_SCALE = 17, PR_CX = 50, PR_CY = 50;
+  function prPoint(theta) {
+    const r = 2 * Math.cos(2 * theta);
+    return { x: PR_CX + PR_SCALE * r * Math.cos(theta), y: PR_CY - PR_SCALE * r * Math.sin(theta) };
+  }
+  function prRosePathD() {
+    const steps = 240;
+    let d = '';
+    for (let i = 0; i <= steps; i++) {
+      const theta = (2 * Math.PI * i) / steps;
+      const p = prPoint(theta);
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ';
+    }
+    return d.trim();
+  }
+  function prTileSVG() {
+    const rest = prPoint(0);
+    return `<svg class="pr-tile" viewBox="0 0 100 100">
+      <line class="axis-line" x1="50" y1="92" x2="50" y2="8"/>
+      <line class="axis-line" x1="8" y1="50" x2="92" y2="50"/>
+      <path class="curve-path pr-rose" d="${prRosePathD()}"/>
+      <line class="pr-radius" x1="${PR_CX}" y1="${PR_CY}" x2="${rest.x.toFixed(1)}" y2="${rest.y.toFixed(1)}"/>
+      <circle class="pr-dot" cx="${rest.x.toFixed(1)}" cy="${rest.y.toFixed(1)}"/>
+    </svg>`;
+  }
+  var prSpins = new Map();
+  var PR_CYCLE_MS = 2600;
+  function prStartSpin(svg) {
+    if (prSpins.has(svg)) return;
+    const pathEl = svg.querySelector('.pr-rose');
+    const lineEl = svg.querySelector('.pr-radius');
+    const dotEl = svg.querySelector('.pr-dot');
+    const total = pathEl.getTotalLength();
+    pathEl.style.strokeDasharray = String(total);
+    const start = performance.now();
+    function frame(now) {
+      const f = ((now - start) % PR_CYCLE_MS) / PR_CYCLE_MS;
+      const dist = total * f;
+      pathEl.style.strokeDashoffset = String(total - dist);
+      const p = pathEl.getPointAtLength(dist);
+      lineEl.setAttribute('x2', p.x.toFixed(1));
+      lineEl.setAttribute('y2', p.y.toFixed(1));
+      dotEl.setAttribute('cx', p.x.toFixed(1));
+      dotEl.setAttribute('cy', p.y.toFixed(1));
+      prSpins.set(svg, requestAnimationFrame(frame));
+    }
+    prSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function prStopSpin(svg) {
+    const id = prSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    prSpins.delete(svg);
+    const pathEl = svg.querySelector('.pr-rose');
+    const lineEl = svg.querySelector('.pr-radius');
+    const dotEl = svg.querySelector('.pr-dot');
+    const rest = prPoint(0);
+    if (pathEl) { pathEl.style.strokeDasharray = ''; pathEl.style.strokeDashoffset = ''; }
+    if (lineEl) { lineEl.setAttribute('x2', rest.x.toFixed(1)); lineEl.setAttribute('y2', rest.y.toFixed(1)); }
+    if (dotEl) { dotEl.setAttribute('cx', rest.x.toFixed(1)); dotEl.setAttribute('cy', rest.y.toFixed(1)); }
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.pr-tile');
+    if (svg) prStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.pr-tile');
+    if (svg) prStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —

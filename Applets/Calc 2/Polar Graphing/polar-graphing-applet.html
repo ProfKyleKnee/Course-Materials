@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Polar Graphing &amp; Integration</title>
+<link rel="stylesheet" href="../../shared/applet-header.css">
 <script>
 /**
  * @license React
@@ -317,11 +318,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 <style>
   * { box-sizing: border-box; }
   body { margin:0; background:#F5F5FA; font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif; color:#3A3A3C; font-variant-numeric:tabular-nums; }
-  .pa-root { padding:16px; }
-  .pa-shell { max-width:1000px; margin:0 auto; border-radius:20px; overflow:hidden; box-shadow:0 1px 3px rgba(60,60,90,0.08); }
-  .pa-header { background:linear-gradient(135deg,#3B4FC2,#2f3fa0); color:white; padding:16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-  .pa-header-eyebrow { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.75; margin-bottom:2px; }
-  .pa-header-title { font-size:16px; font-weight:600; }
+  .pa-root { height:100%; box-sizing:border-box; background:#E8E8F2; padding:24px 24px 0; display:flex; flex-direction:column; }
+  .pa-shell { max-width:1200px; width:100%; margin:0 auto; background:#F5F5FA; border-radius:20px; box-shadow:0 4px 24px rgba(60,60,90,0.14); overflow:hidden; flex-shrink:0; }
   .pa-header-toggle { position:relative; display:flex; border:1px solid rgba(255,255,255,0.4); border-radius:20px; overflow:hidden; width:210px; background:rgba(255,255,255,0.08); }
   .pa-header-toggle .pa-thumb {
     position:absolute; top:2px; left:2px; width:calc(50% - 4px); height:calc(100% - 4px);
@@ -904,23 +902,10 @@ function PolarApplet() {
     className: "pa-root"
   }, /*#__PURE__*/React.createElement("div", {
     className: "pa-shell"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "pa-header"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "pa-header-eyebrow"
-  }, "Calculus II · Unit 4"), /*#__PURE__*/React.createElement("div", {
-    className: "pa-header-title"
-  }, "Polar Graphing & Integration")), /*#__PURE__*/React.createElement("div", {
-    className: `pa-header-toggle${areaMode ? ' on' : ''}`
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "pa-thumb"
-  }), /*#__PURE__*/React.createElement("button", {
-    className: !areaMode ? 'active' : '',
-    onClick: () => setAreaMode(false)
-  }, "Graphing"), /*#__PURE__*/React.createElement("button", {
-    className: areaMode ? 'active' : '',
-    onClick: () => setAreaMode(true)
-  }, "Polar Integration"))), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(Banner, {
+    areaMode: areaMode,
+    setAreaMode: setAreaMode
+  }), /*#__PURE__*/React.createElement("div", {
     className: "pa-body"
   }, /*#__PURE__*/React.createElement("div", {
     className: "pa-layout"
@@ -1354,7 +1339,110 @@ function PolarApplet() {
     }));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "pa-flag"
-  }, "v3 build. Fixed since last round: enable/disable toggle bug, sliding header toggle, wider glowing sight-line drag target, header/body alignment, × now removes a function entirely, merged Graphing + Polar Integration panel with smooth expand animation, f/g note relocated next to the shading controls. Known simplifications remaining: no axis tick labels; area-between-curves shading uses a simple f-to-g ribbon rather than a full region-decomposition."))))));
+  }, "v3 build. Fixed since last round: enable/disable toggle bug, sliding header toggle, wider glowing sight-line drag target, header/body alignment, × now removes a function entirely, merged Graphing + Polar Integration panel with smooth expand animation, f/g note relocated next to the shading controls. Known simplifications remaining: no axis tick labels; area-between-curves shading uses a simple f-to-g ribbon rather than a full region-decomposition."))))), /*#__PURE__*/React.createElement(PageCredit, null));
+}
+function Banner({
+  areaMode,
+  setAreaMode
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      padding: "16px 28px",
+      background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+      position: "relative",
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 1200 130",
+    preserveAspectRatio: "none",
+    style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75",
+    stroke: "white",
+    strokeWidth: "2.5",
+    fill: "none"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "../../../browse.html#/applets",
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 5,
+      color: "rgba(255,255,255,0.88)",
+      textDecoration: "none",
+      fontSize: 12.5,
+      fontWeight: 600,
+      whiteSpace: "nowrap",
+      padding: "6px 10px",
+      borderRadius: 8,
+      background: "rgba(255,255,255,0.12)"
+    }
+  }, "← All Applets"), /*#__PURE__*/React.createElement("div", {
+    style: { width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", flexDirection: "column", gap: 2 }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "rgba(255,255,255,0.65)",
+      letterSpacing: "0.08em",
+      textTransform: "uppercase"
+    }
+  }, "Calculus II · Unit 4"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 24,
+      fontWeight: 700,
+      color: "#FFFFFF",
+      letterSpacing: "-0.005em"
+    }
+  }, "Polar Graphing & Integration"))), /*#__PURE__*/React.createElement("div", {
+    className: `pa-header-toggle${areaMode ? ' on' : ''}`,
+    style: { marginLeft: "auto", position: "relative", zIndex: 1 }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "pa-thumb"
+  }), /*#__PURE__*/React.createElement("button", {
+    className: !areaMode ? 'active' : '',
+    onClick: () => setAreaMode(false)
+  }, "Graphing"), /*#__PURE__*/React.createElement("button", {
+    className: areaMode ? 'active' : '',
+    onClick: () => setAreaMode(true)
+  }, "Polar Integration")));
+}
+function PageCredit() {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: "auto",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 11,
+      padding: "18px 20px 26px",
+      fontSize: 13.5,
+      color: "#8A8AA3"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 40,
+      height: 40,
+      borderRadius: "50%",
+      background: "#FFFFFF",
+      border: "1px solid #DCDCF0",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: "../../../assets/favicon.svg",
+    alt: "",
+    width: "28",
+    height: "28"
+  })), "Professor Kyle Knee · Harper College Mathematics");
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(/*#__PURE__*/React.createElement(PolarApplet, null));

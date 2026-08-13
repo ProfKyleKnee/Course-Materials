@@ -21,7 +21,11 @@ Applets/
 │   ├── applet-header.css
 │   └── applet-header.js
 ├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system)
-├── Calc 2/                       Same as Calc 1
+├── Calc 2/
+│   ├── Polar Graphing/            Migrated — polar-graphing-applet.html is the shipped bundle,
+│   │                                 app.jsx the source; has its own spec_4.md
+│   └── Taylor Series & Taylor's Theorem/  Not migrated — taylor-series-explorer_6.html + jsx +
+│                                     spec_4.md, own one-off header
 └── Calc 3/
     ├── Quadric Surfaces/         One folder per applet once it's past mockup stage
     │   ├── quadric_surface_explorer_5.html   Shipped bundle — this is what items[].launchUrl points to
@@ -35,20 +39,21 @@ Applets/
     │                                 spec_2_1_1_1.md
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
-**Quadric Surfaces and Partial Derivatives have been migrated** to the full-viewport layout
-described below; the other two Calc 3 applets and everything under Calc 1/Calc 2 still use their
-own one-off header (or none at all) and haven't been touched. Migrating one means: hand-matching its
-own JSX gradient banner and page-level credit row to the canonical spec (see "Header pattern" below)
-and rebuilding its bundle. Neither migrated applet uses the old shared-topline HTML/JS wiring
-anymore — see "Header pattern" for why.
+**Quadric Surfaces, Partial Derivatives, and Polar Graphing & Integration have been migrated** to
+the full-viewport layout described below; Calc 3's other two applets, Calc 2's Taylor Series
+applet, and everything under Calc 1 still use their own one-off header (or none at all) and haven't
+been touched. Migrating one means: hand-matching its own JSX gradient banner and page-level credit
+row to the canonical spec (see "Header pattern" below) and rebuilding its bundle. None of the
+migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header pattern" for why.
 
 ## Per-applet design-decision logs
 Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
 threads, and pedagogical goals — read for context, not executed. Not every applet folder has one yet
-(as of this branch, only Quadric Surfaces, Partial Derivatives, and Lagrange Multipliers do); worth
-back-filling one when doing substantial work on an applet that lacks it. Applet-specific facts
-(design decisions, open threads, pedagogical goals for *that* applet) belong in its own `spec.md`,
-not in this file — this file is only for rules that apply across applets.
+(as of this branch, Quadric Surfaces, Partial Derivatives, Lagrange Multipliers, Polar Graphing, and
+Taylor Series all do); worth back-filling one when doing substantial work on an applet that lacks
+one. Applet-specific facts (design decisions, open threads, pedagogical goals for *that* applet)
+belong in its own `spec.md`, not in this file — this file is only for rules that apply across
+applets.
 
 ## Build model
 Each applet is bundled **independently** — there is no shared build pipeline or lockfile in this
@@ -90,8 +95,22 @@ lighting model. This exact regression shipped once already on the `small-fixes` 
 diagnosed and reverted by comparing against a git-history screenshot of the original bundle — pin
 the version instead of re-deriving this fix.
 
+**Polar Graphing & Integration**'s shipped bundle is also a classic-transform JSX compile (same
+`--jsx=transform --jsx-factory=React.createElement` shape as Partial Derivatives, concatenated after
+React/ReactDOM 18.3.1 UMD builds — it has no `three` dependency, so no build-tool step here) — but the
+edit that added its header/footer (see "Header pattern" below) was made **by hand, directly in the
+shipped HTML's `React.createElement` calls**, in an environment with no `node`/`npx`/esbuild
+available to actually recompile `app.jsx`. When that's the situation, edit both files in parallel:
+the `.jsx` source with real JSX (so it stays correct if someone *does* rebuild it later), and the
+shipped HTML's compiled `React.createElement(...)` call tree by hand, matching the classic-transform
+output shape already used elsewhere in that same file (nested `React.createElement(tag, propsObj,
+...children)` calls, `/*#__PURE__*/` comments included) — get the paren/brace nesting exactly right,
+since a single miscounted closing paren breaks the whole script silently (produces a blank page with
+a `SyntaxError: missing ) after argument list` console error, not a helpful line-pointed one). Prefer
+a real esbuild rebuild over hand-editing whenever the toolchain is actually available.
+
 ## Header pattern
-Both migrated applets' HTML shells load only the shared CSS file, for its full-viewport layout
+Every migrated applet's HTML shell loads only the shared CSS file, for its full-viewport layout
 rules — nothing else is shared HTML/JS anymore:
 ```html
 <head>...<link rel="stylesheet" href="../../shared/applet-header.css"></head>
@@ -106,7 +125,7 @@ rendered by calling `mountAppletHeader({...})` against a `<div id="applet-header
 site" link back to `index.html`. That two-bar design was retired after live A/B trials on both
 migrated applets found it read as visually heavy; `applet-header.js`'s `mountAppletHeader()` and
 `applet-header.css`'s `.aph-*` rules still exist (in case a future applet's layout genuinely wants a
-separate topline) but neither migrated applet calls or loads them anymore — don't assume a new
+separate topline) but none of the migrated applets call or load them anymore — don't assume a new
 applet should wire them back up without checking whether the single-banner pattern below fits first.
 
 Every migrated applet now builds its **entire header as one gradient banner**, inside its own JSX
@@ -119,8 +138,9 @@ applet must hand-match those values in its own JSX rather than inventing its own
 - **Banner**: `linear-gradient(135deg, #3B4FC2, #4A5CD6)`, a decorative SVG curve behind everything,
   an inline "← All Applets" link (`href="<repo-root>/browse.html#/applets"`) on the left next to a
   1px divider and the kicker/title stack (title `fontSize: 24`), and — only if the applet has its
-  own tabs/toggles, e.g. Quadric Surfaces' Guided/Free Play/Quiz switcher — those on the right.
-  Nothing else goes in the banner.
+  own tabs/toggles, e.g. Quadric Surfaces' Guided/Free Play/Quiz switcher or Polar Graphing &
+  Integration's Graphing/Polar Integration mode toggle — those on the right. Nothing else goes in
+  the banner.
 - **Outer wrapper**: `display: "flex", flexDirection: "column", height: "100%"`, `padding: "24px 24px
   0"` (no bottom padding — the credit row below supplies its own), holding the card (`flexShrink: 0`,
   full `20px` rounding on all four corners now that there's no topline to flatten the top corners
