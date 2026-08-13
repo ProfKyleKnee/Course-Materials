@@ -334,8 +334,8 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
     .pa-layout { grid-template-columns:340px 1fr; align-items:start; }
     .pa-sidebar { display:flex; flex-direction:column; gap:12px; height:100%; }
     .pa-sidebar .pa-panel:last-child { flex:1; display:flex; flex-direction:column; }
-    .pa-graphcol, .pa-graphwrap { height:100%; }
-    .pa-graphwrap svg { height:100%; }
+    .pa-graphcol, .pa-graphwrap { height:100%; min-height:0; }
+    .pa-graphwrap svg { position:absolute; inset:0; width:100%; height:100%; }
   }
   .pa-panel { background:#fff; border-radius:18px; box-shadow:0 1px 3px rgba(60,60,90,0.08); padding:14px; }
   .pa-eyebrow { font-size:10px; letter-spacing:0.06em; color:#8A8AA3; font-weight:600; margin-bottom:8px; }
@@ -370,7 +370,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
   input[type=range] { width:100%; accent-color:#3B4FC2; }
   input[type=range]:disabled { opacity:0.4; }
   .pa-note { font-size:10px; color:#8A8AA3; margin-top:6px; line-height:1.4; }
-  .pa-graphwrap { position:relative; background:white; border-radius:18px; box-shadow:0 1px 3px rgba(60,60,90,0.08); overflow:hidden; }
+  .pa-graphwrap { position:relative; background:white; border-radius:18px; box-shadow:0 1px 3px rgba(60,60,90,0.08); overflow:hidden; padding-right:16px; }
   .pa-zoom { position:absolute; top:10px; right:10px; display:flex; flex-direction:column; gap:6px; z-index:2; }
   .pa-zoom button { width:28px; height:28px; border-radius:50%; border:1px solid #DCDCF0; background:white; color:#6E6E86; font-size:14px; cursor:pointer; }
   .pa-legend-chip { position:absolute; top:10px; left:10px; z-index:2; display:flex; align-items:center; gap:6px; background:white; border:1px solid #DCDCF0; border-radius:12px; padding:6px 10px; font-size:10px; color:#6E6E86; max-width:220px; line-height:1.35; box-shadow:0 1px 3px rgba(60,60,90,0.08); }
@@ -379,10 +379,9 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
   .pa-edge-label { font-size:10px; fill:#6E6E86; cursor:grab; user-select:none; }
 
   /* smooth expand/collapse for the merged Polar Integration section */
-  .pa-expand-wrap { display:grid; grid-template-rows:0fr; transition:grid-template-rows 0.32s cubic-bezier(0.4,0,0.2,1); }
-  .pa-expand-wrap.open { grid-template-rows:1fr; }
-  .pa-expand-inner { overflow:hidden; }
+  .pa-expand-inner { overflow:hidden; opacity:0; pointer-events:none; transition:opacity 0.32s cubic-bezier(0.4,0,0.2,1); }
   .pa-expand-pad { padding-top:10px; border-top:1px dashed #DCDCF0; margin-top:10px; }
+  .pa-expand-wrap.open .pa-expand-inner { opacity:1; pointer-events:auto; }
 
   .pa-fg-note { font-size:11px; color:#6E6E86; line-height:1.5; padding:8px 10px; background:#F0F0F8; border-radius:10px; margin-top:10px; }
   .pa-fg-note .pa-formula { display:block; margin-top:4px; font-size:12px; color:#3B4FC2; font-weight:600; }
@@ -1050,7 +1049,9 @@ function PolarApplet() {
     onClick: () => changeUnits('deg')
   }, "deg"))), /*#__PURE__*/React.createElement("div", {
     className: "pa-note"
-  }, "θ = ", fmtAngle(t), areaMode ? ' (tracing paused while Polar Integration is On — range still editable)' : ''), /*#__PURE__*/React.createElement("div", {
+  }, "θ = ", fmtAngle(t), " ", /*#__PURE__*/React.createElement("span", {
+    style: { visibility: areaMode ? 'visible' : 'hidden' }
+  }, "(tracing paused while Polar Integration is On — range still editable)")), /*#__PURE__*/React.createElement("div", {
     className: `pa-expand-wrap${areaMode ? ' open' : ''}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "pa-expand-inner"

@@ -28,7 +28,15 @@ viewports, a compact-mode media query so the error-investigation rail fits witho
 letterboxed downward, adaptive x-axis tick marks, and moving the error panel's selected-x marker off
 the error line and down onto the x-axis — see that applet's own `spec_4.md` and
 `.claude/rules/applets.md` for the general gotchas these fixes surfaced) added on the
-`TaylorSeries-Applet` branch (not yet merged to `main`).
+`TaylorSeries-Applet` branch (not yet merged to `main`), plus a round of Polar Graphing &
+Integration layout/sizing fixes — the graph area no longer lets its own square-viewBox SVG inflate
+past the sidebar's height (the SVG is taken out of flow via `position:absolute; inset:0` so the CSS
+grid row is sized by the sidebar instead), a `padding-right` buffer on the graph box so the
+edge-to-edge axis/tick labels aren't flush against its border, and the Graphing ⟷ Polar Integration
+mode toggle no longer resizes the card at all (the accordion section and a conditionally-suffixed
+note line both switched from conditional mounting to always-mounted-but-`visibility:hidden`, so both
+modes are always sized to whatever Polar Integration mode needs) — added on the
+`PolarGrapher-Updates` branch (not yet merged to `main`).
 
 ---
 
