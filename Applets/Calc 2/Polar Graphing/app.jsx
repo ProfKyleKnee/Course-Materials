@@ -826,10 +826,13 @@ function PolarApplet() {
                   </div>
                 </div>
                 <div className="pa-note">
-                  θ = {fmtAngle(t)}
-                  {areaMode
-                    ? " (tracing paused while Polar Integration is On — range still editable)"
-                    : ""}
+                  θ = {fmtAngle(t)}{" "}
+                  <span
+                    style={{ visibility: areaMode ? "visible" : "hidden" }}
+                  >
+                    (tracing paused while Polar Integration is On — range
+                    still editable)
+                  </span>
                 </div>
                 <div className={`pa-expand-wrap${areaMode ? " open" : ""}`}>
                   <div className="pa-expand-inner">
