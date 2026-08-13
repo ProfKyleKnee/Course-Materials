@@ -460,6 +460,23 @@ function fmt(v, digits = 4) {
     const s = v.toFixed(digits).replace(/\.?0+$/, (m) => (m === "." ? "" : m));
     return s === "-0" ? "0" : s || "0";
 }
+// picks a "nice" step (1/2/5 x 10^n) so the x-axis shows roughly targetCount ticks at any zoom level
+function niceTicks(min, max, targetCount) {
+    const span = max - min;
+    if (!(span > 0))
+        return { ticks: [], step: 1 };
+    const rawStep = span / targetCount;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const norm = rawStep / mag;
+    const niceNorm = norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10;
+    const step = niceNorm * mag;
+    const start = Math.ceil(min / step) * step;
+    const ticks = [];
+    for (let v = start; v <= max + step * 1e-6; v += step) {
+        ticks.push(Math.round(v / step) * step);
+    }
+    return { ticks, step };
+}
 function superscript(n) {
     const map = {
         "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴",
@@ -575,11 +592,11 @@ function useNumericText(value, onCommit, decimals = 4) {
 }
 // ---------- main component ----------
 function TaylorSeriesApplet() {
-    const [presetKey, setPresetKey] = useState("atan");
+    const [presetKey, setPresetKey] = useState("exp");
     const [customExpr, setCustomExpr] = useState("atan(x)");
     const [k, setK] = useState(0.5);
     const [x0, setX0] = useState(0);
-    const [nRaw, setNRaw] = useState(5); // continuous, for smooth slider glide
+    const [nRaw, setNRaw] = useState(1); // continuous, for smooth slider glide
     const n = Math.round(nRaw);
     const [errorOn, setErrorOn] = useState(false);
     const [xSel, setXSel] = useState(0.8);
@@ -587,7 +604,7 @@ function TaylorSeriesApplet() {
     const [bVal, setBVal] = useState(0.8);
     const [mValue, setMValueRaw] = useState(0); // absolute M value (initialized properly once minValidM known)
     const mInitialized = useRef(false);
-    const [view, setView] = useState({ xMin: -2.5, xMax: 2.5, yMin: -1.6, yMax: 1.6 });
+    const [view, setView] = useState({ xMin: -3, xMax: 3, yMin: -1, yMax: 5 });
     const [manualMode, setManualMode] = useState(false);
     const svgRef = useRef(null);
     const dragRef = useRef(null);
@@ -857,7 +874,7 @@ function TaylorSeriesApplet() {
     }
     function resetView() {
         setManualMode(false);
-        setView({ xMin: -2.5, xMax: 2.5, yMin: -1.6, yMax: 1.6 });
+        setView({ xMin: -3, xMax: 3, yMin: -1, yMax: 5 });
     }
     function settleRecenter() {
         if (!manualMode)
@@ -947,6 +964,13 @@ function TaylorSeriesApplet() {
     const [x0Px, x0Py] = toPx(x0, compiled ? compiled.f(x0) : 0);
     const [xSelPxF, xSelPyF] = toPx(xSel, fAtXSel);
     const [, xSelPyP] = toPx(xSel, pAtXSel);
+    const [, xSelPyAxis] = toPx(xSel, 0);
+    // adaptive x-axis ticks: step re-picked from {1,2,5}x10^n every render so tick density stays
+    // sane as the view zooms/pans, skipping any tick that would collide with x0/a/b's own labels
+    const specialXs = [x0, ...(errorOn ? [aVal, bVal] : [])];
+    const { ticks: axisTicks, step: tickStep } = niceTicks(view.xMin, view.xMax, 7);
+    const tickDigits = Math.max(0, Math.ceil(-Math.log10(tickStep)));
+    const filteredAxisTicks = axisTicks.filter((v) => !specialXs.some((s) => Math.abs(v - s) < tickStep * 0.2));
     // convergence band
     const R = preset ? preset.radius(x0, k) : Infinity;
     const hasBand = isFinite(R) && !!preset;
@@ -1008,7 +1032,7 @@ function TaylorSeriesApplet() {
                                     if (turningOn && !manualMode)
                                         fitView(true);
                                 }, title: "Investigate Errors" }, "E")),
-                        React.createElement("svg", { ref: svgRef, viewBox: `0 0 ${VB_W} ${VB_H}`, onPointerMove: onPointerMove, onPointerUp: endDrag, onPointerDown: startPan },
+                        React.createElement("svg", { ref: svgRef, viewBox: `0 0 ${VB_W} ${VB_H}`, preserveAspectRatio: "none", onPointerMove: onPointerMove, onPointerUp: endDrag, onPointerDown: startPan },
                             React.createElement("rect", { x: 0, y: 0, width: VB_W, height: VB_H, fill: "transparent", style: { cursor: "grab" } }),
                             hasBand && (React.createElement(React.Fragment, null,
                                 React.createElement("rect", { x: Math.max(bandX1, PAD), y: PAD - 15, width: Math.max(0, Math.min(bandX2, VB_W - PAD) - Math.max(bandX1, PAD)), height: VB_H - 2 * PAD + 15, fill: "rgba(100,120,214,0.10)" }),
@@ -1019,6 +1043,14 @@ function TaylorSeriesApplet() {
                             !hasBand && preset && (React.createElement("text", { x: PAD, y: PAD - 8, fontSize: "12", fill: "#6478D6" }, "Converges for all real x")),
                             React.createElement("line", { x1: PAD, y1: toPx(0, 0)[1], x2: VB_W - PAD, y2: toPx(0, 0)[1], stroke: "#DCDCF0" }),
                             React.createElement("line", { x1: toPx(0, 0)[0], y1: PAD, x2: toPx(0, 0)[0], y2: VB_H - PAD, stroke: "#DCDCF0" }),
+                            filteredAxisTicks.map((v, i) => {
+                                const [px, axisY] = toPx(v, 0);
+                                if (px < PAD || px > VB_W - PAD)
+                                    return null;
+                                return (React.createElement("g", { key: "auto" + i },
+                                    React.createElement("line", { x1: px, y1: axisY - 3, x2: px, y2: axisY + 3, stroke: "#c9c9de", strokeWidth: 1 }),
+                                    React.createElement("text", { x: px, y: axisY + 14, fontSize: "9.5", fill: "#A8A8BC", textAnchor: "middle" }, fmt(v, tickDigits))));
+                            }),
                             [{ v: x0, color: "#6478D6" }, ...(errorOn ? [{ v: aVal, color: "#8A8AA3" }, { v: bVal, color: "#8A8AA3" }] : [])].map((t, i) => {
                                 const [px, axisY] = toPx(t.v, 0);
                                 if (px < PAD || px > VB_W - PAD)
@@ -1034,7 +1066,7 @@ function TaylorSeriesApplet() {
                                 React.createElement("line", { x1: xSelPxF, y1: xSelPyF, x2: xSelPxF, y2: xSelPyP, stroke: "#B23A52", strokeWidth: 2.5, strokeDasharray: "4,3" }),
                                 React.createElement("circle", { cx: xSelPxF, cy: xSelPyF, r: 7, fill: "#3A3A3C", style: { cursor: "ew-resize" }, onPointerDown: startDrag("xsel") }),
                                 React.createElement("circle", { cx: xSelPxF, cy: xSelPyP, r: 7, fill: "#3B4FC2", style: { cursor: "ew-resize" }, onPointerDown: startDrag("xsel") }),
-                                React.createElement("circle", { cx: xSelPxF, cy: (xSelPyF + xSelPyP) / 2, r: 8, fill: "white", stroke: "#B23A52", strokeWidth: 2, style: { cursor: "ew-resize" }, onPointerDown: startDrag("xsel") }))),
+                                React.createElement("circle", { cx: xSelPxF, cy: xSelPyAxis, r: 8, fill: "white", stroke: "#B23A52", strokeWidth: 2, style: { cursor: "ew-resize" }, onPointerDown: startDrag("xsel") }))),
                             React.createElement("circle", { cx: x0Px, cy: x0Py, r: 9, fill: "rgba(100,120,214,0.18)" }),
                             React.createElement("circle", { cx: x0Px, cy: x0Py, r: 6, fill: "#6478D6", stroke: "white", strokeWidth: 1.5, style: { cursor: "ew-resize" }, onPointerDown: startDrag("x0") })),
                         React.createElement("div", { className: "ts-x0-box" },
@@ -1177,11 +1209,11 @@ function PageCredit() {
         "Professor Kyle Knee · Harper College Mathematics"));
 }
 const CSS = `
-.ts-page-root{height:100%;box-sizing:border-box;background:#E8E8F2;padding:12px 24px 0;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;}
-.ts-card{border-radius:20px;box-shadow:0 4px 24px rgba(60,60,90,0.14);overflow:hidden;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;}
+.ts-page-root{height:100%;box-sizing:border-box;background:#E8E8F2;padding:24px 24px 0;display:flex;flex-direction:column;font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;}
+.ts-card{border-radius:20px;box-shadow:0 4px 24px rgba(60,60,90,0.14);overflow:hidden;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;box-sizing:border-box;width:100%;max-width:1200px;margin:0 auto;}
 .ts-wrap *{box-sizing:border-box;}
 .ts-wrap{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;color:#3A3A3C;background:#F5F5FA;padding:14px;width:100%;display:flex;justify-content:center;box-sizing:border-box;flex:1 1 auto;min-height:0;}
-.ts-app-shell{background:#FFFFFF;border-radius:20px;box-shadow:0 1px 3px rgba(60,60,90,0.08);padding:16px;box-sizing:border-box;margin:0 auto;width:100%;max-width:1500px;display:flex;flex-direction:column;min-height:0;}
+.ts-app-shell{background:#FFFFFF;border-radius:20px;box-shadow:0 1px 3px rgba(60,60,90,0.08);padding:16px;box-sizing:border-box;margin:0 auto;width:100%;max-width:1200px;display:flex;flex-direction:column;min-height:0;}
 .ts-caption{font-size:9.5px;color:#8A8AA3;line-height:1.3;margin-top:5px;}
 .ts-ellipsis{color:#8A8AA3;font-weight:700;}
 .ts-interval-box.small{flex:none;width:88px;}
@@ -1200,7 +1232,7 @@ const CSS = `
 .ts-main-row.off{grid-template-columns:1fr;}
 .ts-main-row.on{grid-template-columns:1fr 220px;}
 .ts-graph-col{display:flex;flex-direction:column;min-height:0;}
-.ts-graph-box{background:#FBFBFE;border:1px solid #DCDCF0;border-radius:12px 12px 0 0;padding:8px;position:relative;flex:1 1 auto;min-height:280px;display:flex;}
+.ts-graph-box{background:#FBFBFE;border:1px solid #DCDCF0;border-radius:12px 12px 0 0;padding:8px;position:relative;flex:1 1 auto;min-height:160px;display:flex;}
 .ts-graph-box svg{display:block;width:100%;height:100%;touch-action:none;}
 .ts-zoom-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:5px;z-index:2;}
 .ts-zoom-btn{width:24px;height:24px;border-radius:50%;background:white;border:1px solid #DCDCF0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#6E6E86;font-weight:600;cursor:pointer;padding:0;}
@@ -1210,7 +1242,7 @@ const CSS = `
 .ts-x0-box input{border:none;background:transparent;width:40px;text-align:center;font-weight:700;color:#3B4FC2;font-size:12px;font-family:inherit;outline:none;}
 .ts-poly-box{background:white;border:1px solid #DCDCF0;border-top:none;border-radius:0 0 12px 12px;padding:12px 16px;font-size:14px;font-variant-numeric:tabular-nums;min-height:20px;flex-shrink:0;}
 .ts-term-new{background:rgba(59,79,194,0.12);border-radius:5px;padding:1px 5px;color:#3B4FC2;font-weight:700;}
-.ts-rail{display:flex;flex-direction:column;gap:8px;}
+.ts-rail{display:flex;flex-direction:column;gap:8px;min-height:0;overflow-y:auto;overflow-x:hidden;}
 .ts-mini-readout{background:white;border:1px solid #DCDCF0;border-radius:9px;padding:6px 8px;text-align:center;}
 .ts-eyebrow{text-transform:uppercase;letter-spacing:0.06em;font-size:10.5px;color:#8A8AA3;font-weight:600;}
 .ts-val{font-size:14px;font-weight:700;color:#3B4FC2;font-variant-numeric:tabular-nums;margin-top:2px;}
@@ -1247,6 +1279,28 @@ const CSS = `
 .ts-handle.thin{width:16px;height:16px;border-width:3px;}
 .ts-tick-row{position:absolute;left:0;right:0;top:50%;display:flex;justify-content:space-between;transform:translateY(-50%);pointer-events:none;}
 .ts-tick{width:1px;height:9px;background:#c9c9de;}
+@media (max-height:760px){
+.ts-caption,.ts-helper-text{display:none;}
+.ts-rail{gap:4px;}
+.ts-mini-readout{padding:2px 6px;}
+.ts-m-block{padding:4px 6px;}
+.ts-eyebrow{font-size:9px;}
+.ts-val{font-size:12px;margin-top:1px;}
+.ts-panel-header-row{margin-bottom:2px;}
+.ts-m-input-row{margin-bottom:0;}
+.ts-m-input-box input,.ts-m-input-box span{padding:3px 6px;}
+.ts-interval-box input,.ts-interval-box span{padding:3px 6px;}
+.ts-rail-divider{margin:0;}
+.ts-jump-btn.wide,.ts-shrink-btn.wide{padding:3px 8px;margin-top:3px;font-size:9.5px;}
+.ts-fake-slider{margin-top:4px;}
+.ts-interval-row{margin-top:4px;}
+.ts-fn-row{margin-bottom:4px;}
+.ts-fn-prefix span,.ts-fake-input{padding:4px 8px;}
+.ts-preset-pill{padding:3px 10px;}
+.ts-poly-box{padding:6px 12px;min-height:0;}
+.ts-n-hero{padding:8px 14px;margin-top:6px;}
+.ts-n-top{margin-bottom:4px;}
+}
 `;
 
 
