@@ -625,27 +625,7 @@ function PolarApplet() {
   return (
     /*#__PURE__*/ <div className="pa-root">
       <div className="pa-shell">
-        <div className="pa-header">
-          <div>
-            <div className="pa-header-eyebrow">Calculus II · Unit 4</div>
-            <div className="pa-header-title">Polar Graphing & Integration</div>
-          </div>
-          <div className={`pa-header-toggle${areaMode ? " on" : ""}`}>
-            <div className="pa-thumb" />
-            <button
-              className={!areaMode ? "active" : ""}
-              onClick={() => setAreaMode(false)}
-            >
-              Graphing
-            </button>
-            <button
-              className={areaMode ? "active" : ""}
-              onClick={() => setAreaMode(true)}
-            >
-              Polar Integration
-            </button>
-          </div>
-        </div>
+        <Banner areaMode={areaMode} setAreaMode={setAreaMode} />
         <div className="pa-body">
           <div className="pa-layout">
             <div className="pa-sidebar">
@@ -1248,6 +1228,141 @@ function PolarApplet() {
           </div>
         </div>
       </div>
+      <PageCredit />
+    </div>
+  );
+}
+// Matches the canonical gradient-banner spec documented at the bottom of
+// Applets/shared/applet-header.css, hand-matched here since each applet's banner lives in its own
+// JSX (see CLAUDE.md's "Shared header" section) -- same values Quadric Surfaces and Partial
+// Derivatives both use. "All Applets" lives inline on the banner's left; this applet's own
+// Graphing/Polar Integration mode toggle occupies the banner's right zone (the one case the spec
+// calls out for applet-specific controls), pushed there via marginLeft:"auto".
+function Banner({ areaMode, setAreaMode }) {
+  return (
+    /*#__PURE__*/ <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        padding: "16px 28px",
+        background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        viewBox="0 0 1200 130"
+        preserveAspectRatio="none"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }}
+      >
+        <path
+          d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75"
+          stroke="white"
+          strokeWidth="2.5"
+          fill="none"
+        />
+      </svg>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
+        <a
+          href="../../../browse.html#/applets"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            color: "rgba(255,255,255,0.88)",
+            textDecoration: "none",
+            fontSize: 12.5,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            padding: "6px 10px",
+            borderRadius: 8,
+            background: "rgba(255,255,255,0.12)",
+          }}
+        >
+          ← All Applets
+        </a>
+        <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "rgba(255,255,255,0.65)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
+            Calculus II · Unit 4
+          </div>
+          <div
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              letterSpacing: "-0.005em",
+            }}
+          >
+            Polar Graphing & Integration
+          </div>
+        </div>
+      </div>
+      <div
+        className={`pa-header-toggle${areaMode ? " on" : ""}`}
+        style={{ marginLeft: "auto", position: "relative", zIndex: 1 }}
+      >
+        <div className="pa-thumb" />
+        <button
+          className={!areaMode ? "active" : ""}
+          onClick={() => setAreaMode(false)}
+        >
+          Graphing
+        </button>
+        <button
+          className={areaMode ? "active" : ""}
+          onClick={() => setAreaMode(true)}
+        >
+          Polar Integration
+        </button>
+      </div>
+    </div>
+  );
+}
+// Page-level brand credit, centered below the app card -- see the "final header direction" note in
+// Applets/shared/applet-header.css. marginTop:"auto" on the wrapper pins it to the bottom of the
+// outer flex column when there's leftover vertical space, and lets it fall in normal flow right
+// after the card (never disappearing) when the app's own content is tall enough to fill the
+// viewport on its own.
+function PageCredit() {
+  return (
+    /*#__PURE__*/ <div
+      style={{
+        marginTop: "auto",
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 11,
+        padding: "18px 20px 26px",
+        fontSize: 13.5,
+        color: "#8A8AA3",
+      }}
+    >
+      <span
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: "50%",
+          background: "#FFFFFF",
+          border: "1px solid #DCDCF0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }

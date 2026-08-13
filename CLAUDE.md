@@ -12,7 +12,20 @@ Quadric Surfaces applet fully wired up) added on the `First-Applet` branch (not 
 applets' headers rebuilt from a two-bar shared-topline design down to a single gradient banner with
 a page-level brand credit row, same-tab applet launches, a course-glyph redesign of the top-level
 Applets/Lecture Videos course-carousel headers, and a three.js version regression fix on Partial
-Derivatives — see §7 for all of it.
+Derivatives — see §7 for all of it, plus the Calc 2 Polar Graphing & Integration applet wired into
+`js/data.js` and migrated to that same canonical header/footer pattern, a new `polarRose` card-tile
+hover animation (a progressive stroke-dashoffset curve reveal, not the generic curve+dot tile — see
+`.claude/rules/wiring.md`), and a Calc II Chapter 4/5 unit-merge fix (`unitMergeOverrides` in
+`js/app.js`) added on the `polar-graphing` branch (not yet merged to `main`).
+
+---
+
+## 0. Working Mode
+
+Always work in manual mode — confirm before taking actions the user hasn't explicitly asked for
+(destructive commands, git pushes/PRs, multi-step browser automation sequences like `wait`/`hover`
+chains, etc.) rather than proceeding through them autonomously. This applies for the whole repo
+unless a specific request says otherwise for that task.
 
 ---
 
@@ -212,7 +225,7 @@ Calculus I/II/III's `items[]` entries are hand-written, real data — not genera
 | Course | LectureGuideNotes | Worksheet | LectureVideo | Applet | Total |
 |---|---|---|---|---|---|
 | Calculus I | 38 | 62 | 36 | 0 | 136 |
-| Calculus II | 40 | 65 | 36 | 0 | 141 |
+| Calculus II | 40 | 65 | 36 | 1 | 142 |
 | Calculus III | 45 | 45 | 40 (11 real, 29 `inProgress`) | 1 | 131 |
 
 Calc I's chapters (2-5) don't align with its pedagogical unit numbers (1-4), since Chapter 1 has no
@@ -220,8 +233,13 @@ unit of its own (just the "Graphs To Know" resource item) and Unit 1 starts at C
 `unitLabelOverrides` / `unitLabel(course, u)` (`js/app.js`) remaps the *displayed* unit number for
 Calculus I only (chapter `2`→"Unit 1", `3`→"2", `4`→"3", `5`→"4"); `unitOf()`'s raw return value
 (the chapter number) is still what's used for grouping/filtering/`isolateUnit()` state everywhere —
-only the on-screen "Unit N" text changes. Calc II and Calc III have no such override — their
-textbook chapter numbers and pedagogical unit numbers already align 1:1.
+only the on-screen "Unit N" text changes. Calc II has a *different* kind of override: its Chapter 4
+(Power Series) and Chapter 5 (Parametric & Polar) are one pedagogical unit (Unit 4) per the Blended
+Sessions folder structure, so `unitMergeOverrides` folds Chapter 5 into Chapter 4 inside `unitOf()`
+itself — a real grouping merge, not just a relabel, so every Chapter 5 item (Lecture Guides/Notes,
+Worksheets, Lecture Videos, and the Polar Graphing & Integration applet alike) shows up in the same
+Unit 4 carousel as Chapter 4 items. See `.claude/rules/wiring.md` for the mechanism. Calc III has no
+override — its textbook chapter numbers and pedagogical unit numbers already align 1:1.
 
 Both Calc II and Calc III also carry a handful of `resource: true` items beyond the "reference
 sheet" pattern described above — cumulative review packets and exam-practice worksheets (e.g. Calc

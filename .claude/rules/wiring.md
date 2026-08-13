@@ -102,6 +102,34 @@ sections from each other without also affecting `tier3`'s own unit carousels, wh
 row above this list (rendered via `jumpRowHTML()`) was removed from `typeBrowse` entirely — see
 "Sidebar alignment" above for the knock-on effect on sidebar positioning.
 
+## Unit grouping and labeling overrides
+`unitOf(item)` (`js/app.js`) derives an item's unit purely from `sections[0]`'s leading chapter
+number — every `tier3`/`typeBrowse` unit carousel, the `jump-row` chip filter, and `isolateUnit()`
+state all key off its raw return value, so a course whose textbook chapters don't line up 1:1 with
+its taught units needs one of two different override mechanisms depending on *what* is misaligned:
+
+- **Relabel only** (`unitLabelOverrides`, keyed by course): the chapter numbers already group
+  correctly — Chapter *N* content belongs together — but the number shown to students differs from
+  the chapter number. Calculus I is the only user: Chapter 1 has no unit of its own (just the
+  "Graphs To Know" resource item), so Unit 1 starts at Chapter 2 and every later chapter's displayed
+  label shifts down by one (`unitLabel(course, u)` remaps `2`→"1", `3`→"2", etc.). Grouping itself is
+  untouched — each chapter is still its own carousel, just relabeled.
+- **Real merge** (`unitMergeOverrides`, keyed by course, consulted inside `unitOf()` itself before
+  `unitLabelOverrides` ever sees the value): two or more chapters are genuinely the *same* taught
+  unit and must land in one carousel together, not just share a display number. Calculus II is the
+  only user: Chapter 4 (Power Series) and Chapter 5 (Parametric & Polar) are both Unit 4 per the
+  `Course Materials/Calc 2/Blended Sessions/Unit 4/` folder (it holds both 4.x and 5.x worksheets),
+  so `unitMergeOverrides['Calculus II']['5'] = '4'` folds every Chapter 5 item into the Chapter 4
+  group. This changes grouping for every existing item with that chapter number, course-wide — not
+  just whichever item prompted adding the override — so before adding a new merge entry, confirm
+  with the user that the folding applies to *every* item in that chapter, not only the one you're
+  currently working on.
+
+When wiring in a new item (applet or otherwise), check both maps for its course before trusting
+`sections[0]`'s chapter number as the unit it'll display under — a `unitMergeOverrides` entry can
+move an item into a different carousel than its raw chapter number would suggest, same as it did for
+the Polar Graphing & Integration applet (`sections: ['5.2', '5.3.2']`, but displays as Unit 4).
+
 ## In-development course lock
 `js/app.js` defines `isInDevelopment(course)`, `devTapeHTML(course)`, and `devPillHTML(course)`,
 all driven by `coursesInDevelopment` in `js/data.js`. Three render sites call all three:
@@ -174,3 +202,24 @@ user launched the applet from (the Applets grid, a course's unit carousel, etc.)
 an orphaned tab. Each migrated applet's own "All Applets" banner link (see
 [applets.md](applets.md#header-pattern)) is a second, independent way back to `browse.html#/applets`
 specifically, regardless of where the user actually came from.
+
+**Wiring in a new applet's HTML file is not just the `items[]` row.** The applet's own shipped HTML
+must already carry (or be brought up to, as part of the same piece of work) the canonical gradient-
+banner header and page-level `PageCredit` footer described in
+[applets.md](applets.md#header-pattern) — this is not an optional "migrate later" step for a *new*
+applet being linked in for the first time, only for the pre-existing Calc 1/Calc 2/unmigrated-Calc-3
+applets that predate that pattern. Ship the header/footer and the `items[]` row together; don't wire
+in an applet whose header still uses a one-off design.
+
+**Card-tile hover animation.** `tileSVG()` (`js/app.js`, `appletCardHTML()`'s tile) defaults to a
+generic curve-plus-traveling-dot tile driven by the item's `curve` field, with `.ring1`/`.ring2`
+ripple markers **hardcoded at `cx="118" cy="26"`** (`css/styles.css`) — this only looks right for an
+open curve that starts on the left and ends near that point (the default curve and the Unit Circle
+Explorer's both follow this convention). A closed curve, a curve that ends elsewhere, or an animation
+that isn't "trace a path once" (e.g. a rotating radius line, like Polar Graphing & Integration's
+`polarRose` tileType) needs its own `tileType` — a dedicated `<type>TileSVG()` render function plus a
+`<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s `mouseover`/`mouseout`
+(see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()` or `prTileSVG()`/`prStartSpin()`/`prStopSpin()` in
+`js/app.js` for the pattern), registered in `tileSVG()`'s dispatch and given a matching CSS comment
+block in `css/styles.css`. Don't force a non-conforming curve through the generic tile just to avoid
+writing a new `tileType`.
