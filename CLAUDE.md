@@ -16,7 +16,19 @@ Derivatives — see §7 for all of it, plus the Calc 2 Polar Graphing & Integrat
 `js/data.js` and migrated to that same canonical header/footer pattern, a new `polarRose` card-tile
 hover animation (a progressive stroke-dashoffset curve reveal, not the generic curve+dot tile — see
 `.claude/rules/wiring.md`), and a Calc II Chapter 4/5 unit-merge fix (`unitMergeOverrides` in
-`js/app.js`) added on the `polar-graphing` branch (not yet merged to `main`).
+`js/app.js`) added on the `polar-graphing` branch (not yet merged to `main`), plus the Calc 2 Taylor
+Series & Remainder Explorer applet wired into `js/data.js` (Unit 4, via `unitMergeOverrides` same as
+Polar Graphing) and migrated to that same canonical header/footer pattern, a new `taylorSeries`
+card-tile hover animation (a morphing polynomial path lerping between precomputed degree shapes, not
+the generic curve+dot tile or a static crossfade — see `.claude/rules/wiring.md`), and a round of
+post-migration layout/sizing fixes (default `n`/preset/view-zoom changes, a card `max-width` fix so
+the banner no longer stretches full-bleed, a graph-box `min-height` fix for overlap on short
+viewports, a compact-mode media query so the error-investigation rail fits without scrolling, an
+`svg` `preserveAspectRatio` fix so corner labels sit flush at the top-left instead of being
+letterboxed downward, adaptive x-axis tick marks, and moving the error panel's selected-x marker off
+the error line and down onto the x-axis — see that applet's own `spec_4.md` and
+`.claude/rules/applets.md` for the general gotchas these fixes surfaced) added on the
+`TaylorSeries-Applet` branch (not yet merged to `main`).
 
 ---
 

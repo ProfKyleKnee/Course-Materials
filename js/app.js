@@ -357,6 +357,7 @@
     if (a.tileType === 'partialDerivatives') return partialDerivTileSVG();
     if (a.tileType === 'dotProduct') return dpTileSVG();
     if (a.tileType === 'polarRose') return prTileSVG();
+    if (a.tileType === 'taylorSeries') return tsTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -942,6 +943,108 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.pr-tile');
     if (svg) prStopSpin(svg);
+  });
+
+  // ---------- Taylor Series & Remainder Explorer card tile (tileType: 'taylorSeries' in
+  // js/data.js) -- sells the applet's actual pedagogy (a Taylor polynomial's fit improves as its
+  // degree n rises) rather than a generic curve+dot. sin x (dashed, muted -- "the true function")
+  // is drawn once and never moves; a single polynomial path around x0=0 morphs between degrees
+  // (n=1,3,5,7, the same odd-term signs/coefficients as sin x's real series) by lerping each
+  // sampled point's y-value between the two neighboring degrees' precomputed shapes (eased with
+  // tsEase) and rewriting the path's `d` every frame -- not a crossfade between separately-drawn
+  // paths, since two full-opacity curves overlapping mid-fade read as a flicker/dissolve rather
+  // than one curve bending into the next. Same start/stop-on-hover wiring as
+  // prStartSpin/prStopSpin above. At rest (unhovered) only n=1 (the tangent-line approximation)
+  // shows, so the resting tile still reads as "a line approximating a curve" rather than blank;
+  // hovering morphs up through better-fitting degrees and loops. Points are clamped in *pixel*
+  // space (not domain space) so a high-degree term shooting off outside [-1,1] near the domain
+  // edges just runs into the tile's own border instead of producing absurd coordinate values --
+  // that clamped runaway is itself a small, honest preview of divergence outside the radius of
+  // convergence, not a bug to hide. ----------
+  var TS_OX = 50, TS_OY = 50, TS_SCALE_X = 80 / 7, TS_SCALE_Y = 24;
+  var TS_XMIN = -3.5, TS_XMAX = 3.5, TS_STEPS = 56;
+  var TS_TERMS = [[1, 1], [3, -1 / 6], [5, 1 / 120], [7, -1 / 5040]];
+  var TS_DEGREES = [1, 3, 5, 7];
+  var TS_HOLD_MS = 450, TS_MORPH_MS = 550;
+  function tsPolyValue(x, n) {
+    let y = 0;
+    for (const [p, c] of TS_TERMS) { if (p > n) break; y += c * Math.pow(x, p); }
+    return y;
+  }
+  function tsPoint(x, y) {
+    const py = TS_OY - y * TS_SCALE_Y;
+    return { x: TS_OX + x * TS_SCALE_X, y: Math.max(2, Math.min(98, py)) };
+  }
+  var TS_XS = [];
+  for (let i = 0; i <= TS_STEPS; i++) TS_XS.push(TS_XMIN + (TS_XMAX - TS_XMIN) * i / TS_STEPS);
+  var TS_TARGET_YS = TS_XS.map((x) => Math.sin(x));
+  var TS_DEGREE_YS = TS_DEGREES.map((n) => TS_XS.map((x) => tsPolyValue(x, n)));
+  function tsPathFromYs(ys) {
+    let d = '';
+    for (let i = 0; i < ys.length; i++) {
+      const p = tsPoint(TS_XS[i], ys[i]);
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ';
+    }
+    return d.trim();
+  }
+  function tsEase(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+  function tsTileSVG() {
+    return `<svg class="ts-tile" viewBox="0 0 100 100">
+      <line class="axis-line" x1="50" y1="92" x2="50" y2="8"/>
+      <line class="axis-line" x1="8" y1="50" x2="92" y2="50"/>
+      <path class="ts-target" d="${tsPathFromYs(TS_TARGET_YS)}"/>
+      <path class="curve-path ts-poly" d="${tsPathFromYs(TS_DEGREE_YS[0])}"/>
+    </svg>`;
+  }
+  var tsSpins = new Map();
+  var TS_CYCLE_MS = TS_DEGREES.length * (TS_HOLD_MS + TS_MORPH_MS);
+  function tsStartSpin(svg) {
+    if (tsSpins.has(svg)) return;
+    const pathEl = svg.querySelector('.ts-poly');
+    const segMs = TS_HOLD_MS + TS_MORPH_MS;
+    const start = performance.now();
+    function frame(now) {
+      // A browser's first rAF callback can hand back a `now` that's *earlier* than the
+      // performance.now() captured above (the timestamp is pinned to the frame's start, which
+      // can precede the event handler's own clock read) -- clamping to 0 keeps `now - start`
+      // from going negative, since JS's `%` doesn't wrap negatives the way math mod does and a
+      // negative t here would produce a negative (out-of-bounds) TS_DEGREE_YS index.
+      const t = Math.max(0, now - start) % TS_CYCLE_MS;
+      const idx = Math.floor(t / segMs) % TS_DEGREES.length;
+      const local = t % segMs;
+      let ys;
+      if (local < TS_HOLD_MS) {
+        ys = TS_DEGREE_YS[idx];
+      } else {
+        const nextIdx = (idx + 1) % TS_DEGREES.length;
+        const b = tsEase((local - TS_HOLD_MS) / TS_MORPH_MS);
+        const from = TS_DEGREE_YS[idx], to = TS_DEGREE_YS[nextIdx];
+        ys = from.map((y, i) => y + (to[i] - y) * b);
+      }
+      pathEl.setAttribute('d', tsPathFromYs(ys));
+      tsSpins.set(svg, requestAnimationFrame(frame));
+    }
+    tsSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function tsStopSpin(svg) {
+    const id = tsSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    tsSpins.delete(svg);
+    const pathEl = svg.querySelector('.ts-poly');
+    if (pathEl) pathEl.setAttribute('d', tsPathFromYs(TS_DEGREE_YS[0]));
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.ts-tile');
+    if (svg) tsStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.ts-tile');
+    if (svg) tsStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
