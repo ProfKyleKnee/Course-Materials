@@ -21,16 +21,21 @@ Applets/
 │   ├── applet-header.css
 │   └── applet-header.js
 ├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system),
-│                                   except Curve Sketching and Newton's Method (below), both migrated
+│                                   except Curve Sketching, Newton's Method, and Reimann Sums (below),
+│                                   all three migrated
 │   ├── Curve Sketching/            Migrated — curve-sketching-v13.html is the shipped bundle,
 │   │                                 curve-sketching-v13.jsx + curve-sketching-styles.css the source;
 │   │                                 has its own spec_4.md
-│   └── Newton's Method/            Migrated — Newton's Method.html is the shipped bundle; App.jsx,
-│                                     Shared.jsx, Graph.jsx, newtonMath.js, IntroTab.jsx,
-│                                     FreePlayTab.jsx, FailureTab.jsx, OtherReasonsTab.jsx,
-│                                     failureConfigs.js, main.jsx the source (all flat in this same
-│                                     folder — see the import-path mismatch note under "Build model"
-│                                     below); has its own spec.md
+│   ├── Newton's Method/            Migrated — Newton's Method.html is the shipped bundle; App.jsx,
+│   │                                 Shared.jsx, Graph.jsx, newtonMath.js, IntroTab.jsx,
+│   │                                 FreePlayTab.jsx, FailureTab.jsx, OtherReasonsTab.jsx,
+│   │                                 failureConfigs.js, main.jsx the source (all flat in this same
+│   │                                 folder — see the import-path mismatch note under "Build model"
+│   │                                 below); has its own spec.md
+│   └── Reimann Sums/               Migrated — riemann-sum-applet-standalone_6.html is the shipped
+│                                     bundle, riemann-sum-applet.jsx the source; also cross-listed as a
+│                                     Calculus II applet (same shipped file, two items[] rows — see
+│                                     wiring.md); has its own spec_5.md
 ├── Calc 2/
 │   ├── Polar Graphing/            Migrated — polar-graphing-applet.html is the shipped bundle,
 │   │                                 app.jsx the source; has its own spec_4.md
@@ -50,8 +55,8 @@ Applets/
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
 **Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, Taylor Series & Remainder
-Explorer, Curve Sketching Studio, and Newton's Method Explorer have been migrated** to the
-full-viewport layout described below; Calc 3's other two applets and the rest of Calc 1 still use
+Explorer, Curve Sketching Studio, Newton's Method Explorer, and the Riemann Sum Explorer have been
+migrated** to the full-viewport layout described below; Calc 3's other two applets and the rest of Calc 1 still use
 their own one-off header (or none at all) and haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
 page-level credit row to the canonical spec (see "Header pattern" below) and rebuilding its bundle.
 None of the migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header
@@ -61,7 +66,7 @@ pattern" for why.
 Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
 threads, and pedagogical goals — read for context, not executed. Not every applet folder has one yet
 (as of this branch, Quadric Surfaces, Partial Derivatives, Lagrange Multipliers, Polar Graphing,
-Taylor Series, Curve Sketching, and Newton's Method all do); worth back-filling one when doing
+Taylor Series, Curve Sketching, Newton's Method, and Reimann Sums all do); worth back-filling one when doing
 substantial work on an applet that lacks
 one. Applet-specific facts (design decisions, open threads, pedagogical goals for *that* applet)
 belong in its own `spec.md`, not in this file — this file is only for rules that apply across
@@ -155,6 +160,24 @@ imports — copy the tab files into an actual `tabs/` subdirectory in your scrat
 (matching what the imports expect), bundle from there, and don't try to "fix" the mismatch by moving
 the real repo files into a `tabs/` folder without checking with Kyle first, since nothing about the
 shipped HTML or this doc assumes that layout.
+
+**Reimann Sums** predates this system's `import`-based/classic-transform-concatenation split
+entirely — its own build pipeline (`tsc --jsx react` plus a hand-rolled recursive-descent expression
+parser standing in for `mathjs`, see its own `spec_5.md` for the full recipe) has nothing to do with
+esbuild. No toolchain assumption from that original pipeline needed to be re-run for the header
+migration, since only the outermost wrapper/banner/footer changed, not the math engine — but the
+shipped HTML has no `import`s to rebuild from either way, so the migration edited the compiled
+`React.createElement(...)` tree directly, same hand-editing constraint as Polar Graphing/Taylor
+Series. Rather than counting nested parens by eye (the exact mistake this doc's hand-editing warning
+above is about), the splice points were found programmatically: a small one-off Node script walked
+the file with a JS-aware paren/string/template-literal matcher to locate the byte offsets of the
+`return (`, the outer wrapper's own `React.createElement(...)` call, and the content div's call, then
+spliced the new banner/card/footer markup in at those offsets. The result was verified with
+`node --check` on the extracted `<script>` block plus a real headless-browser render before being
+treated as done — the general "verify, don't just assert" standard `spec_5.md` already called for on
+this applet, extended to structural HTML edits, not just math-logic bugs. Prefer this script-assisted
+splice approach (or a real esbuild rebuild, if a toolchain happens to be available for a given
+applet) over hand-counting parens on any future compiled-output-only migration.
 
 **Five full-viewport gotchas worth checking on any migrated applet** — the first three caught (and
 fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio, the fifth on Newton's Method

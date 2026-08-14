@@ -211,6 +211,20 @@ applet being linked in for the first time, only for the pre-existing Calc 1/Calc
 applets that predate that pattern. Ship the header/footer and the `items[]` row together; don't wire
 in an applet whose header still uses a one-off design.
 
+**Cross-listing an applet across two courses.** An applet whose techniques genuinely belong to two
+courses' curricula (e.g. the Riemann Sum Explorer's rectangle/trapezoid/Simpson's-Rule modes cover
+both Calculus I's 5.1 Approximating Areas and Calculus II's 2.6 Numerical Integration) gets **two**
+`items[]` rows — one per course, each with its own `id`/`sections` so it groups into the right unit
+carousel on each course's own page — both pointing at the **same** `launchUrl`. There is no separate
+build or copy of the shipped HTML; don't duplicate the applet file itself just to change which course
+"owns" it, since that turns every future bug fix into a two-file update that will eventually drift
+(see "Data duplicated across files" above for why that pattern is avoided elsewhere in this repo).
+The one real cost is the banner: its kicker can only say one thing regardless of which course's
+carousel the user clicked in from, so a cross-listed applet's kicker should name **both** courses/
+units it's filed under (e.g. "Calculus I · Unit 4 / Calculus II · Unit 2", with a dedicated divider
+`<span>` — not just a `/` character mid-string — given enough horizontal margin to read as two
+distinct labels rather than one run-on line) rather than picking just one course to display.
+
 **Card-tile hover animation.** `tileSVG()` (`js/app.js`, `appletCardHTML()`'s tile) defaults to a
 generic curve-plus-traveling-dot tile driven by the item's `curve` field, with `.ring1`/`.ring2`
 ripple markers **hardcoded at `cx="118" cy="26"`** (`css/styles.css`) — this only looks right for an
@@ -228,10 +242,17 @@ Newton's Method Explorer's `newtonTangent` tileType, which sequences a whole *ch
 elements (a dashed connector, then a point, then a tangent line, then the next x-intercept, twice)
 by driving each one's own inline `opacity` on independent start/duration windows within one shared
 timeline, rather than rewriting a `d` attribute at all, since nothing in that construction morphs —
-it only ever appears) needs its own `tileType` — a dedicated `<type>TileSVG()` render function plus a
+it only ever appears, or the Riemann Sum Explorer's `riemannSum` tileType, which animates a discrete
+*count* rather than a continuous shape or opacity timeline: up to 50 pooled `<rect>` elements sit in
+the DOM at all times, and each frame recomputes x/y/width/height for however many of them are "in
+use" as n eases from 4 up to 50 (real f(x)=x²/4+1 Left-endpoint geometry, matching the applet's own
+default preset/technique) and hides the rest via inline `display:none`, rather than rewriting one
+element's `d` the way `tsTileSVG`/`csTileSVG` do) needs its own `tileType` — a dedicated
+`<type>TileSVG()` render function plus a
 `<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s `mouseover`/`mouseout`
 (see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()`, `prTileSVG()`/`prStartSpin()`/`prStopSpin()`,
-`tsTileSVG()`/`tsStartSpin()`/`tsStopSpin()`, `csTileSVG()`/`csStartSpin()`/`csStopSpin()`, or
-`nmTileSVG()`/`nmStartSpin()`/`nmStopSpin()` in `js/app.js` for the pattern), registered in
+`tsTileSVG()`/`tsStartSpin()`/`tsStopSpin()`, `csTileSVG()`/`csStartSpin()`/`csStopSpin()`,
+`nmTileSVG()`/`nmStartSpin()`/`nmStopSpin()`, or `rsTileSVG()`/`rsStartSpin()`/`rsStopSpin()` in
+`js/app.js` for the pattern), registered in
 `tileSVG()`'s dispatch and given a matching CSS comment block in `css/styles.css`. Don't force a
 non-conforming curve through the generic tile just to avoid writing a new `tileType`.

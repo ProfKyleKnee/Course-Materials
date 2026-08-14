@@ -360,6 +360,7 @@
     if (a.tileType === 'taylorSeries') return tsTileSVG();
     if (a.tileType === 'curveSketch') return csTileSVG();
     if (a.tileType === 'newtonTangent') return nmTileSVG();
+    if (a.tileType === 'riemannSum') return rsTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -1259,6 +1260,102 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.nm-tile');
     if (svg) nmStopSpin(svg);
+  });
+
+  // ---------- Riemann Sum Explorer card tile (tileType: 'riemannSum' in js/data.js) ----------
+  // Real applet math, not decoration: f(x) = x^2/4 + 1 (the applet's own first preset) sampled with
+  // Left-endpoint rectangles (the applet's own default technique/mode) over [0,6]. Up to RS_MAX_N
+  // <rect> elements are always present in the DOM; rsUpdateRects recomputes every visible one's
+  // x/y/width/height each frame (hiding the rest via display:none) rather than rewriting a single
+  // path's `d`, since what's actually changing here is the *rectangle count* itself, not a
+  // continuous shape. At rest the tile shows the static RS_MIN_N-rectangle picture (the loop's own
+  // starting frame); rsStartSpin eases n from RS_MIN_N up to RS_MAX_N, holds briefly so the dense
+  // finish is readable, then snaps back to RS_MIN_N and repeats, matching Kyle's "4 rectangles up to
+  // 50, then loop" spec.
+  var RS_MIN_N = 4, RS_MAX_N = 50;
+  var RS_XMIN = 0, RS_XMAX = 6;
+  function rsF(x) { return x * x / 4 + 1; }
+  var RS_YMAX = rsF(RS_XMAX);
+  var RS_PAD_L = 10, RS_PAD_R = 6, RS_TOP_Y = 8, RS_BASE_Y = 88;
+  var RS_SCALE_X = (100 - RS_PAD_L - RS_PAD_R) / (RS_XMAX - RS_XMIN);
+  var RS_SCALE_Y = (RS_BASE_Y - RS_TOP_Y) / RS_YMAX;
+  function rsPx(x) { return RS_PAD_L + (x - RS_XMIN) * RS_SCALE_X; }
+  function rsPy(y) { return RS_BASE_Y - y * RS_SCALE_Y; }
+  var RS_CURVE_D = (function () {
+    let d = '';
+    const steps = 32;
+    for (let i = 0; i <= steps; i++) {
+      const x = RS_XMIN + (RS_XMAX - RS_XMIN) * i / steps;
+      d += (i === 0 ? 'M' : 'L') + rsPx(x).toFixed(1) + ',' + rsPy(rsF(x)).toFixed(1) + ' ';
+    }
+    return d.trim();
+  })();
+  function rsRectGeom(i, n) {
+    const dx = (RS_XMAX - RS_XMIN) / n;
+    const x0 = RS_XMIN + i * dx;
+    const py = rsPy(rsF(x0));
+    const px0 = rsPx(x0), px1 = rsPx(x0 + dx);
+    return { x: px0, y: py, width: Math.max(0.2, px1 - px0 - 0.5), height: Math.max(0, RS_BASE_Y - py) };
+  }
+  function rsTileSVG() {
+    let rects = '';
+    for (let i = 0; i < RS_MAX_N; i++) {
+      if (i < RS_MIN_N) {
+        const g = rsRectGeom(i, RS_MIN_N);
+        rects += `<rect class="rs-rect" data-i="${i}" x="${g.x.toFixed(1)}" y="${g.y.toFixed(1)}" width="${g.width.toFixed(1)}" height="${g.height.toFixed(1)}"/>`;
+      } else {
+        rects += `<rect class="rs-rect" data-i="${i}" style="display:none"/>`;
+      }
+    }
+    return `<svg class="rs-tile" viewBox="0 0 100 100">
+      <line class="axis-line" x1="${RS_PAD_L}" y1="${RS_BASE_Y}" x2="${RS_PAD_L}" y2="4"/>
+      <line class="axis-line" x1="6" y1="${RS_BASE_Y}" x2="96" y2="${RS_BASE_Y}"/>
+      ${rects}
+      <path class="curve-path" d="${RS_CURVE_D}"/>
+    </svg>`;
+  }
+  function rsUpdateRects(svg, n) {
+    const els = svg.querySelectorAll('.rs-rect');
+    els.forEach((el, i) => {
+      if (i >= n) { el.style.display = 'none'; return; }
+      el.style.display = '';
+      const g = rsRectGeom(i, n);
+      el.setAttribute('x', g.x.toFixed(1));
+      el.setAttribute('y', g.y.toFixed(1));
+      el.setAttribute('width', g.width.toFixed(1));
+      el.setAttribute('height', g.height.toFixed(1));
+    });
+  }
+  var RS_RAMP_MS = 2200, RS_HOLD_MS = 550, RS_LOOP_MS = RS_RAMP_MS + RS_HOLD_MS;
+  function rsEase(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t); }
+  var rsSpins = new Map();
+  function rsStartSpin(svg) {
+    if (rsSpins.has(svg)) return;
+    const start = performance.now();
+    function frame(now) {
+      const t = (now - start) % RS_LOOP_MS;
+      const n = Math.round(RS_MIN_N + (RS_MAX_N - RS_MIN_N) * rsEase(t / RS_RAMP_MS));
+      rsUpdateRects(svg, n);
+      rsSpins.set(svg, requestAnimationFrame(frame));
+    }
+    rsSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function rsStopSpin(svg) {
+    const id = rsSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    rsSpins.delete(svg);
+    rsUpdateRects(svg, RS_MIN_N);
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.rs-tile');
+    if (svg) rsStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.rs-tile');
+    if (svg) rsStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —

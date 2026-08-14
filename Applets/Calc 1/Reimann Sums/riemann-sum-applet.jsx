@@ -310,13 +310,56 @@ export default function RiemannSumApplet() {
     <div
       style={{
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-        background: "#F5F5FA",
-        minHeight: "100vh",
-        padding: "26px 20px",
+        background: "#E8E8F2",
+        height: "100%",
+        padding: "24px 24px 0",
         color: "#3A3A3C",
         boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
+      <div
+        style={{
+          maxWidth: 1200, width: "100%", margin: "0 auto", borderRadius: 20,
+          boxShadow: "0 4px 24px rgba(60,60,90,0.14)", overflow: "hidden", flexShrink: 0,
+          background: "#FFFFFF", display: "flex", flexDirection: "column",
+        }}
+      >
+        <div
+          style={{
+            position: "relative", overflow: "hidden", display: "flex", alignItems: "center",
+            gap: 16, padding: "16px 28px", flexShrink: 0,
+            background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+          }}
+        >
+          <svg
+            viewBox="0 0 1200 130" preserveAspectRatio="none"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }}
+          >
+            <path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" stroke="white" strokeWidth="2.5" fill="none" />
+          </svg>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
+            <a
+              href="../../../browse.html#/applets"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.88)",
+                textDecoration: "none", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap",
+                padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.12)",
+              }}
+            >
+              ← All Applets
+            </a>
+            <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                Calculus I · Unit 4<span style={{ margin: "0 10px", opacity: 0.6 }}>/</span>Calculus II · Unit 2
+              </div>
+              <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }}>Riemann Sum Approximation</h1>
+            </div>
+          </div>
+        </div>
+        <div style={{ background: "#F5F5FA", padding: "20px 28px 24px" }}>
       <style>{`
         .rsa-slider { -webkit-appearance: none; height: 4px; border-radius: 2px; background: #DCDCF0; outline: none; accent-color: #3B4FC2; }
         .rsa-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #3B4FC2; cursor: pointer; border: 2px solid #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
@@ -331,16 +374,8 @@ export default function RiemannSumApplet() {
       `}</style>
 
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#8A8AA3", textTransform: "uppercase", fontWeight: 600 }}>
-            Riemann Sum Approximation
-          </div>
-          <h1 style={{ fontWeight: 600, fontSize: 32, margin: "4px 0 0", color: "#3A3A3C", letterSpacing: "-0.3px" }}>
-            Estimating the area under f(x)
-          </h1>
-          <div style={{ fontSize: 12, color: "#8A8AA3", marginTop: 4 }}>
-            Drag the a and b markers on the axis to adjust the interval.
-          </div>
+        <div style={{ fontSize: 12, color: "#8A8AA3", marginBottom: 14 }}>
+          Drag the a and b markers on the axis to adjust the interval.
         </div>
 
         <div style={{ position: "relative", background: "#FFFFFF", borderRadius: 20, padding: 14, boxShadow: "0 1px 3px rgba(60,60,90,0.08)" }}>
@@ -652,6 +687,28 @@ export default function RiemannSumApplet() {
           </div>
         </div>
       </div>
+        </div>
+      </div>
+      <PageCredit />
+    </div>
+  );
+}
+
+function PageCredit() {
+  return (
+    <div
+      style={{
+        marginTop: "auto", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 11, padding: "18px 20px 26px", fontSize: 13.5, color: "#8A8AA3",
+      }}
+    >
+      <span style={{
+        width: 40, height: 40, borderRadius: "50%", background: "#FFFFFF", border: "1px solid #DCDCF0",
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+      }}>
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }
