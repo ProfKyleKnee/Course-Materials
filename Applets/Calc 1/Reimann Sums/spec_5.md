@@ -6,7 +6,13 @@ _Last updated: this session_
 
 ## Current status
 
-Feature-complete and polished. Supports three techniques — Rectangles (with Left/Midpoint/Right/Random sub-modes and a continuous sample-point slider), Trapezoid, and Simpson's Rule — with draggable interval endpoints, zoom/autofit, and a fully offline standalone export for LMS upload. Most recent work was layout tuning (graph height, spacing) to fit on-screen without scrolling. No open feature work right now; this spec is a first-draft backfill pulled from conversation history — please review and correct anything I've mischaracterized.
+Feature-complete and polished. Supports three techniques — Rectangles (with Left/Midpoint/Right/Random sub-modes and a continuous sample-point slider), Trapezoid, and Simpson's Rule — with draggable interval endpoints, zoom/autofit, and a fully offline standalone export for LMS upload. Most recent work was layout tuning (graph height, spacing) to fit on-screen without scrolling.
+
+Wired into the site on the `ReimannSums-Wiring` branch (not yet merged to `main`): migrated to the canonical gradient-banner header/`PageCredit` footer pattern (see `.claude/rules/applets.md`), added to `js/data.js` as `a-c1-51` (Calculus I, section 5.1, Unit 4), and cross-listed as `a-c2-26` (Calculus II, section 2.6, Unit 2) pointing at the same shipped `riemann-sum-applet-standalone_6.html` — no second build, no second copy of the file. The banner kicker names both: "Calculus I · Unit 4 / Calculus II · Unit 2", with the `/` in its own `<span>` given horizontal margin so the two labels read as distinct rather than run-on. The card tile (`tileType: 'riemannSum'` in both `items[]` rows) is a dedicated animation, not the generic curve+dot tile — see "Card-tile animation" below. No open feature work right now; the "Design decisions log" through "Open threads" sections below are a first-draft backfill pulled from conversation history from before the wiring work — please review and correct anything I've mischaracterized.
+
+## Card-tile animation
+
+`tileType: 'riemannSum'` (`js/app.js`'s `rsTileSVG`/`rsStartSpin`/`rsStopSpin`, styled by `.rs-rect` in `css/styles.css`) uses the applet's own real math and default view, not decoration: f(x) = x²/4 + 1 (the first function preset) sampled with Left-endpoint rectangles (the default technique/mode) over [0, 6]. Up to 50 `<rect>` elements are always present in the tile's DOM; at rest only the first 4 are shown (a static picture, matching the generic tile's "everything visible, static" resting convention). On hover, `rsStartSpin` eases the visible rectangle count from 4 up to 50 over ~2.2s (recomputing every visible rect's x/y/width/height each frame — real geometry, not a lookup table), holds briefly at 50 so the dense, curve-hugging finish is readable, then snaps back to 4 and repeats for as long as the card stays hovered; moving away resets immediately to the static 4-rectangle frame.
 
 ## Pedagogical goal
 
@@ -51,3 +57,4 @@ Let students see *why* a Riemann sum approximates area under a curve, and that t
 ## Open threads / questions
 
 - None currently open. Flag anything I've gotten wrong above so this spec is accurate for the next session.
+- The folder name (`Applets/Calc 1/Reimann Sums/`) and this file's own path keep the "Reimann" misspelling on purpose — the shipped HTML's `launchUrl` in `js/data.js` (both the Calc I and Calc II rows) and this spec's own filename all point at that exact path, so renaming the folder now would be a coordinated multi-file rename, not a typo fix. Worth doing in one dedicated pass if it's ever bothersome, not as a drive-by edit.

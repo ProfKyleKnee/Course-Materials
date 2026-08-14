@@ -247,6 +247,15 @@
   .nm-tan { stroke: #C1556B; stroke-width: 2; fill: none; }
   .nm-dot { fill: var(--accent); }
 
+  /* ---------- Riemann Sum Explorer card tile (tileType: 'riemannSum' in js/data.js) ----------
+     No dedicated axis/curve classes needed -- reuses the generic .axis-line/.curve-path rules
+     above, drawn last so the curve's stroke sits visibly on top of the rectangle fills, same
+     paint order as the real applet. js/app.js's rsStartSpin/rsUpdateRects rewrite each .rs-rect's
+     x/y/width/height every frame while hovered (not a single path's `d`, since it's the rectangle
+     *count* that's animating), hiding whichever of the up-to-50 pooled rects aren't in use via
+     inline display:none. */
+  .rs-rect { fill: var(--accent); fill-opacity: 0.35; stroke: var(--accent); stroke-width: 0.6; }
+
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
   .jump-link:hover { color: var(--accent); }

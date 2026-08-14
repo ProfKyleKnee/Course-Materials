@@ -67,7 +67,21 @@ some window sizes, invisibly clipping the icon rail's bottom nav buttons against
 distort) and sizes it by capping its *width* with a `calc()` tied to `100vh` minus each tab's own
 fixed vertical chrome (a new `overheadPx` prop on `Graph`, since Free Play/the failure tabs have
 visibly less fixed content above the graph than Intro's Big Idea card and need a smaller constant) —
-added on the `NewtonsMethod-Wiring` branch (not yet merged to `main`).
+added on the `NewtonsMethod-Wiring` branch (not yet merged to `main`), plus the Calc 1 Riemann Sum
+Explorer applet migrated to that same canonical header/footer pattern — hand-spliced into the
+compiled `React.createElement` tree via a one-off Node script that locates splice points with a
+JS-aware paren/string matcher instead of counting nested parens by eye, verified with `node --check`
+plus a real headless-browser render (see `.claude/rules/applets.md`'s Build model section) — and
+wired into `js/data.js` for the first time (Unit 4, section 5.1, via `unitLabelOverrides` same as the
+rest of Calc I), plus a dedicated `riemannSum` card-tile hover animation (real f(x)=x²/4+1
+Left-endpoint geometry easing the rectangle count from 4 up to 50 and back, rewriting up to 50 pooled
+`<rect>` elements' geometry every frame rather than a single path's `d` — see
+`.claude/rules/wiring.md`), a condensed card description to match the other applet cards' four-line
+height, and a second cross-listing of the same shipped applet into Calculus II (Unit 2, section 2.6,
+same `launchUrl`, no duplicate build — see `.claude/rules/wiring.md`'s new "Cross-listing an applet
+across two courses" section) with the banner kicker updated to name both courses/units it's filed
+under, separated by a dedicated divider `<span>` for visual breathing room — added on the
+`ReimannSums-Wiring` branch (not yet merged to `main`).
 
 ---
 
