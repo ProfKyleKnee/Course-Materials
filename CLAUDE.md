@@ -48,7 +48,26 @@ reverse-morphing loop, see `.claude/rules/wiring.md`), plus a first pass at real
 for the applet itself (a `720px` breakpoint stacking its two-column graph/panel layout to one column,
 and a fix for a genuine CSS Grid/Flexbox shrink-to-fit overflow bug — see the fourth full-viewport
 gotcha in `.claude/rules/applets.md`) — added on the `CurveSketching-Applet-Wiring` branch (not yet
-merged to `main`).
+merged to `main`), plus the Calc 1 Newton's Method Explorer applet migrated to that same canonical
+header/footer pattern (rebuilt via the same `import`-based esbuild recipe as Curve Sketching) and
+wired into `js/data.js` for the first time (Unit 3, section 4.9), plus a dedicated `newtonTangent`
+card-tile hover animation (a two-step tangent-line construction — dashed connector, point, tangent,
+x-intercept, twice, using a real Newton step on f(x)=0.5x²−1.5 with a starting guess chosen far
+enough from the root that both steps stay visually legible — with its tangent lines drawn in red via
+a dedicated `.nm-tan` CSS class, not the generic curve+dot tile; see `.claude/rules/wiring.md`), plus
+a graph-sizing fix worth knowing about before touching any other applet's graph area: an initial
+width-driven `aspect-ratio` container ballooned to ~685px tall once the canonical header migration
+widened the page from the applet's original ~980px layout to the shared 1200px card, a
+`preserveAspectRatio="none"` attempt to fix that by letting the SVG stretch independently in turn
+visibly distorted every circle marker into an ellipse, and a from-scratch flex-grow chain (six nested
+levels all set to `flex:1 1 auto; min-height:0`) tried to fill the remaining viewport height exactly
+but caused a real bug (a nested flex item's automatic min-height calculation ballooned to ~980px on
+some window sizes, invisibly clipping the icon rail's bottom nav buttons against the card's own
+`overflow:hidden`) — the fix that shipped instead locks the graph's `aspect-ratio` (so it can never
+distort) and sizes it by capping its *width* with a `calc()` tied to `100vh` minus each tab's own
+fixed vertical chrome (a new `overheadPx` prop on `Graph`, since Free Play/the failure tabs have
+visibly less fixed content above the graph than Intro's Big Idea card and need a smaller constant) —
+added on the `NewtonsMethod-Wiring` branch (not yet merged to `main`).
 
 ---
 

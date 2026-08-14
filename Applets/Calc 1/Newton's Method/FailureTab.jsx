@@ -46,8 +46,8 @@ export default function FailureTab({ config }) {
   const rootHighlight = config.roots && config.roots.length ? nearestRootIndex(config.roots, x1) : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
+      <div style={{ flexShrink: 0, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
         <div>
           <FieldCaption>Function</FieldCaption>
           <FixedReadout prefix="f(x) =" value={config.fn.label} />
@@ -80,14 +80,15 @@ export default function FailureTab({ config }) {
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 16, flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
           <Graph
             fn={config.fn} camera={camera} trail={trail} edgeBadges={edgeBadges}
             roots={config.roots} rootHighlight={rootHighlight} showRootLegend={!!config.showRootLegend}
             onAutofitClick={() => camera.autofit(config.fn, xs.slice(0, clampedN))}
+            overheadPx={445}
           />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 12.5, color: COLORS.muted, fontWeight: 600 }}>n</span>
               <input

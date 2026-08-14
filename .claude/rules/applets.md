@@ -21,10 +21,16 @@ Applets/
 │   ├── applet-header.css
 │   └── applet-header.js
 ├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system),
-│                                   except Curve Sketching (below), which is migrated
-│   └── Curve Sketching/            Migrated — curve-sketching-v13.html is the shipped bundle,
-│                                     curve-sketching-v13.jsx + curve-sketching-styles.css the source;
-│                                     has its own spec_4.md
+│                                   except Curve Sketching and Newton's Method (below), both migrated
+│   ├── Curve Sketching/            Migrated — curve-sketching-v13.html is the shipped bundle,
+│   │                                 curve-sketching-v13.jsx + curve-sketching-styles.css the source;
+│   │                                 has its own spec_4.md
+│   └── Newton's Method/            Migrated — Newton's Method.html is the shipped bundle; App.jsx,
+│                                     Shared.jsx, Graph.jsx, newtonMath.js, IntroTab.jsx,
+│                                     FreePlayTab.jsx, FailureTab.jsx, OtherReasonsTab.jsx,
+│                                     failureConfigs.js, main.jsx the source (all flat in this same
+│                                     folder — see the import-path mismatch note under "Build model"
+│                                     below); has its own spec.md
 ├── Calc 2/
 │   ├── Polar Graphing/            Migrated — polar-graphing-applet.html is the shipped bundle,
 │   │                                 app.jsx the source; has its own spec_4.md
@@ -44,9 +50,9 @@ Applets/
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
 **Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, Taylor Series & Remainder
-Explorer, and Curve Sketching Studio have been migrated** to the full-viewport layout described
-below; Calc 3's other two applets and the rest of Calc 1 still use their own one-off header (or none
-at all) and haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
+Explorer, Curve Sketching Studio, and Newton's Method Explorer have been migrated** to the
+full-viewport layout described below; Calc 3's other two applets and the rest of Calc 1 still use
+their own one-off header (or none at all) and haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
 page-level credit row to the canonical spec (see "Header pattern" below) and rebuilding its bundle.
 None of the migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header
 pattern" for why.
@@ -54,8 +60,9 @@ pattern" for why.
 ## Per-applet design-decision logs
 Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
 threads, and pedagogical goals — read for context, not executed. Not every applet folder has one yet
-(as of this branch, Quadric Surfaces, Partial Derivatives, Lagrange Multipliers, Polar Graphing, and
-Taylor Series all do); worth back-filling one when doing substantial work on an applet that lacks
+(as of this branch, Quadric Surfaces, Partial Derivatives, Lagrange Multipliers, Polar Graphing,
+Taylor Series, Curve Sketching, and Newton's Method all do); worth back-filling one when doing
+substantial work on an applet that lacks
 one. Applet-specific facts (design decisions, open threads, pedagogical goals for *that* applet)
 belong in its own `spec.md`, not in this file — this file is only for rules that apply across
 applets.
@@ -136,8 +143,22 @@ than one replacing the other. It's also the applet that surfaced the fourth full
 until a later round of work added one, at which point the missing `minmax(0, …)` caused a real
 horizontal-overflow bug on phones, not just a hypothetical one.
 
-**Four full-viewport gotchas worth checking on any migrated applet** — the first three caught (and
-fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio:
+**Newton's Method Explorer** is built like Quadric Surfaces and Curve Sketching (`import`-based
+source, real ES module imports for React/react-dom), rebuilt via the same `esbuild --bundle
+--format=iife --jsx=automatic` recipe against `react@19`/`react-dom@19`. **Import-path mismatch to
+know about before rebuilding**: `App.jsx` imports its tab components from `./tabs/IntroTab.jsx` etc.,
+but every `.jsx` file in this applet actually sits flat in `Applets/Calc 1/Newton's Method/` — there
+is no `tabs/` subfolder on disk. This isn't a bug that broke anything (esbuild resolves relative to
+wherever you actually put the files when bundling, not to some canonical layout), but it does mean a
+straight `esbuild app.jsx --bundle` run against the files *in place* will fail to resolve those
+imports — copy the tab files into an actual `tabs/` subdirectory in your scratch build folder first
+(matching what the imports expect), bundle from there, and don't try to "fix" the mismatch by moving
+the real repo files into a `tabs/` folder without checking with Kyle first, since nothing about the
+shipped HTML or this doc assumes that layout.
+
+**Five full-viewport gotchas worth checking on any migrated applet** — the first three caught (and
+fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio, the fifth on Newton's Method
+Explorer:
 - The **card** itself (the flex child holding the banner *and* the content, not just an inner content
   wrapper) needs its own explicit `max-width: 1200px; margin: 0 auto` — capping only an inner wrapper
   while the outer card is unconstrained lets the gradient banner stretch full-bleed across the page
@@ -165,6 +186,21 @@ fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio:
   need the equivalent explicit `min-width: 0` — hit on Curve Sketching Studio by two side-by-side
   `<input type="range">` sliders inside a flex row, which refused to shrink below their own browser-
   default intrinsic width no matter how narrow their flex container got.
+- A deeply-nested `flex: 1 1 auto; min-height: 0` chain (six-plus levels, trying to make an inner
+  element like a graph truly *fill* whatever vertical space is left after the banner/fixed rows) is
+  fragile and easy to get subtly wrong — on Newton's Method Explorer, removing `min-height: 0` from
+  just one intermediate row (to stop a sibling nav rail from being squeezed below its own content
+  height) caused a *different* level's automatic min-height calculation to balloon to ~980px on some
+  window sizes, which silently clipped the nav rail's own bottom buttons against an ancestor's
+  `overflow: hidden` instead of fixing anything. If an element's height genuinely needs to track "the
+  rest of the viewport, minus some fixed chrome above/below it," prefer sizing it directly against the
+  viewport instead of routing that constraint through many flex levels: lock its own `aspect-ratio` (so
+  it can never visually distort, sidestepping the `preserveAspectRatio="none"` gotcha above entirely,
+  since the box always matches the `viewBox`'s true proportions) and cap its *width* (which then drives
+  height through the locked ratio) with `calc(100vh - Npx)`, where `Npx` is that specific caller's own
+  measured fixed vertical overhead — pass it in as a prop rather than hardcoding one value shared by
+  every caller, since siblings with less fixed content around the sized element (e.g. a simpler tab
+  with no intro/explainer card) need a smaller `Npx` or they'll under-fill and leave dead space below.
 
 ## Header pattern
 Every migrated applet's HTML shell loads only the shared CSS file, for its full-viewport layout

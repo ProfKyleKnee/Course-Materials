@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <title>Newton's Method</title>
+<link rel="stylesheet" href="../../shared/applet-header.css">
 <style>
-  html, body { margin: 0; padding: 0; }
   * { box-sizing: border-box; }
   button { font-family: inherit; }
   input[type="range"] { -webkit-appearance: none; height: 4px; background: #DCDCF0; border-radius: 2px; }
@@ -22,7 +22,11 @@
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __commonJS = (cb, mod) => function __require() {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
   };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
@@ -41,9 +45,9 @@
     mod
   ));
 
-  // ../.npm-global/lib/node_modules/react/cjs/react.development.js
+  // node_modules/react/cjs/react.development.js
   var require_react_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react.development.js"(exports, module) {
+    "node_modules/react/cjs/react.development.js"(exports, module) {
       "use strict";
       (function() {
         function defineDeprecationWarning(methodName, info) {
@@ -1007,15 +1011,15 @@
         exports.useTransition = function() {
           return resolveDispatcher().useTransition();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/index.js
+  // node_modules/react/index.js
   var require_react = __commonJS({
-    "../.npm-global/lib/node_modules/react/index.js"(exports, module) {
+    "node_modules/react/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1025,9 +1029,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js
+  // node_modules/scheduler/cjs/scheduler.development.js
   var require_scheduler_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js"(exports) {
+    "node_modules/scheduler/cjs/scheduler.development.js"(exports) {
       "use strict";
       (function() {
         function performWorkUntilDeadline() {
@@ -1284,9 +1288,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js
+  // node_modules/scheduler/index.js
   var require_scheduler = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js"(exports, module) {
+    "node_modules/scheduler/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1296,9 +1300,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js
+  // node_modules/react-dom/cjs/react-dom.development.js
   var require_react_dom_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom.development.js"(exports) {
       "use strict";
       (function() {
         function noop() {
@@ -1534,15 +1538,15 @@
         exports.useFormStatus = function() {
           return resolveDispatcher().useHostTransitionStatus();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/index.js
+  // node_modules/react-dom/index.js
   var require_react_dom = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/index.js"(exports, module) {
+    "node_modules/react-dom/index.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -1553,9 +1557,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js
+  // node_modules/react-dom/cjs/react-dom-client.development.js
   var require_react_dom_client_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
       "use strict";
       (function() {
         function findHook(fiber, id) {
@@ -21326,9 +21330,9 @@
         };
         (function() {
           var isomorphicReactPackageVersion = React9.version;
-          if ("19.2.5" !== isomorphicReactPackageVersion)
+          if ("19.2.8" !== isomorphicReactPackageVersion)
             throw Error(
-              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.5\nLearn more: https://react.dev/warnings/version-mismatch")
+              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch")
             );
         })();
         "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
@@ -21352,10 +21356,10 @@
         if (!(function() {
           var internals = {
             bundleType: 1,
-            version: "19.2.5",
+            version: "19.2.8",
             rendererPackageName: "react-dom",
             currentDispatcherRef: ReactSharedInternals,
-            reconcilerVersion: "19.2.5"
+            reconcilerVersion: "19.2.8"
           };
           internals.overrideHookState = overrideHookState;
           internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -21446,15 +21450,15 @@
           listenToAllSupportedEvents(container);
           return new ReactDOMHydrationRoot(initialChildren);
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/client.js
+  // node_modules/react-dom/client.js
   var require_client = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/client.js"(exports, module) {
+    "node_modules/react-dom/client.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -21465,9 +21469,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js
+  // node_modules/react/cjs/react-jsx-runtime.development.js
   var require_react_jsx_runtime_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
+    "node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
       "use strict";
       (function() {
         function getComponentNameFromType(type) {
@@ -21722,9 +21726,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/jsx-runtime.js
+  // node_modules/react/jsx-runtime.js
   var require_jsx_runtime = __commonJS({
-    "../.npm-global/lib/node_modules/react/jsx-runtime.js"(exports, module) {
+    "node_modules/react/jsx-runtime.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -22214,7 +22218,7 @@
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { style: { ...btnStyle, fontSize: 12 }, onClick: onAutofitClick, title: "Autofit", children: "\u2922" })
     ] });
   }
-  function Graph({ fn: fn2, camera, trail = [], guessPoint, edgeBadges = [], roots = [], rootHighlight = null, showRootLegend = false, onAutofitClick, simpleFade = true, overlay }) {
+  function Graph({ fn: fn2, camera, trail = [], guessPoint, edgeBadges = [], roots = [], rootHighlight = null, showRootLegend = false, onAutofitClick, simpleFade = true, overlay, overheadPx = 515 }) {
     const svgRef = (0, import_react2.useRef)(null);
     const dragState = (0, import_react2.useRef)(null);
     function pxToMath(px, py, view2) {
@@ -22265,7 +22269,18 @@
       window.addEventListener("mouseup", onUp);
     }
     const view = camera.view;
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { position: "relative", width: "100%", aspectRatio: `${WIDTH}/${HEIGHT}`, background: COLORS.card, borderRadius: 18, boxShadow: "0 1px 3px rgba(60,60,90,0.07)", overflow: "hidden" }, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: {
+      position: "relative",
+      width: "100%",
+      maxWidth: `max(290px, calc((100vh - ${overheadPx}px) * ${(WIDTH / HEIGHT).toFixed(4)}))`,
+      aspectRatio: `${WIDTH}/${HEIGHT}`,
+      margin: "0 auto",
+      flexShrink: 0,
+      background: COLORS.card,
+      borderRadius: 18,
+      boxShadow: "0 1px 3px rgba(60,60,90,0.07)",
+      overflow: "hidden"
+    }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
         "svg",
         {
@@ -22593,6 +22608,7 @@
   var PAUSE_BEFORE_INTERCEPT_MS = 350;
   var INTERCEPT_FADE_MS = 500;
   var PAUSE_AFTER_MS = 500;
+  var FINAL_PAUSE_MS = 2200;
   var DASH_LEN = 4;
   var GAP_LEN = 4;
   function FadeIn({ durationMs, children }) {
@@ -22673,7 +22689,7 @@
               setBlank(false);
               runTransition(0, myToken);
             }, DOT_FADE_MS + PAUSE_AFTER_DOT_MS);
-          }, PAUSE_AFTER_MS);
+          }, FINAL_PAUSE_MS);
         }
       }, DASH_TOTAL_MS + PAUSE_BEFORE_TANGENT_MS + TANGENT_FADE_MS + PAUSE_BEFORE_INTERCEPT_MS + INTERCEPT_FADE_MS);
     }
@@ -22802,10 +22818,10 @@
         interceptEl
       ] });
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 14, flex: 1 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { background: COLORS.card, borderRadius: 16, padding: "14px 18px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)", fontSize: 13.5, color: COLORS.text, lineHeight: 1.55 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { style: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.accent, fontWeight: 700, marginBottom: 6 }, children: "The Big Idea" }),
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("p", { style: { margin: "0 0 6px 0" }, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { flexShrink: 0, background: COLORS.card, borderRadius: 16, padding: "10px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)", fontSize: 13, color: COLORS.text, lineHeight: 1.45 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { style: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: COLORS.accent, fontWeight: 700, marginBottom: 4 }, children: "The Big Idea" }),
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("p", { style: { margin: "0 0 5px 0" }, children: [
           "Newton\u2019s Method finds a root of f(x) by repeatedly replacing a hard problem with an easy one. At your current guess, the curve is approximated by its ",
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { style: { color: COLORS.accent, fontWeight: 600 }, children: "tangent line" }),
           " \u2014 and a tangent line is trivial to solve exactly, so we use",
@@ -22815,7 +22831,7 @@
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("p", { style: { margin: 0 }, children: "Press play to watch it happen: a tangent line appears, its x-intercept is marked, and that intercept becomes the starting point for the next tangent line. Watch how quickly the marked points march toward the actual root." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { flexShrink: 0, display: "flex", gap: 12, flexWrap: "wrap", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(FieldCaption, { children: "Function" }),
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(FixedReadout, { prefix: "f(x) =", value: fn.label })
@@ -22825,8 +22841,8 @@
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(FixedReadout, { prefix: "x\u2081 =", value: X1, minWidth: 220 })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1, minHeight: 0 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
             Graph,
             {
@@ -22838,7 +22854,7 @@
               onAutofitClick: () => camera.autofit(fn, xs.slice(0, displayN))
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { style: { flexShrink: 0, display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
               "button",
               {
@@ -22936,8 +22952,8 @@
       const a = xs[clampedN - 1], b = xs[clampedN - 2];
       return Math.abs(a - b) < 1e-6 && isFinite(a) ? [a] : [];
     }, [xs, clampedN, parseError]);
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 10, flex: 1 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { flexShrink: 0, display: "flex", gap: 16, flexWrap: "wrap", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(FieldCaption, { children: "Function" }),
           /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", borderRadius: 20, border: `1px solid ${parseError ? COLORS.warning : COLORS.border}`, overflow: "hidden", background: "#FFFFFF" }, children: [
@@ -22981,8 +22997,8 @@
           )) })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1, minHeight: 0 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
             Graph,
             {
@@ -22991,10 +23007,11 @@
               trail,
               roots,
               guessPoint: { x: x1, onDrag: setX1 },
-              onAutofitClick: () => camera.autofit(fn2, xs.slice(0, clampedN))
+              onAutofitClick: () => camera.autofit(fn2, xs.slice(0, clampedN)),
+              overheadPx: 397
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { flexShrink: 0, display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { style: { fontSize: 12.5, color: COLORS.muted, fontWeight: 600 }, children: "n" }),
             /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
               "input",
@@ -23062,8 +23079,8 @@
     const capMessage = config.getCapMessage ? config.getCapMessage(isGood, xs, clampedN) : null;
     const edgeBadges = config.useEdgeBadges ? computeEdgeBadges(camera.view, xs, clampedN) : [];
     const rootHighlight = config.roots && config.roots.length ? nearestRootIndex(config.roots, x1) : null;
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 10, flex: 1 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 10, flex: 1, minHeight: 0 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { flexShrink: 0, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end", background: COLORS.card, borderRadius: 18, padding: "12px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(FieldCaption, { children: "Function" }),
           /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(FixedReadout, { prefix: "f(x) =", value: config.fn.label })
@@ -23104,8 +23121,8 @@
           whiteSpace: "nowrap"
         }, children: config.noToggleNote })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", gap: 16, flex: 1, minHeight: 0 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { flex: 1, display: "flex", flexDirection: "column", gap: 10, minHeight: 0 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             Graph,
             {
@@ -23116,10 +23133,11 @@
               roots: config.roots,
               rootHighlight,
               showRootLegend: !!config.showRootLegend,
-              onAutofitClick: () => camera.autofit(config.fn, xs.slice(0, clampedN))
+              onAutofitClick: () => camera.autofit(config.fn, xs.slice(0, clampedN)),
+              overheadPx: 445
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { flexShrink: 0, display: "flex", alignItems: "center", gap: 10, background: COLORS.card, borderRadius: 18, padding: "8px 16px", boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { style: { flex: 1, display: "flex", alignItems: "center", gap: 10 }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { style: { fontSize: 12.5, color: COLORS.muted, fontWeight: 600 }, children: "n" }),
               /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
@@ -23389,20 +23407,112 @@
           return null;
       }
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: {
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-      background: COLORS.bg,
-      minHeight: "100vh",
-      padding: 20,
+      background: "#E8E8F2",
+      height: "100%",
+      padding: "24px 24px 0",
       boxSizing: "border-box",
-      color: COLORS.text
-    }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { maxWidth: 980, margin: "0 auto" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h1", { style: { fontSize: 20, fontWeight: 700, marginBottom: 14 }, children: "Newton\u2019s Method" }),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { display: "flex", gap: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(IconRail, { groups: NAV_GROUPS, active, onSelect: setActive }),
-        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: { flex: 1, display: "flex", marginTop: 18 }, children: renderTab() }, active)
+      color: COLORS.text,
+      display: "flex",
+      flexDirection: "column"
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: {
+        maxWidth: 1200,
+        width: "100%",
+        margin: "0 auto",
+        borderRadius: 20,
+        boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
+        overflow: "hidden",
+        flexShrink: 0,
+        background: COLORS.card,
+        display: "flex",
+        flexDirection: "column"
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Banner, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: { background: COLORS.bg, padding: "16px 16px 20px" }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { display: "flex", gap: 18 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(IconRail, { groups: NAV_GROUPS, active, onSelect: setActive }),
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: { flex: 1, display: "flex", marginTop: 18 }, children: renderTab() }, active)
+        ] }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(PageCredit, {})
+    ] });
+  }
+  function Banner() {
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: {
+      position: "relative",
+      overflow: "hidden",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 16,
+      padding: "16px 28px",
+      flexShrink: 0,
+      background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)"
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+        "svg",
+        {
+          viewBox: "0 0 1200 130",
+          preserveAspectRatio: "none",
+          style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" },
+          children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("path", { d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke: "white", strokeWidth: "2.5", fill: "none" })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+          "a",
+          {
+            href: "../../../browse.html#/applets",
+            style: {
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              color: "rgba(255,255,255,0.88)",
+              textDecoration: "none",
+              fontSize: 12.5,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              padding: "6px 10px",
+              borderRadius: 8,
+              background: "rgba(255,255,255,0.12)"
+            },
+            children: "\u2190 All Applets"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: { width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 2 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { style: { fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }, children: "Calculus I \xB7 Unit 3" }),
+          /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("h1", { style: { margin: 0, fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }, children: "Newton\u2019s Method" })
+        ] })
       ] })
-    ] }) });
+    ] });
+  }
+  function PageCredit() {
+    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: {
+      marginTop: "auto",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 11,
+      padding: "18px 20px 26px",
+      fontSize: 13.5,
+      color: COLORS.eyebrow
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { style: {
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        background: "#FFFFFF",
+        border: `1px solid ${COLORS.border}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }, children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("img", { src: "../../../assets/favicon.svg", alt: "", width: "28", height: "28" }) }),
+      "Professor Kyle Knee \xB7 Harper College Mathematics"
+    ] });
   }
 
   // src/main.jsx

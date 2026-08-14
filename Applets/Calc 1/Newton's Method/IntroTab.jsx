@@ -18,6 +18,7 @@ const TANGENT_FADE_MS = 900;
 const PAUSE_BEFORE_INTERCEPT_MS = 350;
 const INTERCEPT_FADE_MS = 500;
 const PAUSE_AFTER_MS = 500;
+const FINAL_PAUSE_MS = 2200; // longer hold on the finished x4 state before the loop blanks and restarts
 const DASH_LEN = 4, GAP_LEN = 4; // must match the settled connector's own stroke-dasharray
 
 // Fades its children in via a real CSS transition rather than SMIL, and —
@@ -120,14 +121,14 @@ export default function IntroTab() {
       if (nextK < MAX_N - 1) {
         schedule(() => runTransition(nextK, myToken), PAUSE_AFTER_MS);
       } else {
-        // reached x4 — pause, then loop back to a fully blank canvas
+        // reached x4 — a longer hold on the finished picture, then loop back to a fully blank canvas
         schedule(() => {
           setBlank(true);
           setK(0);
           setContinuousN(1);
           setPhase(null);
           schedule(() => { setBlank(false); runTransition(0, myToken); }, DOT_FADE_MS + PAUSE_AFTER_DOT_MS);
-        }, PAUSE_AFTER_MS);
+        }, FINAL_PAUSE_MS);
       }
     }, DASH_TOTAL_MS + PAUSE_BEFORE_TANGENT_MS + TANGENT_FADE_MS + PAUSE_BEFORE_INTERCEPT_MS + INTERCEPT_FADE_MS);
   }
@@ -275,10 +276,10 @@ export default function IntroTab() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
-      <div style={{ background: COLORS.card, borderRadius: 16, padding: '14px 18px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)', fontSize: 13.5, color: COLORS.text, lineHeight: 1.55 }}>
-        <div style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.05em', color: COLORS.accent, fontWeight: 700, marginBottom: 6 }}>The Big Idea</div>
-        <p style={{ margin: '0 0 6px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
+      <div style={{ flexShrink: 0, background: COLORS.card, borderRadius: 16, padding: '10px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)', fontSize: 13, color: COLORS.text, lineHeight: 1.45 }}>
+        <div style={{ fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.05em', color: COLORS.accent, fontWeight: 700, marginBottom: 4 }}>The Big Idea</div>
+        <p style={{ margin: '0 0 5px 0' }}>
           Newton&rsquo;s Method finds a root of f(x) by repeatedly replacing a hard problem with an easy one. At your
           current guess, the curve is approximated by its <span style={{ color: COLORS.accent, fontWeight: 600 }}>tangent line</span> &mdash;
           and a tangent line is trivial to solve exactly, so we use{' '}
@@ -291,7 +292,7 @@ export default function IntroTab() {
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+      <div style={{ flexShrink: 0, display: 'flex', gap: 12, flexWrap: 'wrap', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
         <div>
           <FieldCaption>Function</FieldCaption>
           <FixedReadout prefix="f(x) =" value={fn.label} />
@@ -302,15 +303,16 @@ export default function IntroTab() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
           <Graph
             fn={fn} camera={camera} trail={settledTrail} overlay={overlay}
             roots={KNOWN_ROOTS.intro}
             onAutofitClick={() => camera.autofit(fn, xs.slice(0, displayN))}
+            overheadPx={515}
           />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
             <button
               onClick={handlePlay}
               style={{

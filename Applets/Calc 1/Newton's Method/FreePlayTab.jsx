@@ -58,8 +58,8 @@ export default function FreePlayTab() {
   }, [xs, clampedN, parseError]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
+      <div style={{ flexShrink: 0, display: 'flex', gap: 16, flexWrap: 'wrap', background: COLORS.card, borderRadius: 18, padding: '12px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
         <div>
           <FieldCaption>Function</FieldCaption>
           <div style={{ display: 'flex', borderRadius: 20, border: `1px solid ${parseError ? COLORS.warning : COLORS.border}`, overflow: 'hidden', background: '#FFFFFF' }}>
@@ -102,15 +102,16 @@ export default function FreePlayTab() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 16, flex: 1 }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
           <Graph
             fn={fn} camera={camera} trail={trail} roots={roots}
             guessPoint={{ x: x1, onDrag: setX1 }}
             onAutofitClick={() => camera.autofit(fn, xs.slice(0, clampedN))}
+            overheadPx={397}
           />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: COLORS.card, borderRadius: 18, padding: '8px 16px', boxShadow: '0 1px 3px rgba(60,60,90,0.07)' }}>
             <span style={{ fontSize: 12.5, color: COLORS.muted, fontWeight: 600 }}>n</span>
             <input
               type="range" min={1} max={MAX_N} step={1} value={clampedN}
