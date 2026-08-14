@@ -246,7 +246,12 @@ function ZoomControls({ camera, onAutofitClick }) {
   );
 }
 
-export default function Graph({ fn, camera, trail = [], guessPoint, edgeBadges = [], roots = [], rootHighlight = null, showRootLegend = false, onAutofitClick, simpleFade = true, overlay }) {
+// overheadPx is each caller's own fixed vertical chrome (banner + card padding + whatever sits
+// above/below the graph on that specific tab — the Big Idea card on Intro, the toggle/note row and
+// capMessage on the failure tabs, etc.) — it has to be passed in per tab rather than hardcoded here,
+// since Intro's Big Idea card alone is worth well over 100px that Free Play and the failure tabs
+// don't have, and reusing one constant across all of them under-fills the shorter tabs.
+export default function Graph({ fn, camera, trail = [], guessPoint, edgeBadges = [], roots = [], rootHighlight = null, showRootLegend = false, onAutofitClick, simpleFade = true, overlay, overheadPx = 515 }) {
   const svgRef = useRef(null);
   const dragState = useRef(null);
 
@@ -304,7 +309,12 @@ export default function Graph({ fn, camera, trail = [], guessPoint, edgeBadges =
   const view = camera.view;
 
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: `${WIDTH}/${HEIGHT}`, background: COLORS.card, borderRadius: 18, boxShadow: '0 1px 3px rgba(60,60,90,0.07)', overflow: 'hidden' }}>
+    <div style={{
+      position: 'relative', width: '100%',
+      maxWidth: `max(290px, calc((100vh - ${overheadPx}px) * ${(WIDTH / HEIGHT).toFixed(4)}))`,
+      aspectRatio: `${WIDTH}/${HEIGHT}`, margin: '0 auto', flexShrink: 0,
+      background: COLORS.card, borderRadius: 18, boxShadow: '0 1px 3px rgba(60,60,90,0.07)', overflow: 'hidden',
+    }}>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}

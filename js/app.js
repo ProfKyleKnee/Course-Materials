@@ -359,6 +359,7 @@
     if (a.tileType === 'polarRose') return prTileSVG();
     if (a.tileType === 'taylorSeries') return tsTileSVG();
     if (a.tileType === 'curveSketch') return csTileSVG();
+    if (a.tileType === 'newtonTangent') return nmTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -1158,6 +1159,106 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.cs-tile');
     if (svg) csStopSpin(svg);
+  });
+
+  // ---------- Newton's Method Explorer card tile (tileType: 'newtonTangent' in js/data.js) ----------
+  // Mirrors the applet's own Intro-tab construction rather than the generic curve+dot tile: a
+  // dashed connector rises from the x-axis to the curve, a point appears where it lands, a tangent
+  // line fades in through that point down to its x-intercept, and that intercept becomes the start
+  // of a second, smaller construction toward the root -- two steps total, same "dash, point,
+  // tangent, intercept" beat order as the real Intro tab, just compressed. The curve is a real
+  // f(x)=0.5x^2-1.5 (root √3≈1.732) and the starting guess (x=6) is deliberately far from the root --
+  // Newton's method converges quadratically, so starting close in made the second construction's
+  // step (x1→x2) collapse to a sliver next to the first; starting far out keeps both steps large
+  // enough to read clearly at card-tile size (x=6→3.25→2.087, a real Newton step, not decoration).
+  // At rest every element is shown at full opacity (the finished two-step construction), matching
+  // the generic tile's "everything visible, static" resting convention; nmStartSpin fades them back
+  // to 0 and replays the sequence via plain opacity timing (nothing here needs to morph, only
+  // appear) while hovered, looping.
+  var NM_X0 = 6, NM_X1 = 3.25, NM_X2 = NM_X1 - (0.5 * NM_X1 * NM_X1 - 1.5) / NM_X1;
+  var NM_XMIN = NM_X2 - 0.4, NM_XMAX = NM_X0 + 0.3, NM_YMIN = -0.5, NM_YMAX = 19, NM_STEPS = 32;
+  var NM_SCALE_X = 84 / (NM_XMAX - NM_XMIN), NM_SCALE_Y = 84 / (NM_YMAX - NM_YMIN);
+  var NM_OX = 8 - NM_XMIN * NM_SCALE_X, NM_OY = 8 + NM_YMAX * NM_SCALE_Y;
+  function nmF(x) { return 0.5 * x * x - 1.5; }
+  function nmPoint(x, y) {
+    const py = NM_OY - y * NM_SCALE_Y;
+    return { x: NM_OX + x * NM_SCALE_X, y: Math.max(4, Math.min(96, py)) };
+  }
+  var NM_CURVE_D = (function () {
+    let d = '';
+    for (let i = 0; i <= NM_STEPS; i++) {
+      const x = NM_XMIN + (NM_XMAX - NM_XMIN) * i / NM_STEPS;
+      const p = nmPoint(x, nmF(x));
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ';
+    }
+    return d.trim();
+  })();
+  var NM_P0 = nmPoint(NM_X0, 0), NM_C0 = nmPoint(NM_X0, nmF(NM_X0));
+  var NM_P1 = nmPoint(NM_X1, 0), NM_C1 = nmPoint(NM_X1, nmF(NM_X1));
+  var NM_P2 = nmPoint(NM_X2, 0);
+  var NM_AXIS_Y = nmPoint(0, 0).y;
+  function nmTileSVG() {
+    return `<svg class="nm-tile" viewBox="0 0 100 100">
+      <line class="axis-line" x1="4" y1="${NM_AXIS_Y}" x2="96" y2="${NM_AXIS_Y}"/>
+      <path class="curve-path" d="${NM_CURVE_D}"/>
+      <line class="nm-el nm-dash nm-dash1" x1="${NM_P0.x}" y1="${NM_P0.y}" x2="${NM_C0.x}" y2="${NM_C0.y}"/>
+      <line class="nm-el nm-tan nm-tan1" x1="${NM_C0.x}" y1="${NM_C0.y}" x2="${NM_P1.x}" y2="${NM_P1.y}"/>
+      <line class="nm-el nm-dash nm-dash2" x1="${NM_P1.x}" y1="${NM_P1.y}" x2="${NM_C1.x}" y2="${NM_C1.y}"/>
+      <line class="nm-el nm-tan nm-tan2" x1="${NM_C1.x}" y1="${NM_C1.y}" x2="${NM_P2.x}" y2="${NM_P2.y}"/>
+      <circle class="nm-el nm-dot nm-dot0" cx="${NM_P0.x}" cy="${NM_P0.y}" r="3"/>
+      <circle class="nm-el nm-dot nm-dotC0" cx="${NM_C0.x}" cy="${NM_C0.y}" r="2.6"/>
+      <circle class="nm-el nm-dot nm-dot1" cx="${NM_P1.x}" cy="${NM_P1.y}" r="3.2"/>
+      <circle class="nm-el nm-dot nm-dotC1" cx="${NM_C1.x}" cy="${NM_C1.y}" r="2.6"/>
+      <circle class="nm-el nm-dot nm-dot2" cx="${NM_P2.x}" cy="${NM_P2.y}" r="3.2"/>
+    </svg>`;
+  }
+  var NM_LOOP_MS = 3050;
+  var NM_PHASES = [
+    { cls: 'nm-dot0', start: 0, dur: 200 },
+    { cls: 'nm-dash1', start: 300, dur: 200 },
+    { cls: 'nm-dotC0', start: 550, dur: 200 },
+    { cls: 'nm-tan1', start: 800, dur: 250 },
+    { cls: 'nm-dot1', start: 1100, dur: 200 },
+    { cls: 'nm-dash2', start: 1550, dur: 200 },
+    { cls: 'nm-dotC1', start: 1800, dur: 200 },
+    { cls: 'nm-tan2', start: 2050, dur: 250 },
+    { cls: 'nm-dot2', start: 2350, dur: 200 },
+  ];
+  var nmSpins = new Map();
+  function nmStartSpin(svg) {
+    if (nmSpins.has(svg)) return;
+    const els = NM_PHASES.map((p) => svg.querySelector('.' + p.cls));
+    els.forEach((el) => { el.style.opacity = 0; });
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.max(0, now - start) % NM_LOOP_MS;
+      NM_PHASES.forEach((p, i) => {
+        const op = t < p.start ? 0 : t > p.start + p.dur ? 1 : (t - p.start) / p.dur;
+        els[i].style.opacity = op;
+      });
+      nmSpins.set(svg, requestAnimationFrame(frame));
+    }
+    nmSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function nmStopSpin(svg) {
+    const id = nmSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    nmSpins.delete(svg);
+    NM_PHASES.forEach((p) => {
+      const el = svg.querySelector('.' + p.cls);
+      if (el) el.style.opacity = '';
+    });
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.nm-tile');
+    if (svg) nmStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.nm-tile');
+    if (svg) nmStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
