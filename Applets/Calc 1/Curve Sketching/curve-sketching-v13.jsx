@@ -1585,59 +1585,69 @@ function App() {
     }
   }, [tierIndex]);
   return (
-    <div className="page">
+    <div className="app-outer">
+      <div className="app-card">
       <div className="header-card">
         <div className="banner">
-          <div className="banner-text">
-            <div className="kicker">CALCULUS 1 · CURVE SKETCHING</div>
-            <h1>Curve Sketching Studio</h1>
-            <p className="tagline">
-              Let's use information from the 1st and 2nd derivatives to build a
-              possible sketch of the function.
-            </p>
-          </div>
-          <div className="tab-pill-group">
-            {thumbBox && (
-              <div
-                className="tab-thumb"
-                style={{
-                  left: thumbBox.left,
-                  top: thumbBox.top,
-                  width: thumbBox.width,
-                  height: thumbBox.height,
-                }}
-              />
-            )}
-            {TIERS.map((t, i) => (
-              <button
-                ref={(el) => {
-                  tabRefs.current[i] = el;
-                }}
-                className={
-                  "tab-pill-btn" +
-                  (i === tierIndex ? " active" : "") +
-                  (!t.ready ? " disabled" : "")
-                }
-                onClick={() => selectTier(i)}
-                key={t.key}
-              >
-                <div className="name">{t.name}</div>
-                <div className="skill">
-                  {t.ready ? t.skill : t.skill + " \u2014 coming soon"}
-                </div>
-              </button>
-            ))}
+          <svg
+            className="banner-decor"
+            viewBox="0 0 1200 130"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75"
+              stroke="white"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          </svg>
+          <div className="banner-left">
+            <a className="all-applets-link" href="../../../browse.html#/applets">
+              ← All Applets
+            </a>
+            <div className="banner-divider" />
+            <div className="banner-text">
+              <div className="kicker">Calculus I · Unit 3</div>
+              <h1>Curve Sketching Studio</h1>
+            </div>
           </div>
         </div>
       </div>
+      <div className="app-card-body">
+      <div className="tab-pill-group">
+        {thumbBox && (
+          <div
+            className="tab-thumb"
+            style={{
+              left: thumbBox.left,
+              top: thumbBox.top,
+              width: thumbBox.width,
+              height: thumbBox.height,
+            }}
+          />
+        )}
+        {TIERS.map((t, i) => (
+          <button
+            ref={(el) => {
+              tabRefs.current[i] = el;
+            }}
+            className={
+              "tab-pill-btn" +
+              (i === tierIndex ? " active" : "") +
+              (!t.ready ? " disabled" : "")
+            }
+            onClick={() => selectTier(i)}
+            key={t.key}
+          >
+            <div className="name">{t.name}</div>
+            <div className="skill">
+              {t.ready ? t.skill : t.skill + " \u2014 coming soon"}
+            </div>
+          </button>
+        ))}
+      </div>
       <div className="main-grid">
         <div className="graph-card">
-          {!playing && pass1Progress === 0 && !revealedInstantly && (
-            <div className="instruction-text">
-              Click <b>Play</b> to reveal how the first derivative shapes this
-              curve
-            </div>
-          )}
           <svg className="graph" viewBox={`0 0 ${VB_W} ${VB_H}`}>
             <g stroke="#EFEFF7" strokeWidth="1">
               {[38, 76, 114, 152, 228, 266, 304, 342].map((y) => (
@@ -2011,6 +2021,12 @@ function App() {
               Reveal Graph
             </button>
           </div>
+          {!playing && pass1Progress === 0 && !revealedInstantly && (
+            <div className="instruction-text">
+              Click <b>Play</b> to reveal how the 1st and 2nd derivatives
+              affect the shape of the curve.
+            </div>
+          )}
           <div className="controls-row">
             <button
               className={
@@ -2439,13 +2455,19 @@ function App() {
           </div>
         </div>
       </div>
-      <div className="footer-note">
-        {"Curve Sketching Studio \u2014 " +
-          TIERS.filter((t) => t.ready).length +
-          " of " +
-          TIERS.length +
-          " tiers wired"}
       </div>
+      </div>
+      <PageCredit />
+    </div>
+  );
+}
+function PageCredit() {
+  return (
+    <div className="page-credit">
+      <span className="page-credit-chip">
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      {"Professor Kyle Knee \u00b7 Harper College Mathematics"}
     </div>
   );
 }

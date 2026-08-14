@@ -5,22 +5,40 @@
   }
   html, body { background: var(--bg); color-scheme: light; }
   * { box-sizing: border-box; }
-  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; color: var(--text); padding: 28px; }
-  .page { max-width: 1180px; margin: 0 auto; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; color: var(--text); }
   h1 { font-size: 19px; font-weight: 700; margin: 0; }
 
-  /* Header: title + tagline, flat tab row (no numbering, no progress semantics) */
-  .header-card { border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.08); overflow: hidden; margin-bottom: 14px; }
-  .banner { background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 20px 28px; }
-  .banner-text { margin-bottom: 16px; }
-  .kicker { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
-  .banner h1 { font-size: 23px; font-weight: 700; color: #fff; letter-spacing: -0.005em; margin: 0; }
-  .banner .tagline { margin: 6px 0 0; font-size: 15px; color: rgba(255,255,255,0.82); }
-  .tab-pill-group { position: relative; display: flex; gap: 2px; background: rgba(255,255,255,0.14); border-radius: 16px; padding: 4px; flex-wrap: wrap; }
+  /* Canonical applet shell: full-viewport outer wrapper (see Applets/shared/applet-header.css)
+     holding a single rounded/shadowed card, with PageCredit pinned below it. */
+  .app-outer { background: #E8E8F2; padding: 24px 24px 0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+  .app-card { max-width: 1200px; width: 100%; margin: 0 auto; border-radius: 20px; box-shadow: 0 4px 24px rgba(60,60,90,0.14); overflow: hidden; flex-shrink: 0; background: var(--card); }
+  .app-card-body { padding: 20px 28px 24px; }
+  .page-credit { margin-top: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 11px; padding: 18px 20px 26px; font-size: 13.5px; color: var(--eyebrow); }
+  .page-credit-chip { width: 40px; height: 40px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* Header: single gradient banner -- just the back link + kicker/title, matching the canonical
+     shape used site-wide. The tagline and tier tabs live in the white card body below instead (see
+     .tagline/.tab-pill-group further down) -- the six-tier, name+skill tab row needed a full-width
+     row of its own, which made the banner noticeably taller than every other migrated applet's when
+     it lived there; moving both out keeps the banner thin and consistent with the rest of the site. */
+  .header-card { margin-bottom: 0; }
+  .banner { position: relative; overflow: hidden; display: flex; align-items: center; background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 16px 28px; }
+  .banner-decor { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.14; pointer-events: none; }
+  .banner-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+  .all-applets-link { display: inline-flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.88); text-decoration: none; font-size: 12.5px; font-weight: 600; white-space: nowrap; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.12); }
+  .all-applets-link:hover { background: rgba(255,255,255,0.2); }
+  .banner-divider { width: 1px; align-self: stretch; background: rgba(255,255,255,0.22); }
+  .banner-text { display: flex; flex-direction: column; gap: 2px; }
+  .kicker { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.65); letter-spacing: 0.08em; text-transform: uppercase; }
+  .banner h1 { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.005em; margin: 0; }
+
+  /* Tagline + tier tabs, now living in the white card body instead of the gradient banner. */
+  .tagline { margin: 0 0 16px; font-size: 14px; color: var(--muted); max-width: 560px; }
+  .tab-pill-group { position: relative; width: 100%; display: flex; gap: 2px; background: var(--bg); border-radius: 16px; padding: 4px; margin-bottom: 18px; flex-wrap: wrap; }
   .tab-thumb { position: absolute; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); transition: left 0.32s cubic-bezier(0.4,0,0.2,1), top 0.32s cubic-bezier(0.4,0,0.2,1), width 0.32s cubic-bezier(0.4,0,0.2,1), height 0.32s cubic-bezier(0.4,0,0.2,1); }
   .tab-pill-btn { position: relative; z-index: 1; flex: 1; min-width: 90px; border: none; background: transparent; border-radius: 12px; padding: 8px 8px; text-align: center; cursor: pointer; font-family: inherit; }
-  .tab-pill-btn .name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.78); }
-  .tab-pill-btn .skill { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 3px; line-height: 1.3; }
+  .tab-pill-btn .name { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .tab-pill-btn .skill { font-size: 10.5px; color: var(--eyebrow); margin-top: 3px; line-height: 1.3; }
   .tab-pill-btn.active .name { color: var(--accent); }
   .tab-pill-btn.active .skill { color: var(--muted); }
   .tab-pill-btn.disabled { cursor: not-allowed; opacity: 0.55; }
@@ -31,12 +49,12 @@
   .domain-row:hover { background: #EFEFF9; }
   .domain-row.active { background: #EEF0FB; }
 
-  .main-grid { display: grid; grid-template-columns: 62fr 38fr; gap: 18px; align-items: start; }
+  .main-grid { display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); gap: 18px; align-items: start; }
   .graph-card, .panel-card { background: var(--card); border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); padding: 20px; }
   .graph-card { position: relative; }
   svg.graph { width: 100%; height: 380px; display: block; background: #FCFCFE; border-radius: 14px; overflow: visible; }
 
-  .instruction-text { text-align: center; font-size: 14px; color: var(--muted); margin-bottom: 10px; font-weight: 500; }
+  .instruction-text { text-align: center; font-size: 13px; color: var(--muted); margin: 18px 0 10px; font-weight: 500; white-space: nowrap; }
   .instruction-text b { color: var(--text); }
 
   /* Utility row: speed presets + Reveal Graph, sits above the playback row */
@@ -66,10 +84,10 @@
   }
   .icon-btn:hover { background: #EFEFF9; }
 
-  .progress-track { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .progress-track { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--eyebrow); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
-  .slider-row { display: flex; gap: 8px; }
-  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; }
+  .slider-row { display: flex; gap: 8px; min-width: 0; }
+  .slider-row input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); height: 8px; }
   .slider-row input[type="range"]:disabled { opacity: 0.35; }
 
   .panel-section { margin-bottom: 24px; }
@@ -84,8 +102,6 @@
   .sign-label.neg { color: var(--warn-neg); }
   .sign-value { color: var(--text); }
 
-  .footer-note { margin-top: 18px; font-size: 12px; color: var(--eyebrow); text-align: center; }
-
   .point-group { cursor: pointer; }
   .point-group circle.dot { transition: fill 0.2s ease; }
   .ring { animation: ringPulseOnce 0.8s ease-out 2; opacity: 0.6; }
@@ -99,4 +115,21 @@
   @keyframes labelRise {
     0%   { opacity: 0; }
     100% { opacity: 1; }
+  }
+
+  /* ---------- Narrow-viewport stack (first pass, see spec_4.md) ----------
+     .main-grid had no breakpoint at all before this -- the 62fr/38fr graph/panel split just kept
+     shrinking together on phones, squeezing the graph into a column too narrow to read and forcing
+     the instruction-text to overflow past the card edge instead of wrapping. Below 720px the two
+     columns stack (graph on top, derivative-info panel below), the graph height comes down a bit
+     since the column is now full-width instead of ~62% of it, and outer padding tightens up to
+     reclaim room on small screens. */
+  @media (max-width: 720px) {
+    .app-outer { padding: 14px 14px 0; }
+    .app-card-body { padding: 16px 16px 20px; }
+    .main-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    svg.graph { height: 300px; }
+  }
+  @media (max-width: 480px) {
+    .instruction-text { white-space: normal; }
   }

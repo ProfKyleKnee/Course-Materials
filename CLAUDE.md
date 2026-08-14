@@ -36,7 +36,19 @@ edge-to-edge axis/tick labels aren't flush against its border, and the Graphing 
 mode toggle no longer resizes the card at all (the accordion section and a conditionally-suffixed
 note line both switched from conditional mounting to always-mounted-but-`visibility:hidden`, so both
 modes are always sized to whatever Polar Integration mode needs) — added on the
-`PolarGrapher-Updates` branch (not yet merged to `main`).
+`PolarGrapher-Updates` branch (not yet merged to `main`), plus the Calc 1 Curve Sketching Studio
+applet migrated to that same canonical header/footer pattern (a thin gradient banner holding just the
+"← All Applets" back-link, decor curve, and kicker/title — its locked pedagogical tagline and
+six-tier tab-pill switcher both live in the white card body below the banner instead, after an early
+same-day design that put them in the banner itself was reversed the next day) and wired into
+`js/data.js` for the first time (Unit 3, via `unitLabelOverrides` same as the rest of Calc I), plus a
+dedicated `curveSketch` card-tile hover animation (a straight-line sketch that draws itself in, pauses,
+bends into the real cubic for concavity, pauses, and restarts — not the generic curve+dot tile or a
+reverse-morphing loop, see `.claude/rules/wiring.md`), plus a first pass at real mobile responsiveness
+for the applet itself (a `720px` breakpoint stacking its two-column graph/panel layout to one column,
+and a fix for a genuine CSS Grid/Flexbox shrink-to-fit overflow bug — see the fourth full-viewport
+gotcha in `.claude/rules/applets.md`) — added on the `CurveSketching-Applet-Wiring` branch (not yet
+merged to `main`).
 
 ---
 
@@ -244,7 +256,7 @@ Calculus I/II/III's `items[]` entries are hand-written, real data — not genera
 
 | Course | LectureGuideNotes | Worksheet | LectureVideo | Applet | Total |
 |---|---|---|---|---|---|
-| Calculus I | 38 | 62 | 36 | 0 | 136 |
+| Calculus I | 38 | 62 | 36 | 1 | 137 |
 | Calculus II | 40 | 65 | 36 | 1 | 142 |
 | Calculus III | 45 | 45 | 40 (11 real, 29 `inProgress`) | 1 | 131 |
 
