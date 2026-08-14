@@ -358,6 +358,7 @@
     if (a.tileType === 'dotProduct') return dpTileSVG();
     if (a.tileType === 'polarRose') return prTileSVG();
     if (a.tileType === 'taylorSeries') return tsTileSVG();
+    if (a.tileType === 'curveSketch') return csTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -1045,6 +1046,118 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.ts-tile');
     if (svg) tsStopSpin(svg);
+  });
+
+  // ---------- Curve Sketching Studio card tile (tileType: 'curveSketch' in js/data.js) ----------
+  // Mirrors the applet's own reveal animation: a rough straight-line "sketch" bends into the real
+  // smooth cubic and back, rather than the generic curve+dot tile's dot gliding along an
+  // already-finished path -- same "own tileType" reasoning as dotProduct/polarRose/taylorSeries in
+  // .claude/rules/wiring.md. Reuses the taylorSeries tile's approach (same X grid, two precomputed Y
+  // arrays, lerp between them by rewriting one path's `d` every frame) rather than a from-scratch
+  // technique, since it already fits: "straight" is a piecewise-linear approximation through the
+  // curve's own local-max/inflection/local-min vertices, "curve" is the exact cubic x^3-3x (the
+  // applet's own Baseline tier function) sampled on the same grid, so the two shapes share endpoints
+  // and never visually jump. At rest (unhovered) the tile shows the straight-line sketch, echoing
+  // "sketch first, then verify against the real curve" -- the same framing the applet itself teaches.
+  var CS_OX = 50, CS_OY = 50, CS_SCALE_X = 80 / 3.6, CS_SCALE_Y = 18;
+  var CS_XMIN = -1.8, CS_XMAX = 1.8, CS_STEPS = 40;
+  var CS_VERTICES = [[-1.8, -0.432], [-1, 2], [0, 0], [1, -2], [1.8, 0.432]];
+  var CS_SKETCH_MS = 1100, CS_HOLD_MS = 50, CS_MORPH_MS = 1300;
+  function csCubicValue(x) { return x * x * x - 3 * x; }
+  function csLinearValue(x) {
+    for (let i = 1; i < CS_VERTICES.length; i++) {
+      const [x0, y0] = CS_VERTICES[i - 1], [x1, y1] = CS_VERTICES[i];
+      if (x <= x1) return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
+    }
+    return CS_VERTICES[CS_VERTICES.length - 1][1];
+  }
+  function csPoint(x, y) {
+    const py = CS_OY - y * CS_SCALE_Y;
+    return { x: CS_OX + x * CS_SCALE_X, y: Math.max(2, Math.min(98, py)) };
+  }
+  var CS_XS = [];
+  for (let i = 0; i <= CS_STEPS; i++) CS_XS.push(CS_XMIN + (CS_XMAX - CS_XMIN) * i / CS_STEPS);
+  var CS_CURVE_YS = CS_XS.map(csCubicValue);
+  var CS_STRAIGHT_YS = CS_XS.map(csLinearValue);
+  function csPathFromYs(ys) {
+    let d = '';
+    for (let i = 0; i < ys.length; i++) {
+      const p = csPoint(CS_XS[i], ys[i]);
+      d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ';
+    }
+    return d.trim();
+  }
+  function csEase(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+  function csTileSVG() {
+    return `<svg class="cs-tile" viewBox="0 0 100 100">
+      <line class="axis-line" x1="50" y1="92" x2="50" y2="8"/>
+      <line class="axis-line" x1="8" y1="50" x2="92" y2="50"/>
+      <path class="curve-path cs-poly" d="${csPathFromYs(CS_STRAIGHT_YS)}"/>
+    </svg>`;
+  }
+  var csSpins = new Map();
+  // The straight-line sketch draws itself in (stroke-dashoffset reveal, same technique as the
+  // Polar Graphing tile's prStartSpin), pauses briefly, bends into the real curve for concavity,
+  // pauses again, then the whole thing restarts from a blank sketch -- matching the applet's own
+  // two-pass reveal order (shape first, concavity after) on every loop, not just the first one.
+  // There's no reverse morph back to straight: the cycle wraps straight back to the sketch phase,
+  // which snaps `d` back to the straight shape and re-hides it via dashoffset in the same frame.
+  var CS_CYCLE_MS = CS_SKETCH_MS + CS_HOLD_MS + CS_MORPH_MS + CS_HOLD_MS;
+  function csStartSpin(svg) {
+    if (csSpins.has(svg)) return;
+    const pathEl = svg.querySelector('.cs-poly');
+    pathEl.setAttribute('d', csPathFromYs(CS_STRAIGHT_YS));
+    const total = pathEl.getTotalLength();
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.max(0, now - start) % CS_CYCLE_MS;
+      if (t < CS_SKETCH_MS) {
+        const b = csEase(t / CS_SKETCH_MS);
+        pathEl.setAttribute('d', csPathFromYs(CS_STRAIGHT_YS));
+        pathEl.style.strokeDasharray = String(total);
+        pathEl.style.strokeDashoffset = String(total * (1 - b));
+        csSpins.set(svg, requestAnimationFrame(frame));
+        return;
+      }
+      if (pathEl.style.strokeDasharray) { pathEl.style.strokeDasharray = ''; pathEl.style.strokeDashoffset = ''; }
+      const t2 = t - CS_SKETCH_MS;
+      let ys;
+      if (t2 < CS_HOLD_MS) {
+        ys = CS_STRAIGHT_YS;
+      } else if (t2 < CS_HOLD_MS + CS_MORPH_MS) {
+        const b = csEase((t2 - CS_HOLD_MS) / CS_MORPH_MS);
+        ys = CS_STRAIGHT_YS.map((y, i) => y + (CS_CURVE_YS[i] - y) * b);
+      } else {
+        ys = CS_CURVE_YS;
+      }
+      pathEl.setAttribute('d', csPathFromYs(ys));
+      csSpins.set(svg, requestAnimationFrame(frame));
+    }
+    csSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function csStopSpin(svg) {
+    const id = csSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    csSpins.delete(svg);
+    const pathEl = svg.querySelector('.cs-poly');
+    if (pathEl) {
+      pathEl.setAttribute('d', csPathFromYs(CS_STRAIGHT_YS));
+      pathEl.style.strokeDasharray = '';
+      pathEl.style.strokeDashoffset = '';
+    }
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.cs-tile');
+    if (svg) csStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.cs-tile');
+    if (svg) csStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —

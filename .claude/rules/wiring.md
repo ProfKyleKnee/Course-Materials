@@ -220,10 +220,14 @@ that isn't "trace a path once" (e.g. a rotating radius line, like Polar Graphing
 `polarRose` tileType, or a morphing path, like Taylor Series & Remainder Explorer's `taylorSeries`
 tileType — sin x drawn once as a dashed "target" while a single polynomial path lerps its sampled
 points between precomputed degree shapes and rewrites its own `d` attribute every frame, rather than
-crossfading separately-drawn paths) needs its own `tileType` — a dedicated `<type>TileSVG()` render
-function plus a `<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s
-`mouseover`/`mouseout` (see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()`, `prTileSVG()`/
-`prStartSpin()`/`prStopSpin()`, or `tsTileSVG()`/`tsStartSpin()`/`tsStopSpin()` in `js/app.js` for the
+crossfading separately-drawn paths — or Curve Sketching Studio's `curveSketch` tileType, which
+sequences the two techniques: a straight-line polyline sketches itself in via a `stroke-dashoffset`
+reveal first, and only after that one-time reveal finishes does the loop start lerping it into the
+real curve and back, echoing that applet's own "shape first, concavity after" reveal order) needs its
+own `tileType` — a dedicated `<type>TileSVG()` render function plus a `<prefix>StartSpin()`/
+`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s `mouseover`/`mouseout` (see `dpTileSVG()`/
+`dpStartSpin()`/`dpStopSpin()`, `prTileSVG()`/`prStartSpin()`/`prStopSpin()`, `tsTileSVG()`/
+`tsStartSpin()`/`tsStopSpin()`, or `csTileSVG()`/`csStartSpin()`/`csStopSpin()` in `js/app.js` for the
 pattern), registered in `tileSVG()`'s dispatch and given a matching CSS comment block in
 `css/styles.css`. Don't force a non-conforming curve through the generic tile just to avoid
 writing a new `tileType`.

@@ -1,33 +1,53 @@
 <!DOCTYPE html>
-<html lang="en" style="background:#F5F5FA;">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
 <title>Curve Sketching Studio</title>
+<link rel="stylesheet" href="../../shared/applet-header.css">
 <style>
-  :root {
+:root {
     --bg: #F5F5FA; --card: #FFFFFF; --accent: #3B4FC2; --accent-light: #6478D6;
     --text: #3A3A3C; --muted: #6E6E86; --eyebrow: #8A8AA3; --border: #DCDCF0;
     --warn-neg: #C77B94; --current: #3FA66A; --dot: #6E6E86;
   }
   html, body { background: var(--bg); color-scheme: light; }
   * { box-sizing: border-box; }
-  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; color: var(--text); padding: 28px; }
-  .page { max-width: 1180px; margin: 0 auto; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; color: var(--text); }
   h1 { font-size: 19px; font-weight: 700; margin: 0; }
 
-  /* Header: title + tagline, flat tab row (no numbering, no progress semantics) */
-  .header-card { border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.08); overflow: hidden; margin-bottom: 14px; }
-  .banner { background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 20px 28px; }
-  .banner-text { margin-bottom: 16px; }
-  .kicker { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
-  .banner h1 { font-size: 23px; font-weight: 700; color: #fff; letter-spacing: -0.005em; margin: 0; }
-  .banner .tagline { margin: 6px 0 0; font-size: 15px; color: rgba(255,255,255,0.82); }
-  .tab-pill-group { position: relative; display: flex; gap: 2px; background: rgba(255,255,255,0.14); border-radius: 16px; padding: 4px; flex-wrap: wrap; }
+  /* Canonical applet shell: full-viewport outer wrapper (see Applets/shared/applet-header.css)
+     holding a single rounded/shadowed card, with PageCredit pinned below it. */
+  .app-outer { background: #E8E8F2; padding: 24px 24px 0; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+  .app-card { max-width: 1200px; width: 100%; margin: 0 auto; border-radius: 20px; box-shadow: 0 4px 24px rgba(60,60,90,0.14); overflow: hidden; flex-shrink: 0; background: var(--card); }
+  .app-card-body { padding: 20px 28px 24px; }
+  .page-credit { margin-top: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 11px; padding: 18px 20px 26px; font-size: 13.5px; color: var(--eyebrow); }
+  .page-credit-chip { width: 40px; height: 40px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* Header: single gradient banner -- just the back link + kicker/title, matching the canonical
+     shape used site-wide. The tagline and tier tabs live in the white card body below instead (see
+     .tagline/.tab-pill-group further down) -- the six-tier, name+skill tab row needed a full-width
+     row of its own, which made the banner noticeably taller than every other migrated applet's when
+     it lived there; moving both out keeps the banner thin and consistent with the rest of the site. */
+  .header-card { margin-bottom: 0; }
+  .banner { position: relative; overflow: hidden; display: flex; align-items: center; background: linear-gradient(135deg, #3B4FC2, #4A5CD6); padding: 16px 28px; }
+  .banner-decor { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.14; pointer-events: none; }
+  .banner-left { display: flex; align-items: center; gap: 14px; position: relative; z-index: 1; }
+  .all-applets-link { display: inline-flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.88); text-decoration: none; font-size: 12.5px; font-weight: 600; white-space: nowrap; padding: 6px 10px; border-radius: 8px; background: rgba(255,255,255,0.12); }
+  .all-applets-link:hover { background: rgba(255,255,255,0.2); }
+  .banner-divider { width: 1px; align-self: stretch; background: rgba(255,255,255,0.22); }
+  .banner-text { display: flex; flex-direction: column; gap: 2px; }
+  .kicker { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.65); letter-spacing: 0.08em; text-transform: uppercase; }
+  .banner h1 { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.005em; margin: 0; }
+
+  /* Tagline + tier tabs, now living in the white card body instead of the gradient banner. */
+  .tagline { margin: 0 0 16px; font-size: 14px; color: var(--muted); max-width: 560px; }
+  .tab-pill-group { position: relative; width: 100%; display: flex; gap: 2px; background: var(--bg); border-radius: 16px; padding: 4px; margin-bottom: 18px; flex-wrap: wrap; }
   .tab-thumb { position: absolute; background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); transition: left 0.32s cubic-bezier(0.4,0,0.2,1), top 0.32s cubic-bezier(0.4,0,0.2,1), width 0.32s cubic-bezier(0.4,0,0.2,1), height 0.32s cubic-bezier(0.4,0,0.2,1); }
   .tab-pill-btn { position: relative; z-index: 1; flex: 1; min-width: 90px; border: none; background: transparent; border-radius: 12px; padding: 8px 8px; text-align: center; cursor: pointer; font-family: inherit; }
-  .tab-pill-btn .name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.78); }
-  .tab-pill-btn .skill { font-size: 10.5px; color: rgba(255,255,255,0.55); margin-top: 3px; line-height: 1.3; }
+  .tab-pill-btn .name { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .tab-pill-btn .skill { font-size: 10.5px; color: var(--eyebrow); margin-top: 3px; line-height: 1.3; }
   .tab-pill-btn.active .name { color: var(--accent); }
   .tab-pill-btn.active .skill { color: var(--muted); }
   .tab-pill-btn.disabled { cursor: not-allowed; opacity: 0.55; }
@@ -38,12 +58,12 @@
   .domain-row:hover { background: #EFEFF9; }
   .domain-row.active { background: #EEF0FB; }
 
-  .main-grid { display: grid; grid-template-columns: 62fr 38fr; gap: 18px; align-items: start; }
+  .main-grid { display: grid; grid-template-columns: minmax(0, 62fr) minmax(0, 38fr); gap: 18px; align-items: start; }
   .graph-card, .panel-card { background: var(--card); border-radius: 20px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); padding: 20px; }
   .graph-card { position: relative; }
   svg.graph { width: 100%; height: 380px; display: block; background: #FCFCFE; border-radius: 14px; overflow: visible; }
 
-  .instruction-text { text-align: center; font-size: 14px; color: var(--muted); margin-bottom: 10px; font-weight: 500; }
+  .instruction-text { text-align: center; font-size: 13px; color: var(--muted); margin: 18px 0 10px; font-weight: 500; white-space: nowrap; }
   .instruction-text b { color: var(--text); }
 
   /* Utility row: speed presets + Reveal Graph, sits above the playback row */
@@ -73,10 +93,10 @@
   }
   .icon-btn:hover { background: #EFEFF9; }
 
-  .progress-track { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .progress-track { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .progress-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--eyebrow); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em; }
-  .slider-row { display: flex; gap: 8px; }
-  .slider-row input[type="range"] { flex: 1; accent-color: var(--accent); height: 8px; }
+  .slider-row { display: flex; gap: 8px; min-width: 0; }
+  .slider-row input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); height: 8px; }
   .slider-row input[type="range"]:disabled { opacity: 0.35; }
 
   .panel-section { margin-bottom: 24px; }
@@ -90,8 +110,6 @@
   .sign-label.pos { color: #3B4FC2; }
   .sign-label.neg { color: var(--warn-neg); }
   .sign-value { color: var(--text); }
-
-  .footer-note { margin-top: 18px; font-size: 12px; color: var(--eyebrow); text-align: center; }
 
   .point-group { cursor: pointer; }
   .point-group circle.dot { transition: fill 0.2s ease; }
@@ -107,11 +125,29 @@
     0%   { opacity: 0; }
     100% { opacity: 1; }
   }
+
+  /* ---------- Narrow-viewport stack (first pass, see spec_4.md) ----------
+     .main-grid had no breakpoint at all before this -- the 62fr/38fr graph/panel split just kept
+     shrinking together on phones, squeezing the graph into a column too narrow to read and forcing
+     the instruction-text to overflow past the card edge instead of wrapping. Below 720px the two
+     columns stack (graph on top, derivative-info panel below), the graph height comes down a bit
+     since the column is now full-width instead of ~62% of it, and outer padding tightens up to
+     reclaim room on small screens. */
+  @media (max-width: 720px) {
+    .app-outer { padding: 14px 14px 0; }
+    .app-card-body { padding: 16px 16px 20px; }
+    .main-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    svg.graph { height: 300px; }
+  }
+  @media (max-width: 480px) {
+    .instruction-text { white-space: normal; }
+  }
 </style>
 </head>
 <body>
 <div id="root"></div>
-<script>(() => {
+<script>
+(() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -119,7 +155,11 @@
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __commonJS = (cb, mod) => function __require() {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
   };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
@@ -138,9 +178,9 @@
     mod
   ));
 
-  // ../.npm-global/lib/node_modules/react/cjs/react.development.js
+  // node_modules/react/cjs/react.development.js
   var require_react_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react.development.js"(exports, module) {
+    "node_modules/react/cjs/react.development.js"(exports, module) {
       "use strict";
       (function() {
         function defineDeprecationWarning(methodName, info) {
@@ -1104,15 +1144,15 @@
         exports.useTransition = function() {
           return resolveDispatcher().useTransition();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/index.js
+  // node_modules/react/index.js
   var require_react = __commonJS({
-    "../.npm-global/lib/node_modules/react/index.js"(exports, module) {
+    "node_modules/react/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1122,9 +1162,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js
+  // node_modules/scheduler/cjs/scheduler.development.js
   var require_scheduler_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js"(exports) {
+    "node_modules/scheduler/cjs/scheduler.development.js"(exports) {
       "use strict";
       (function() {
         function performWorkUntilDeadline() {
@@ -1381,9 +1421,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js
+  // node_modules/scheduler/index.js
   var require_scheduler = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js"(exports, module) {
+    "node_modules/scheduler/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1393,9 +1433,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js
+  // node_modules/react-dom/cjs/react-dom.development.js
   var require_react_dom_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom.development.js"(exports) {
       "use strict";
       (function() {
         function noop() {
@@ -1631,15 +1671,15 @@
         exports.useFormStatus = function() {
           return resolveDispatcher().useHostTransitionStatus();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/index.js
+  // node_modules/react-dom/index.js
   var require_react_dom = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/index.js"(exports, module) {
+    "node_modules/react-dom/index.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -1650,9 +1690,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js
+  // node_modules/react-dom/cjs/react-dom-client.development.js
   var require_react_dom_client_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
       "use strict";
       (function() {
         function findHook(fiber, id) {
@@ -21423,9 +21463,9 @@
         };
         (function() {
           var isomorphicReactPackageVersion = React.version;
-          if ("19.2.5" !== isomorphicReactPackageVersion)
+          if ("19.2.8" !== isomorphicReactPackageVersion)
             throw Error(
-              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.5\nLearn more: https://react.dev/warnings/version-mismatch")
+              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch")
             );
         })();
         "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
@@ -21449,10 +21489,10 @@
         if (!(function() {
           var internals = {
             bundleType: 1,
-            version: "19.2.5",
+            version: "19.2.8",
             rendererPackageName: "react-dom",
             currentDispatcherRef: ReactSharedInternals,
-            reconcilerVersion: "19.2.5"
+            reconcilerVersion: "19.2.8"
           };
           internals.overrideHookState = overrideHookState;
           internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -21543,15 +21583,15 @@
           listenToAllSupportedEvents(container);
           return new ReactDOMHydrationRoot(initialChildren);
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/client.js
+  // node_modules/react-dom/client.js
   var require_client = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/client.js"(exports, module) {
+    "node_modules/react-dom/client.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -21562,9 +21602,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js
+  // node_modules/react/cjs/react-jsx-runtime.development.js
   var require_react_jsx_runtime_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
+    "node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
       "use strict";
       (function() {
         function getComponentNameFromType(type) {
@@ -21819,9 +21859,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/jsx-runtime.js
+  // node_modules/react/jsx-runtime.js
   var require_jsx_runtime = __commonJS({
-    "../.npm-global/lib/node_modules/react/jsx-runtime.js"(exports, module) {
+    "node_modules/react/jsx-runtime.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -21831,7 +21871,7 @@
     }
   });
 
-  // src/main.jsx
+  // app.jsx
   var import_react = __toESM(require_react());
   var import_client = __toESM(require_client());
   var import_jsx_runtime = __toESM(require_jsx_runtime());
@@ -21871,7 +21911,8 @@
   var CAP_M0_NEAR = 2 * (-1 - CAP_YMAX) / (0 - CAP_XRIGHT_START);
   function fCapstone(x) {
     if (x < -1) return -1 / (x + 1) + CAP_K * (x + 1);
-    if (x <= 0) return hermiteEval(x, CAP_XRIGHT_START, CAP_YMAX, CAP_M0_NEAR, 0, -1, 0);
+    if (x <= 0)
+      return hermiteEval(x, CAP_XRIGHT_START, CAP_YMAX, CAP_M0_NEAR, 0, -1, 0);
     if (x <= 1) return hermiteEval(x, 0, -1, 0, 1, 0.5, 2.25);
     if (x <= 2) return hermiteEval(x, 1, 0.5, 2.25, 2, 2, 0);
     if (x <= 3) return hermiteEval(x, 2, 2, 0, 3, 0, -3.5);
@@ -21892,35 +21933,123 @@
       ymax: 5.6,
       f: fBaseline,
       skeletonCorners: [
-        { x: -2.3, y: fBaseline(-2.3) },
-        { x: -1, y: fBaseline(-1) },
-        { x: 1, y: fBaseline(1) },
-        { x: 2.3, y: fBaseline(2.3) }
+        {
+          x: -2.3,
+          y: fBaseline(-2.3)
+        },
+        {
+          x: -1,
+          y: fBaseline(-1)
+        },
+        {
+          x: 1,
+          y: fBaseline(1)
+        },
+        {
+          x: 2.3,
+          y: fBaseline(2.3)
+        }
       ],
       // Points participating in the sync system. `pass` says which curtain
       // reveals it (1 = first-derivative pass, 2 = second-derivative pass).
       points: [
-        { key: "localmax", x: -1, y: fBaseline(-1), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 90, tickLabel: "\u22121" },
-        { key: "inflection", x: 0, y: fBaseline(0), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: 35, tickCx: 140, tickLabel: "0" },
-        { key: "localmin", x: 1, y: fBaseline(1), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Min", labelDx: 0, labelDy: 40, tickCx: 190, tickLabel: "1" }
+        {
+          key: "localmax",
+          x: -1,
+          y: fBaseline(-1),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 90,
+          tickLabel: "\u22121"
+        },
+        {
+          key: "inflection",
+          x: 0,
+          y: fBaseline(0),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: 35,
+          tickCx: 140,
+          tickLabel: "0"
+        },
+        {
+          key: "localmin",
+          x: 1,
+          y: fBaseline(1),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Min",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 190,
+          tickLabel: "1"
+        }
       ],
       pass1Intervals: [
-        { from: -2.3, to: -1, sign: "+" },
-        { from: -1, to: 1, sign: "\u2212" },
-        { from: 1, to: 2.3, sign: "+" }
+        {
+          from: -2.3,
+          to: -1,
+          sign: "+"
+        },
+        {
+          from: -1,
+          to: 1,
+          sign: "\u2212"
+        },
+        {
+          from: 1,
+          to: 2.3,
+          sign: "+"
+        }
       ],
       pass2Intervals: [
-        { from: -2.3, to: 0, sign: "\u2212" },
-        { from: 0, to: 2.3, sign: "+" }
+        {
+          from: -2.3,
+          to: 0,
+          sign: "\u2212"
+        },
+        {
+          from: 0,
+          to: 2.3,
+          sign: "+"
+        }
       ],
       pass1Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 140, sign: "\u2212", color: "#C77B94" },
-        { x: 240, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 140,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 240,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       pass2Signs: [
-        { x: 70, sign: "\u2212", color: "#C77B94" },
-        { x: 215, sign: "+", color: "#3B4FC2" }
+        {
+          x: 70,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 215,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       increasing: "(\u2212\u221E, \u22121) \u222A (1, \u221E)",
       decreasing: "(\u22121, 1)",
@@ -21942,40 +22071,180 @@
       // false-alarm point at x=0 sits inside one continuous decreasing
       // interval, so it is not a skeleton corner.
       skeletonCorners: [
-        { x: -2.6, y: fFaker(-2.6) },
-        { x: -2, y: fFaker(-2) },
-        { x: 2, y: fFaker(2) },
-        { x: 2.6, y: fFaker(2.6) }
+        {
+          x: -2.6,
+          y: fFaker(-2.6)
+        },
+        {
+          x: -2,
+          y: fFaker(-2)
+        },
+        {
+          x: 2,
+          y: fFaker(2)
+        },
+        {
+          x: 2.6,
+          y: fFaker(2.6)
+        }
       ],
       points: [
-        { key: "localmax", x: -2, y: fFaker(-2), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 80, tickLabel: "\u22122" },
-        { key: "falsecrit", x: 0, y: fFaker(0), pass: 1, falseAlarm: true, flashColor: "#8A8AA3", label: "Critical Point \u2014 Not an Extremum", labelDx: 0, labelDy: -34, tickCx: 150, tickLabel: "0" },
-        { key: "localmin", x: 2, y: fFaker(2), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Min", labelDx: 0, labelDy: 40, tickCx: 220, tickLabel: "2" },
-        { key: "inflLeft", x: -SQRT2, y: fFaker(-SQRT2), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: -30, tickCx: 80, tickLabel: "\u2212\u221A2" },
-        { key: "inflZero", x: 0, y: fFaker(0), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: 40, tickCx: 150, tickLabel: "0" },
-        { key: "inflRight", x: SQRT2, y: fFaker(SQRT2), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: 40, tickCx: 220, tickLabel: "\u221A2" }
+        {
+          key: "localmax",
+          x: -2,
+          y: fFaker(-2),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 80,
+          tickLabel: "\u22122"
+        },
+        {
+          key: "falsecrit",
+          x: 0,
+          y: fFaker(0),
+          pass: 1,
+          falseAlarm: true,
+          flashColor: "#8A8AA3",
+          label: "Critical Point \u2014 Not an Extremum",
+          labelDx: 0,
+          labelDy: -34,
+          tickCx: 150,
+          tickLabel: "0"
+        },
+        {
+          key: "localmin",
+          x: 2,
+          y: fFaker(2),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Min",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 220,
+          tickLabel: "2"
+        },
+        {
+          key: "inflLeft",
+          x: -SQRT2,
+          y: fFaker(-SQRT2),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 80,
+          tickLabel: "\u2212\u221A2"
+        },
+        {
+          key: "inflZero",
+          x: 0,
+          y: fFaker(0),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 150,
+          tickLabel: "0"
+        },
+        {
+          key: "inflRight",
+          x: SQRT2,
+          y: fFaker(SQRT2),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 220,
+          tickLabel: "\u221A2"
+        }
       ],
       pass1Intervals: [
-        { from: -2.6, to: -2, sign: "+" },
-        { from: -2, to: 2, sign: "\u2212" },
-        { from: 2, to: 2.6, sign: "+" }
+        {
+          from: -2.6,
+          to: -2,
+          sign: "+"
+        },
+        {
+          from: -2,
+          to: 2,
+          sign: "\u2212"
+        },
+        {
+          from: 2,
+          to: 2.6,
+          sign: "+"
+        }
       ],
       pass2Intervals: [
-        { from: -2.6, to: -SQRT2, sign: "\u2212" },
-        { from: -SQRT2, to: 0, sign: "+" },
-        { from: 0, to: SQRT2, sign: "\u2212" },
-        { from: SQRT2, to: 2.6, sign: "+" }
+        {
+          from: -2.6,
+          to: -SQRT2,
+          sign: "\u2212"
+        },
+        {
+          from: -SQRT2,
+          to: 0,
+          sign: "+"
+        },
+        {
+          from: 0,
+          to: SQRT2,
+          sign: "\u2212"
+        },
+        {
+          from: SQRT2,
+          to: 2.6,
+          sign: "+"
+        }
       ],
       pass1Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 150, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 150,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       pass2Signs: [
-        { x: 45, sign: "\u2212", color: "#C77B94" },
-        { x: 115, sign: "+", color: "#3B4FC2" },
-        { x: 185, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 115,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 185,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       increasing: "(\u2212\u221E, \u22122) \u222A (2, \u221E)",
       decreasing: "(\u22122, 2)",
@@ -21996,37 +22265,141 @@
       // Only two real critical points (x=\u00b16) \u2014 the cubic factor
       // (3x\u00b2+4x+60) in f' has negative discriminant, so no other real roots.
       skeletonCorners: [
-        { x: -8.5, y: fImpostor(-8.5) },
-        { x: -6, y: fImpostor(-6) },
-        { x: 6, y: fImpostor(6) },
-        { x: 8.5, y: fImpostor(8.5) }
+        {
+          x: -8.5,
+          y: fImpostor(-8.5)
+        },
+        {
+          x: -6,
+          y: fImpostor(-6)
+        },
+        {
+          x: 6,
+          y: fImpostor(6)
+        },
+        {
+          x: 8.5,
+          y: fImpostor(8.5)
+        }
       ],
       points: [
-        { key: "localmax", x: -6, y: fImpostor(-6), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 90, tickLabel: "\u22126" },
-        { key: "falseinfl", x: -2, y: fImpostor(-2), pass: 2, falseAlarm: true, flashColor: "#8A8AA3", label: "Inflection Point \u2014 No Concavity Change", labelDx: 0, labelDy: -30, tickCx: 90, tickLabel: "\u22122" },
-        { key: "realinfl", x: 3, y: fImpostor(3), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: 40, tickCx: 190, tickLabel: "3" },
-        { key: "localmin", x: 6, y: fImpostor(6), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Min", labelDx: 0, labelDy: 40, tickCx: 190, tickLabel: "6" }
+        {
+          key: "localmax",
+          x: -6,
+          y: fImpostor(-6),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 90,
+          tickLabel: "\u22126"
+        },
+        {
+          key: "falseinfl",
+          x: -2,
+          y: fImpostor(-2),
+          pass: 2,
+          falseAlarm: true,
+          flashColor: "#8A8AA3",
+          label: "Inflection Point \u2014 No Concavity Change",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 90,
+          tickLabel: "\u22122"
+        },
+        {
+          key: "realinfl",
+          x: 3,
+          y: fImpostor(3),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 190,
+          tickLabel: "3"
+        },
+        {
+          key: "localmin",
+          x: 6,
+          y: fImpostor(6),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Min",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 190,
+          tickLabel: "6"
+        }
       ],
       pass1Intervals: [
-        { from: -8.5, to: -6, sign: "+" },
-        { from: -6, to: 6, sign: "\u2212" },
-        { from: 6, to: 8.5, sign: "+" }
+        {
+          from: -8.5,
+          to: -6,
+          sign: "+"
+        },
+        {
+          from: -6,
+          to: 6,
+          sign: "\u2212"
+        },
+        {
+          from: 6,
+          to: 8.5,
+          sign: "+"
+        }
       ],
       // Only x=3 is a real sign-change boundary; x=-2 sits inside the (-\u221E,3)
       // interval without splitting it (same sign on both sides -> false alarm).
       pass2Intervals: [
-        { from: -8.5, to: 3, sign: "\u2212" },
-        { from: 3, to: 8.5, sign: "+" }
+        {
+          from: -8.5,
+          to: 3,
+          sign: "\u2212"
+        },
+        {
+          from: 3,
+          to: 8.5,
+          sign: "+"
+        }
       ],
       pass1Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 140, sign: "\u2212", color: "#C77B94" },
-        { x: 240, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 140,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 240,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       pass2Signs: [
-        { x: 50, sign: "\u2212", color: "#C77B94" },
-        { x: 140, sign: "\u2212", color: "#C77B94" },
-        { x: 240, sign: "+", color: "#3B4FC2" }
+        {
+          x: 50,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 140,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 240,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       increasing: "(\u2212\u221E, \u22126) \u222A (6, \u221E)",
       decreasing: "(\u22126, 6)",
@@ -22050,42 +22423,165 @@
       // a faint flatlined plateau against the ceiling/floor before the true
       // descent kicked in (same bug Kyle caught more visibly on Corner).
       domainPieces: [
-        { xStart: -5, xEnd: -Math.sqrt(31 / 7), corners: [{ x: -5, y: fGap(-5) }, { x: -Math.sqrt(31 / 7), y: 8 }] },
-        { xStart: -Math.sqrt(11 / 3), xEnd: Math.sqrt(11 / 3), corners: [{ x: -Math.sqrt(11 / 3), y: -8 }, { x: 0, y: fGap(0) }, { x: Math.sqrt(11 / 3), y: -8 }] },
-        { xStart: Math.sqrt(31 / 7), xEnd: 5, corners: [{ x: Math.sqrt(31 / 7), y: 8 }, { x: 5, y: fGap(5) }] }
+        {
+          xStart: -5,
+          xEnd: -Math.sqrt(31 / 7),
+          corners: [
+            {
+              x: -5,
+              y: fGap(-5)
+            },
+            {
+              x: -Math.sqrt(31 / 7),
+              y: 8
+            }
+          ]
+        },
+        {
+          xStart: -Math.sqrt(11 / 3),
+          xEnd: Math.sqrt(11 / 3),
+          corners: [
+            {
+              x: -Math.sqrt(11 / 3),
+              y: -8
+            },
+            {
+              x: 0,
+              y: fGap(0)
+            },
+            {
+              x: Math.sqrt(11 / 3),
+              y: -8
+            }
+          ]
+        },
+        {
+          xStart: Math.sqrt(31 / 7),
+          xEnd: 5,
+          corners: [
+            {
+              x: Math.sqrt(31 / 7),
+              y: 8
+            },
+            {
+              x: 5,
+              y: fGap(5)
+            }
+          ]
+        }
       ],
       domainBreaks: [
-        { key: "breakNeg2", x: -2, label: "x \u2260 \u22122 (vertical asymptote)", tickCx: 80, tickLabel: "\u22122" },
-        { key: "break2", x: 2, label: "x \u2260 2 (vertical asymptote)", tickCx: 220, tickLabel: "2" }
+        {
+          key: "breakNeg2",
+          x: -2,
+          label: "x \u2260 \u22122 (vertical asymptote)",
+          tickCx: 80,
+          tickLabel: "\u22122"
+        },
+        {
+          key: "break2",
+          x: 2,
+          label: "x \u2260 2 (vertical asymptote)",
+          tickCx: 220,
+          tickLabel: "2"
+        }
       ],
       // Only one real critical point (x=0). f'' is never zero anywhere in the
       // domain \u2014 the sign of f'' does flip at x=\u00b12, but since neither point is
       // in the domain, neither counts as a real inflection point. Zero pass-2
       // points, by design.
       points: [
-        { key: "localmax", x: 0, y: fGap(0), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 150, tickLabel: "0" }
+        {
+          key: "localmax",
+          x: 0,
+          y: fGap(0),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 150,
+          tickLabel: "0"
+        }
       ],
       pass1Intervals: [
-        { from: -5, to: -2, sign: "+" },
-        { from: -2, to: 0, sign: "+" },
-        { from: 0, to: 2, sign: "\u2212" },
-        { from: 2, to: 5, sign: "\u2212" }
+        {
+          from: -5,
+          to: -2,
+          sign: "+"
+        },
+        {
+          from: -2,
+          to: 0,
+          sign: "+"
+        },
+        {
+          from: 0,
+          to: 2,
+          sign: "\u2212"
+        },
+        {
+          from: 2,
+          to: 5,
+          sign: "\u2212"
+        }
       ],
       pass2Intervals: [
-        { from: -5, to: -2, sign: "+" },
-        { from: -2, to: 2, sign: "\u2212" },
-        { from: 2, to: 5, sign: "+" }
+        {
+          from: -5,
+          to: -2,
+          sign: "+"
+        },
+        {
+          from: -2,
+          to: 2,
+          sign: "\u2212"
+        },
+        {
+          from: 2,
+          to: 5,
+          sign: "+"
+        }
       ],
       pass1Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 115, sign: "+", color: "#3B4FC2" },
-        { x: 185, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "\u2212", color: "#C77B94" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 115,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 185,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "\u2212",
+          color: "#C77B94"
+        }
       ],
       pass2Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 150, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 150,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       increasing: "(\u2212\u221E, \u22122) \u222A (\u22122, 0)",
       decreasing: "(0, 2) \u222A (2, \u221E)",
@@ -22112,57 +22608,212 @@
       // flatlined against the ceiling/floor for a visible stretch, since the
       // true value stays clamped there for a while before actually descending.
       domainPieces: [
-        { xStart: -4, xEnd: 4 + (-31 + Math.sqrt(31 * 31 - 100)) / 2, corners: [{ x: -4, y: fCorner(-4) }, { x: 0, y: fCorner(0) }, { x: 4 + (-31 + Math.sqrt(31 * 31 - 100)) / 2, y: -31 }] },
-        { xStart: 4 + (22 - Math.sqrt(22 * 22 - 100)) / 2, xEnd: 12.5, corners: [{ x: 4 + (22 - Math.sqrt(22 * 22 - 100)) / 2, y: 22 }, { x: 9, y: fCorner(9) }, { x: 12.5, y: fCorner(12.5) }] }
+        {
+          xStart: -4,
+          xEnd: 4 + (-31 + Math.sqrt(31 * 31 - 100)) / 2,
+          corners: [
+            {
+              x: -4,
+              y: fCorner(-4)
+            },
+            {
+              x: 0,
+              y: fCorner(0)
+            },
+            {
+              x: 4 + (-31 + Math.sqrt(31 * 31 - 100)) / 2,
+              y: -31
+            }
+          ]
+        },
+        {
+          xStart: 4 + (22 - Math.sqrt(22 * 22 - 100)) / 2,
+          xEnd: 12.5,
+          corners: [
+            {
+              x: 4 + (22 - Math.sqrt(22 * 22 - 100)) / 2,
+              y: 22
+            },
+            {
+              x: 9,
+              y: fCorner(9)
+            },
+            {
+              x: 12.5,
+              y: fCorner(12.5)
+            }
+          ]
+        }
       ],
       domainBreaks: [
         // Needs separate tick positions per number line: on pass 1's line x=4
         // is the middle of {0,4,9}, but on pass 2's line x=4 is the rightmost
         // of {-2,0,4} \u2014 a single shared position can't be evenly spaced on
         // both lines at once.
-        { key: "break4", x: 4, label: "x \u2260 4 (vertical asymptote)", tickCx1: 150, tickCx2: 220, tickLabel: "4" }
+        {
+          key: "break4",
+          x: 4,
+          label: "x \u2260 4 (vertical asymptote)",
+          tickCx1: 150,
+          tickCx2: 220,
+          tickLabel: "4"
+        }
       ],
       points: [
-        { key: "realinfl", x: -2, y: fCorner(-2), pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: -30, tickCx: 80, tickLabel: "\u22122" },
+        {
+          key: "realinfl",
+          x: -2,
+          y: fCorner(-2),
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 80,
+          tickLabel: "\u22122"
+        },
         // The corner itself: a REAL local max, but the derivative is
         // undefined there (left slope 13, right slope \u22129/16 don't agree) \u2014
         // first tier where "undefined derivative" and "real extremum"
         // coincide, rather than undefined-derivative only ever marking a
         // false-alarm/cusp point. Gets a filled, colored dot like any real
         // point, but a "u" tick (undefinedDeriv) instead of a numeric one.
-        { key: "cornermax", x: 0, y: fCorner(0), pass: 1, falseAlarm: false, undefinedDeriv: true, flashColor: "#3B4FC2", label: "Local Max (Corner)", labelDx: 0, labelDy: -30, tickCx: 80, tickLabel: "0" },
+        {
+          key: "cornermax",
+          x: 0,
+          y: fCorner(0),
+          pass: 1,
+          falseAlarm: false,
+          undefinedDeriv: true,
+          flashColor: "#3B4FC2",
+          label: "Local Max (Corner)",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 80,
+          tickLabel: "0"
+        },
         // Concavity genuinely differs on either side of the seam (concave up
         // on (-2,0), concave down on (0,4)) even though f'' is undefined
         // exactly at x=0 \u2014 same "real point, undefined derivative" pattern as
         // the corner's own pass-1 marker above, just for the second
         // derivative. Coincides on the graph with cornermax (same x,y), so
         // clicking that point shows both labels stacked.
-        { key: "cornerconcavity", x: 0, y: fCorner(0), pass: 2, falseAlarm: false, undefinedDeriv: true, flashColor: "#6478D6", label: "Concavity Change (Corner)", labelDx: 0, labelDy: 40, tickCx: 150, tickLabel: "0" },
-        { key: "realmin", x: 9, y: fCorner(9), pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Min", labelDx: 0, labelDy: 40, tickCx: 220, tickLabel: "9" }
+        {
+          key: "cornerconcavity",
+          x: 0,
+          y: fCorner(0),
+          pass: 2,
+          falseAlarm: false,
+          undefinedDeriv: true,
+          flashColor: "#6478D6",
+          label: "Concavity Change (Corner)",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 150,
+          tickLabel: "0"
+        },
+        {
+          key: "realmin",
+          x: 9,
+          y: fCorner(9),
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Min",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 220,
+          tickLabel: "9"
+        }
       ],
       pass1Intervals: [
-        { from: -4, to: 0, sign: "+" },
-        { from: 0, to: 4, sign: "\u2212" },
-        { from: 4, to: 9, sign: "\u2212" },
-        { from: 9, to: 12.5, sign: "+" }
+        {
+          from: -4,
+          to: 0,
+          sign: "+"
+        },
+        {
+          from: 0,
+          to: 4,
+          sign: "\u2212"
+        },
+        {
+          from: 4,
+          to: 9,
+          sign: "\u2212"
+        },
+        {
+          from: 9,
+          to: 12.5,
+          sign: "+"
+        }
       ],
       pass2Intervals: [
-        { from: -4, to: -2, sign: "\u2212" },
-        { from: -2, to: 0, sign: "+" },
-        { from: 0, to: 4, sign: "\u2212" },
-        { from: 4, to: 12.5, sign: "+" }
+        {
+          from: -4,
+          to: -2,
+          sign: "\u2212"
+        },
+        {
+          from: -2,
+          to: 0,
+          sign: "+"
+        },
+        {
+          from: 0,
+          to: 4,
+          sign: "\u2212"
+        },
+        {
+          from: 4,
+          to: 12.5,
+          sign: "+"
+        }
       ],
       pass1Signs: [
-        { x: 45, sign: "+", color: "#3B4FC2" },
-        { x: 115, sign: "\u2212", color: "#C77B94" },
-        { x: 185, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 115,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 185,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       pass2Signs: [
-        { x: 45, sign: "\u2212", color: "#C77B94" },
-        { x: 115, sign: "+", color: "#3B4FC2" },
-        { x: 185, sign: "\u2212", color: "#C77B94" },
-        { x: 255, sign: "+", color: "#3B4FC2" }
+        {
+          x: 45,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 115,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 185,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 255,
+          sign: "+",
+          color: "#3B4FC2"
+        }
       ],
       increasing: "(\u2212\u221E, 0) \u222A (9, \u221E)",
       decreasing: "(0, 4) \u222A (4, 9)",
@@ -22180,58 +22831,233 @@
       ymax: 6,
       f: fCapstone,
       domainPieces: [
-        { xStart: -2, xEnd: CAP_XLEFT_CROSS, corners: [{ x: -2, y: fCapstone(-2) }, { x: CAP_XLEFT_CROSS, y: CAP_YMAX }] },
-        { xStart: CAP_XRIGHT_START, xEnd: 6, corners: [
-          { x: CAP_XRIGHT_START, y: CAP_YMAX },
-          { x: 0, y: -1 },
-          { x: 2, y: 2 },
-          { x: 3, y: 0 },
-          { x: 4, y: 1.5 },
-          { x: 6, y: fCapstone(6) }
-        ] }
+        {
+          xStart: -2,
+          xEnd: CAP_XLEFT_CROSS,
+          corners: [
+            {
+              x: -2,
+              y: fCapstone(-2)
+            },
+            {
+              x: CAP_XLEFT_CROSS,
+              y: CAP_YMAX
+            }
+          ]
+        },
+        {
+          xStart: CAP_XRIGHT_START,
+          xEnd: 6,
+          corners: [
+            {
+              x: CAP_XRIGHT_START,
+              y: CAP_YMAX
+            },
+            {
+              x: 0,
+              y: -1
+            },
+            {
+              x: 2,
+              y: 2
+            },
+            {
+              x: 3,
+              y: 0
+            },
+            {
+              x: 4,
+              y: 1.5
+            },
+            {
+              x: 6,
+              y: fCapstone(6)
+            }
+          ]
+        }
       ],
       domainBreaks: [
-        { key: "breakNeg1", x: -1, label: "x \u2260 \u22121 (vertical asymptote)", tickCx1: 57, tickCx2: 103, tickLabel: "\u22121" }
+        {
+          key: "breakNeg1",
+          x: -1,
+          label: "x \u2260 \u22121 (vertical asymptote)",
+          tickCx1: 57,
+          tickCx2: 103,
+          tickLabel: "\u22121"
+        }
       ],
       points: [
-        { key: "min", x: 0, y: -1, pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Min", labelDx: 0, labelDy: 40, tickCx: 103, tickLabel: "0" },
-        { key: "realinfl", x: 1, y: 0.5, pass: 2, falseAlarm: false, flashColor: "#6478D6", label: "Inflection Point", labelDx: 0, labelDy: -30, tickCx: 197, tickLabel: "1" },
-        { key: "max1", x: 2, y: 2, pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 150, tickLabel: "2" },
+        {
+          key: "min",
+          x: 0,
+          y: -1,
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Min",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 103,
+          tickLabel: "0"
+        },
+        {
+          key: "realinfl",
+          x: 1,
+          y: 0.5,
+          pass: 2,
+          falseAlarm: false,
+          flashColor: "#6478D6",
+          label: "Inflection Point",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 197,
+          tickLabel: "1"
+        },
+        {
+          key: "max1",
+          x: 2,
+          y: 2,
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 150,
+          tickLabel: "2"
+        },
         // Cusp min: a REAL local min (decreasing into it, increasing out) but
         // the derivative is undefined there \u2014 same "real point, undefined
         // derivative" pattern as Corner's own cusp.
-        { key: "cuspmin", x: 3, y: 0, pass: 1, falseAlarm: false, undefinedDeriv: true, flashColor: "#3B4FC2", label: "Local Min (Cusp)", labelDx: 0, labelDy: 40, tickCx: 197, tickLabel: "3" },
-        { key: "max2", x: 4, y: 1.5, pass: 1, falseAlarm: false, flashColor: "#3B4FC2", label: "Local Max", labelDx: 0, labelDy: -30, tickCx: 243, tickLabel: "4" }
+        {
+          key: "cuspmin",
+          x: 3,
+          y: 0,
+          pass: 1,
+          falseAlarm: false,
+          undefinedDeriv: true,
+          flashColor: "#3B4FC2",
+          label: "Local Min (Cusp)",
+          labelDx: 0,
+          labelDy: 40,
+          tickCx: 197,
+          tickLabel: "3"
+        },
+        {
+          key: "max2",
+          x: 4,
+          y: 1.5,
+          pass: 1,
+          falseAlarm: false,
+          flashColor: "#3B4FC2",
+          label: "Local Max",
+          labelDx: 0,
+          labelDy: -30,
+          tickCx: 243,
+          tickLabel: "4"
+        }
       ],
       pass1Intervals: [
-        { from: -2, to: -1, sign: "+" },
-        { from: -1, to: 0, sign: "\u2212" },
-        { from: 0, to: 2, sign: "+" },
-        { from: 2, to: 3, sign: "\u2212" },
-        { from: 3, to: 4, sign: "+" },
-        { from: 4, to: 6, sign: "\u2212" }
+        {
+          from: -2,
+          to: -1,
+          sign: "+"
+        },
+        {
+          from: -1,
+          to: 0,
+          sign: "\u2212"
+        },
+        {
+          from: 0,
+          to: 2,
+          sign: "+"
+        },
+        {
+          from: 2,
+          to: 3,
+          sign: "\u2212"
+        },
+        {
+          from: 3,
+          to: 4,
+          sign: "+"
+        },
+        {
+          from: 4,
+          to: 6,
+          sign: "\u2212"
+        }
       ],
       // Concavity stays positive on BOTH sides of the asymptote (per design:
       // "concave up on either side of the vertical asymptote") \u2014 the break
       // still splits the interval (matching how domain breaks are always
       // treated elsewhere), it just doesn't happen to change the sign here.
       pass2Intervals: [
-        { from: -2, to: -1, sign: "+" },
-        { from: -1, to: 1, sign: "+" },
-        { from: 1, to: 6, sign: "\u2212" }
+        {
+          from: -2,
+          to: -1,
+          sign: "+"
+        },
+        {
+          from: -1,
+          to: 1,
+          sign: "+"
+        },
+        {
+          from: 1,
+          to: 6,
+          sign: "\u2212"
+        }
       ],
       pass1Signs: [
-        { x: 33, sign: "+", color: "#3B4FC2" },
-        { x: 80, sign: "\u2212", color: "#C77B94" },
-        { x: 126, sign: "+", color: "#3B4FC2" },
-        { x: 173, sign: "\u2212", color: "#C77B94" },
-        { x: 220, sign: "+", color: "#3B4FC2" },
-        { x: 266, sign: "\u2212", color: "#C77B94" }
+        {
+          x: 33,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 80,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 126,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 173,
+          sign: "\u2212",
+          color: "#C77B94"
+        },
+        {
+          x: 220,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 266,
+          sign: "\u2212",
+          color: "#C77B94"
+        }
       ],
       pass2Signs: [
-        { x: 56, sign: "+", color: "#3B4FC2" },
-        { x: 150, sign: "+", color: "#3B4FC2" },
-        { x: 243, sign: "\u2212", color: "#C77B94" }
+        {
+          x: 56,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 150,
+          sign: "+",
+          color: "#3B4FC2"
+        },
+        {
+          x: 243,
+          sign: "\u2212",
+          color: "#C77B94"
+        }
       ],
       increasing: "(\u22122, \u22121) \u222A (0, 2) \u222A (3, 4)",
       decreasing: "(\u22121, 0) \u222A (2, 3) \u222A (4, 6)",
@@ -22265,7 +23091,18 @@
     const parts = str.split(/(\u221A\d)/g);
     return parts.map((part, i) => {
       if (part.length === 2 && part[0] === "\u221A") {
-        return (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: ["\u221A", (0, import_jsx_runtime.jsx)("span", { style: { textDecoration: "overline" }, children: part[1] })] }, i);
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_react.Fragment, { children: [
+          "\u221A",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "span",
+            {
+              style: {
+                textDecoration: "overline"
+              },
+              children: part[1]
+            }
+          )
+        ] }, i);
       }
       return part;
     });
@@ -22274,9 +23111,20 @@
     const parts = str.split(/(\u221A\d)/g);
     return parts.map((part, i) => {
       if (part.length === 2 && part[0] === "\u221A") {
-        return (0, import_jsx_runtime.jsxs)("tspan", { children: ["\u221A", (0, import_jsx_runtime.jsx)("tspan", { style: { textDecoration: "overline" }, children: part[1] })] }, i);
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tspan", { children: [
+          "\u221A",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "tspan",
+            {
+              style: {
+                textDecoration: "overline"
+              },
+              children: part[1]
+            }
+          )
+        ] }, i);
       }
-      return (0, import_jsx_runtime.jsx)("tspan", { children: part }, i);
+      return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", { children: part }, i);
     });
   }
   function interpFromCorners(corners, x) {
@@ -22291,7 +23139,9 @@
   }
   function skeletonYAt(tier, x) {
     if (tier.domainPieces) {
-      const piece = tier.domainPieces.find((pc) => x >= pc.xStart && x <= pc.xEnd);
+      const piece = tier.domainPieces.find(
+        (pc) => x >= pc.xStart && x <= pc.xEnd
+      );
       return piece ? interpFromCorners(piece.corners, x) : 0;
     }
     return interpFromCorners(tier.skeletonCorners, x);
@@ -22338,29 +23188,45 @@
         clearTimeout(existing.fadeTimer);
         clearTimeout(existing.removeTimer);
       }
-      setLabelState((prev) => ({ ...prev, [key]: "shown" }));
+      setLabelState((prev) => ({
+        ...prev,
+        [key]: "shown"
+      }));
       const fadeTimer = setTimeout(() => {
-        setLabelState((prev) => ({ ...prev, [key]: "fading" }));
+        setLabelState((prev) => ({
+          ...prev,
+          [key]: "fading"
+        }));
       }, LABEL_HOLD_MS);
       const removeTimer = setTimeout(() => {
         setLabelState((prev) => {
-          const next = { ...prev };
+          const next = {
+            ...prev
+          };
           delete next[key];
           return next;
         });
       }, LABEL_HOLD_MS + LABEL_FADE_MS);
-      labelTimeoutsRef.current[key] = { fadeTimer, removeTimer };
+      labelTimeoutsRef.current[key] = {
+        fadeTimer,
+        removeTimer
+      };
     }
     function clearAllLabelTimers() {
-      Object.values(labelTimeoutsRef.current).forEach(({ fadeTimer, removeTimer }) => {
-        clearTimeout(fadeTimer);
-        clearTimeout(removeTimer);
-      });
+      Object.values(labelTimeoutsRef.current).forEach(
+        ({ fadeTimer, removeTimer }) => {
+          clearTimeout(fadeTimer);
+          clearTimeout(removeTimer);
+        }
+      );
       labelTimeoutsRef.current = {};
       setLabelState({});
     }
     function triggerReview(key) {
-      setReviewPulse((prev) => ({ ...prev, [key]: (prev[key] || 0) + 1 }));
+      setReviewPulse((prev) => ({
+        ...prev,
+        [key]: (prev[key] || 0) + 1
+      }));
       flashLabel(key);
     }
     function keyPointsForPass(which) {
@@ -22391,12 +23257,16 @@
           pauseTimeoutRef.current = setTimeout(() => {
             fromRef.current = t;
             startRef.current = 0;
-            rafRef.current = requestAnimationFrame((ts2) => stepAnim(which, setter, ts2));
+            rafRef.current = requestAnimationFrame(
+              (ts2) => stepAnim(which, setter, ts2)
+            );
           }, dwell);
           return;
         }
         if (t < 1) {
-          rafRef.current = requestAnimationFrame((ts2) => stepAnim(which, setter, ts2));
+          rafRef.current = requestAnimationFrame(
+            (ts2) => stepAnim(which, setter, ts2)
+          );
         } else {
           startRef.current = 0;
           if (which === 1) {
@@ -22421,12 +23291,16 @@
           pausedAtRef.current = /* @__PURE__ */ new Set();
         }
         setPlaying(1);
-        rafRef.current = requestAnimationFrame((ts) => stepAnim(1, setPass1Progress, ts));
+        rafRef.current = requestAnimationFrame(
+          (ts) => stepAnim(1, setPass1Progress, ts)
+        );
       } else {
         fromRef.current = pass2Progress >= 1 ? 0 : pass2Progress;
         if (pass2Progress >= 1) setPass2Progress(0);
         setPlaying(2);
-        rafRef.current = requestAnimationFrame((ts) => stepAnim(2, setPass2Progress, ts));
+        rafRef.current = requestAnimationFrame(
+          (ts) => stepAnim(2, setPass2Progress, ts)
+        );
       }
     }
     function handlePlayClick() {
@@ -22480,11 +23354,14 @@
       setRevealedInstantly(false);
       setPass2Progress(parseFloat(e.target.value));
     }
-    (0, import_react.useEffect)(() => () => {
-      cancelAnimationFrame(rafRef.current);
-      clearTimeout(pauseTimeoutRef.current);
-      Object.values(labelTimeoutsRef.current).forEach((id) => clearTimeout(id));
-    }, []);
+    (0, import_react.useEffect)(
+      () => () => {
+        cancelAnimationFrame(rafRef.current);
+        clearTimeout(pauseTimeoutRef.current);
+        Object.values(labelTimeoutsRef.current).forEach((id) => clearTimeout(id));
+      },
+      []
+    );
     function selectTier(i) {
       if (!TIERS[i].ready) return;
       cancelAnimationFrame(rafRef.current);
@@ -22506,7 +23383,8 @@
       let d = "";
       function bendAt(x) {
         if (pass2Done) return 1;
-        if (pass2X > XMIN) return Math.max(0, Math.min(1, (pass2X - x) / BEND_WIDTH));
+        if (pass2X > XMIN)
+          return Math.max(0, Math.min(1, (pass2X - x) / BEND_WIDTH));
         return 0;
       }
       if (tier.domainPieces) {
@@ -22549,20 +23427,58 @@
     (0, import_react.useEffect)(() => {
       const el = tabRefs.current[tierIndex];
       if (el) {
-        setThumbBox({ left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight });
+        setThumbBox({
+          left: el.offsetLeft,
+          top: el.offsetTop,
+          width: el.offsetWidth,
+          height: el.offsetHeight
+        });
       }
     }, [tierIndex]);
-    return (0, import_jsx_runtime.jsxs)("div", { className: "page", children: [
-      (0, import_jsx_runtime.jsxs)("div", { className: "header-card", children: [
-        (0, import_jsx_runtime.jsxs)("div", { className: "banner", children: [
-          (0, import_jsx_runtime.jsxs)("div", { className: "banner-text", children: [
-            (0, import_jsx_runtime.jsx)("div", { className: "kicker", children: "CALCULUS 1 \xB7 CURVE SKETCHING" }),
-            (0, import_jsx_runtime.jsx)("h1", { children: "Curve Sketching Studio" }),
-            (0, import_jsx_runtime.jsx)("p", { className: "tagline", children: "Let's use information from the 1st and 2nd derivatives to build a possible sketch of the function." })
-          ] }),
-          (0, import_jsx_runtime.jsxs)("div", { className: "tab-pill-group", children: [
-            thumbBox && (0, import_jsx_runtime.jsx)("div", { className: "tab-thumb", style: { left: thumbBox.left, top: thumbBox.top, width: thumbBox.width, height: thumbBox.height } }),
-            TIERS.map((t, i) => (0, import_jsx_runtime.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "app-outer", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "app-card", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "header-card", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "banner", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "svg",
+            {
+              className: "banner-decor",
+              viewBox: "0 0 1200 130",
+              preserveAspectRatio: "none",
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "path",
+                {
+                  d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75",
+                  stroke: "white",
+                  strokeWidth: "2.5",
+                  fill: "none"
+                }
+              )
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "banner-left", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("a", { className: "all-applets-link", href: "../../../browse.html#/applets", children: "\u2190 All Applets" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "banner-divider" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "banner-text", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "kicker", children: "Calculus I \xB7 Unit 3" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "Curve Sketching Studio" })
+            ] })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "app-card-body", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "tab-pill-group", children: [
+            thumbBox && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "div",
+              {
+                className: "tab-thumb",
+                style: {
+                  left: thumbBox.left,
+                  top: thumbBox.top,
+                  width: thumbBox.width,
+                  height: thumbBox.height
+                }
+              }
+            ),
+            TIERS.map((t, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
               "button",
               {
                 ref: (el) => {
@@ -22571,303 +23487,888 @@
                 className: "tab-pill-btn" + (i === tierIndex ? " active" : "") + (!t.ready ? " disabled" : ""),
                 onClick: () => selectTier(i),
                 children: [
-                  (0, import_jsx_runtime.jsx)("div", { className: "name", children: t.name }),
-                  (0, import_jsx_runtime.jsx)("div", { className: "skill", children: t.ready ? t.skill : t.skill + " \u2014 coming soon" })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "name", children: t.name }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "skill", children: t.ready ? t.skill : t.skill + " \u2014 coming soon" })
                 ]
               },
               t.key
             ))
-          ] })
-        ] })
-      ] }),
-      (0, import_jsx_runtime.jsxs)("div", { className: "main-grid", children: [
-        (0, import_jsx_runtime.jsxs)("div", { className: "graph-card", children: [
-          !playing && pass1Progress === 0 && !revealedInstantly && (0, import_jsx_runtime.jsxs)("div", { className: "instruction-text", children: [
-            "Click ",
-            (0, import_jsx_runtime.jsx)("b", { children: "Play" }),
-            " to reveal how the first derivative shapes this curve"
           ] }),
-          (0, import_jsx_runtime.jsxs)("svg", { className: "graph", viewBox: `0 0 ${VB_W} ${VB_H}`, children: [
-            (0, import_jsx_runtime.jsxs)("g", { stroke: "#EFEFF7", strokeWidth: "1", children: [
-              [38, 76, 114, 152, 228, 266, 304, 342].map((y) => (0, import_jsx_runtime.jsx)("line", { x1: "0", y1: y, x2: VB_W, y2: y }, y)),
-              [70, 140, 210, 350, 420, 490].map((x) => (0, import_jsx_runtime.jsx)("line", { x1: x, y1: "0", x2: x, y2: VB_H }, x))
-            ] }),
-            activeInterval1 && (0, import_jsx_runtime.jsxs)("g", { children: [
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX), y: axisY - 4, width: xPix(Math.min(activeInterval1.to, XMAX), XMIN, XMAX) - xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX), height: "8", fill: "#3FA66A", opacity: "0.18" }),
-              (0, import_jsx_runtime.jsx)("line", { x1: xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX), y1: axisY, x2: xPix(Math.min(activeInterval1.to, XMAX), XMIN, XMAX), y2: axisY, stroke: "#3FA66A", strokeWidth: "3" })
-            ] }),
-            activeInterval2 && (0, import_jsx_runtime.jsxs)("g", { children: [
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX), y: axisY - 4, width: xPix(Math.min(activeInterval2.to, XMAX), XMIN, XMAX) - xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX), height: "8", fill: "#3FA66A", opacity: "0.18" }),
-              (0, import_jsx_runtime.jsx)("line", { x1: xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX), y1: axisY, x2: xPix(Math.min(activeInterval2.to, XMAX), XMIN, XMAX), y2: axisY, stroke: "#3FA66A", strokeWidth: "3" })
-            ] }),
-            (0, import_jsx_runtime.jsx)("line", { x1: "0", y1: axisY, x2: VB_W, y2: axisY, stroke: "#B9B9D6", strokeWidth: "1.5" }),
-            (0, import_jsx_runtime.jsx)("line", { x1: xPix(0, XMIN, XMAX), y1: "0", x2: xPix(0, XMIN, XMAX), y2: VB_H, stroke: "#B9B9D6", strokeWidth: "1.5" }),
-            (tier.domainBreaks || []).map((b) => {
-              const bx = xPix(b.x, XMIN, XMAX);
-              const st = labelState[b.key];
-              const pulsed = st === "shown" || st === "fading";
-              return (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                (0, import_jsx_runtime.jsx)("line", {
-                  x1: bx,
-                  y1: "0",
-                  x2: bx,
-                  y2: VB_H,
-                  stroke: pulsed ? "#3B4FC2" : "#B9B9D6",
-                  strokeWidth: pulsed ? "2.5" : "1.5",
-                  strokeDasharray: "6 5",
-                  style: { pointerEvents: "none", transition: "stroke 0.3s ease, stroke-width 0.3s ease" }
-                }),
-                // Wide invisible hit-target \u2014 the visible dashed line itself is
-                // too thin (1.5-2.5px) to click reliably.
-                (0, import_jsx_runtime.jsx)("line", {
-                  x1: bx,
-                  y1: "0",
-                  x2: bx,
-                  y2: VB_H,
-                  stroke: "transparent",
-                  strokeWidth: "22",
-                  style: { cursor: "pointer" },
-                  onClick: () => triggerReview(b.key)
-                })
-              ] }, b.key);
-            }),
-            curvePath && (0, import_jsx_runtime.jsx)("path", { d: curvePath, fill: "none", stroke: "#3A3A3C", strokeWidth: "2.5" }),
-            pass1Progress > 0 && !pass1Done && (0, import_jsx_runtime.jsxs)("g", { children: [
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(pass1X, XMIN, XMAX), y: "0", width: "3", height: VB_H, fill: "#3B4FC2" }),
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(pass1X, XMIN, XMAX) + 3, y: "0", width: "18", height: VB_H, fill: "url(#curtainFade1)" })
-            ] }),
-            pass1Done && pass2Progress > 0 && !pass2Done && (0, import_jsx_runtime.jsxs)("g", { children: [
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(pass2X, XMIN, XMAX), y: "0", width: "3", height: VB_H, fill: "#6478D6" }),
-              (0, import_jsx_runtime.jsx)("rect", { x: xPix(pass2X, XMIN, XMAX) + 3, y: "0", width: "18", height: VB_H, fill: "url(#curtainFade2)" })
-            ] }),
-            (0, import_jsx_runtime.jsxs)("defs", { children: [
-              (0, import_jsx_runtime.jsxs)("linearGradient", { id: "curtainFade1", x1: "0", y1: "0", x2: "1", y2: "0", children: [
-                (0, import_jsx_runtime.jsx)("stop", { offset: "0%", stopColor: "#3B4FC2", stopOpacity: "0.12" }),
-                (0, import_jsx_runtime.jsx)("stop", { offset: "100%", stopColor: "#3B4FC2", stopOpacity: "0" })
-              ] }),
-              (0, import_jsx_runtime.jsxs)("linearGradient", { id: "curtainFade2", x1: "0", y1: "0", x2: "1", y2: "0", children: [
-                (0, import_jsx_runtime.jsx)("stop", { offset: "0%", stopColor: "#6478D6", stopOpacity: "0.12" }),
-                (0, import_jsx_runtime.jsx)("stop", { offset: "100%", stopColor: "#6478D6", stopOpacity: "0" })
-              ] })
-            ] }),
-            tier.points.map((p) => {
-              const revealed = pointRevealed(p);
-              if (!revealed) return null;
-              return p;
-            }).filter(Boolean).reduce((groups, p) => {
-              const gkey = p.x.toFixed(6) + "," + p.y.toFixed(6);
-              let grp = groups.find((g) => g.key === gkey);
-              if (!grp) {
-                grp = { key: gkey, pts: [] };
-                groups.push(grp);
-              }
-              grp.pts.push(p);
-              return groups;
-            }, []).map((grp) => {
-              const anyFalse = grp.pts.some((p) => p.falseAlarm);
-              const anyShown = grp.pts.some((p) => {
-                const s = labelState[p.key];
-                return s === "shown" || s === "fading";
-              });
-              const dotColor = anyFalse && grp.pts.length === 1 ? "#8A8AA3" : anyShown ? grp.pts[0].flashColor : "#8A8AA3";
-              const cx = xPix(grp.pts[0].x, XMIN, XMAX), cy = yPix(grp.pts[0].y, YMIN, YMAX);
-              const onClick = () => grp.pts.forEach((p) => triggerReview(p.key));
-              const anyFreshRing = grp.pts.some((p) => labelState[p.key] === "shown");
-              return (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick, children: [
-                anyFreshRing && (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                  (0, import_jsx_runtime.jsx)("circle", { className: "ring", cx, cy, r: "7", fill: "none", stroke: "#3B4FC2", strokeWidth: "2.5" }),
-                  (0, import_jsx_runtime.jsx)("circle", { className: "ring delay", cx, cy, r: "7", fill: "none", stroke: "#3B4FC2", strokeWidth: "2.5" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "main-grid", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "graph-card", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { className: "graph", viewBox: `0 0 ${VB_W} ${VB_H}`, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { stroke: "#EFEFF7", strokeWidth: "1", children: [
+                  [38, 76, 114, 152, 228, 266, 304, 342].map((y) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: "0", y1: y, x2: VB_W, y2: y }, y)),
+                  [70, 140, 210, 350, 420, 490].map((x) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: x, y1: "0", x2: x, y2: VB_H }, x))
                 ] }),
-                (0, import_jsx_runtime.jsx)("circle", { className: "dot", cx, cy, r: "6", fill: dotColor }),
-                grp.pts.map((p) => {
-                  const state = labelState[p.key];
-                  const showLabel = state === "shown" || state === "fading";
-                  if (!showLabel) return null;
-                  const isFading = state === "fading";
-                  const labelColor = p.falseAlarm ? "#8A8AA3" : p.flashColor;
-                  const labelW = Math.max(100, p.label.length * 7 + 20);
-                  return (0, import_jsx_runtime.jsxs)("g", { className: "label-badge" + (isFading ? " fading" : ""), children: [
-                    (0, import_jsx_runtime.jsx)("line", { x1: cx, y1: cy + (p.labelDy > 0 ? 7 : -7), x2: cx, y2: cy + p.labelDy, stroke: labelColor, strokeWidth: "1.5" }),
-                    (0, import_jsx_runtime.jsx)("rect", { x: cx + p.labelDx - labelW / 2, y: cy + p.labelDy - (p.labelDy > 0 ? 14 : 28), width: labelW, height: "26", rx: "13", fill: labelColor }),
-                    (0, import_jsx_runtime.jsx)("text", { x: cx + p.labelDx, y: cy + p.labelDy - (p.labelDy > 0 ? 0 : 14) + 4, fontSize: "12", fontWeight: "700", fill: "white", textAnchor: "middle", children: p.label })
-                  ] }, p.key);
-                })
-              ] }, grp.key);
-            }),
-            // Permanent x-value labels along the axis \u2014 revealed alongside each
-            // point and never fade, unlike the floating label badges. Dedupe by
-            // x so coincident points (e.g. Faker's/Corner's stacked pairs)
-            // only get one tick, not two overlapping ones.
-            tier.points.filter((p) => pointRevealed(p)).reduce((acc, p) => {
-              if (!acc.some((q) => q.x === p.x)) acc.push(p);
-              return acc;
-            }, []).map((p) => (0, import_jsx_runtime.jsxs)("g", { style: { pointerEvents: "none" }, children: [
-              (0, import_jsx_runtime.jsx)("line", { x1: xPix(p.x, XMIN, XMAX), y1: axisY - 4, x2: xPix(p.x, XMIN, XMAX), y2: axisY + 4, stroke: "#8A8AA3", strokeWidth: "1.5" }),
-              (0, import_jsx_runtime.jsx)("text", { x: xPix(p.x, XMIN, XMAX), y: axisY + 18, fontSize: "10.5", fontStyle: p.undefinedDeriv ? "italic" : "normal", textAnchor: "middle", fill: "#8A8AA3", children: renderSqrtSvg(p.tickLabel) })
-            ] }, p.key + "-xaxis")),
-            (tier.domainBreaks || []).map((b) => (0, import_jsx_runtime.jsxs)("g", { style: { pointerEvents: "none" }, children: [
-              (0, import_jsx_runtime.jsx)("line", { x1: xPix(b.x, XMIN, XMAX), y1: axisY - 4, x2: xPix(b.x, XMIN, XMAX), y2: axisY + 4, stroke: "#8A8AA3", strokeWidth: "1.5" }),
-              (0, import_jsx_runtime.jsx)("text", { x: xPix(b.x, XMIN, XMAX), y: axisY + 18, fontSize: "10.5", fontStyle: "italic", textAnchor: "middle", fill: "#8A8AA3", children: b.tickLabel })
-            ] }, b.key + "-xaxis")),
-            (0, import_jsx_runtime.jsx)("text", { x: VB_W - 15, y: axisY - 6, fontSize: "12", fill: "#8A8AA3", children: "x" }),
-            (0, import_jsx_runtime.jsx)("text", { x: xPix(0, XMIN, XMAX) + 6, y: "14", fontSize: "12", fill: "#8A8AA3", children: "y" })
-          ] }),
-          (0, import_jsx_runtime.jsxs)("div", { className: "util-row", children: [
-            (0, import_jsx_runtime.jsx)("div", { className: "speed-group", children: SPEED_OPTIONS.map((s) => (0, import_jsx_runtime.jsx)(
-              "div",
-              { className: "speed-opt" + (s === speed ? " active" : ""), onClick: () => setSpeed(s), children: s === 1 ? "1\xD7" : s === 0.5 ? "\xBD\xD7" : "\xBC\xD7" },
-              s
-            )) }),
-            (0, import_jsx_runtime.jsx)("button", { className: "reveal-btn", onClick: handleReveal, children: "Reveal Graph" })
-          ] }),
-          (0, import_jsx_runtime.jsxs)("div", { className: "controls-row", children: [
-            (0, import_jsx_runtime.jsx)("button", { className: "play-btn" + (pass1Progress === 0 && !playing ? " pulsing" : ""), onClick: handlePlayClick, children: playing ? (0, import_jsx_runtime.jsx)(PauseIcon, {}) : (0, import_jsx_runtime.jsx)(PlayIcon, {}) }),
-            (0, import_jsx_runtime.jsx)("button", { className: "icon-btn", onClick: handleReset, title: "Reset this example", children: (0, import_jsx_runtime.jsx)(ResetIcon, {}) }),
-            (0, import_jsx_runtime.jsxs)("div", { className: "progress-track", children: [
-              (0, import_jsx_runtime.jsxs)("div", { className: "progress-labels", children: [
-                (0, import_jsx_runtime.jsx)("span", { children: "1st Derivative Pass" }),
-                (0, import_jsx_runtime.jsx)("span", { children: "2nd Derivative Pass" })
+                activeInterval1 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX),
+                      y: axisY - 4,
+                      width: xPix(Math.min(activeInterval1.to, XMAX), XMIN, XMAX) - xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX),
+                      height: "8",
+                      fill: "#3FA66A",
+                      opacity: "0.18"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "line",
+                    {
+                      x1: xPix(Math.max(activeInterval1.from, XMIN), XMIN, XMAX),
+                      y1: axisY,
+                      x2: xPix(Math.min(activeInterval1.to, XMAX), XMIN, XMAX),
+                      y2: axisY,
+                      stroke: "#3FA66A",
+                      strokeWidth: "3"
+                    }
+                  )
+                ] }),
+                activeInterval2 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX),
+                      y: axisY - 4,
+                      width: xPix(Math.min(activeInterval2.to, XMAX), XMIN, XMAX) - xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX),
+                      height: "8",
+                      fill: "#3FA66A",
+                      opacity: "0.18"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "line",
+                    {
+                      x1: xPix(Math.max(activeInterval2.from, XMIN), XMIN, XMAX),
+                      y1: axisY,
+                      x2: xPix(Math.min(activeInterval2.to, XMAX), XMIN, XMAX),
+                      y2: axisY,
+                      stroke: "#3FA66A",
+                      strokeWidth: "3"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "line",
+                  {
+                    x1: "0",
+                    y1: axisY,
+                    x2: VB_W,
+                    y2: axisY,
+                    stroke: "#B9B9D6",
+                    strokeWidth: "1.5"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "line",
+                  {
+                    x1: xPix(0, XMIN, XMAX),
+                    y1: "0",
+                    x2: xPix(0, XMIN, XMAX),
+                    y2: VB_H,
+                    stroke: "#B9B9D6",
+                    strokeWidth: "1.5"
+                  }
+                ),
+                (tier.domainBreaks || []).map((b) => {
+                  const bx = xPix(b.x, XMIN, XMAX);
+                  const st = labelState[b.key];
+                  const pulsed = st === "shown" || st === "fading";
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_react.Fragment, { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "line",
+                      {
+                        x1: bx,
+                        y1: "0",
+                        x2: bx,
+                        y2: VB_H,
+                        stroke: pulsed ? "#3B4FC2" : "#B9B9D6",
+                        strokeWidth: pulsed ? "2.5" : "1.5",
+                        strokeDasharray: "6 5",
+                        style: {
+                          pointerEvents: "none",
+                          transition: "stroke 0.3s ease, stroke-width 0.3s ease"
+                        }
+                      }
+                    ),
+                    " ",
+                    "// Wide invisible hit-target \\u2014 the visible dashed line itself is // too thin (1.5-2.5px) to click reliably.",
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "line",
+                      {
+                        x1: bx,
+                        y1: "0",
+                        x2: bx,
+                        y2: VB_H,
+                        stroke: "transparent",
+                        strokeWidth: "22",
+                        style: {
+                          cursor: "pointer"
+                        },
+                        onClick: () => triggerReview(b.key)
+                      }
+                    )
+                  ] }, b.key);
+                }),
+                curvePath && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "path",
+                  {
+                    d: curvePath,
+                    fill: "none",
+                    stroke: "#3A3A3C",
+                    strokeWidth: "2.5"
+                  }
+                ),
+                pass1Progress > 0 && !pass1Done && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(pass1X, XMIN, XMAX),
+                      y: "0",
+                      width: "3",
+                      height: VB_H,
+                      fill: "#3B4FC2"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(pass1X, XMIN, XMAX) + 3,
+                      y: "0",
+                      width: "18",
+                      height: VB_H,
+                      fill: "url(#curtainFade1)"
+                    }
+                  )
+                ] }),
+                pass1Done && pass2Progress > 0 && !pass2Done && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(pass2X, XMIN, XMAX),
+                      y: "0",
+                      width: "3",
+                      height: VB_H,
+                      fill: "#6478D6"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: xPix(pass2X, XMIN, XMAX) + 3,
+                      y: "0",
+                      width: "18",
+                      height: VB_H,
+                      fill: "url(#curtainFade2)"
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("defs", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", { id: "curtainFade1", x1: "0", y1: "0", x2: "1", y2: "0", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", { offset: "0%", stopColor: "#3B4FC2", stopOpacity: "0.12" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", { offset: "100%", stopColor: "#3B4FC2", stopOpacity: "0" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("linearGradient", { id: "curtainFade2", x1: "0", y1: "0", x2: "1", y2: "0", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", { offset: "0%", stopColor: "#6478D6", stopOpacity: "0.12" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("stop", { offset: "100%", stopColor: "#6478D6", stopOpacity: "0" })
+                  ] })
+                ] }),
+                tier.points.map((p) => {
+                  const revealed = pointRevealed(p);
+                  if (!revealed) return null;
+                  return p;
+                }).filter(Boolean).reduce((groups, p) => {
+                  const gkey = p.x.toFixed(6) + "," + p.y.toFixed(6);
+                  let grp = groups.find((g) => g.key === gkey);
+                  if (!grp) {
+                    grp = {
+                      key: gkey,
+                      pts: []
+                    };
+                    groups.push(grp);
+                  }
+                  grp.pts.push(p);
+                  return groups;
+                }, []).map((grp) => {
+                  const anyFalse = grp.pts.some((p) => p.falseAlarm);
+                  const anyShown = grp.pts.some((p) => {
+                    const s = labelState[p.key];
+                    return s === "shown" || s === "fading";
+                  });
+                  const dotColor = anyFalse && grp.pts.length === 1 ? "#8A8AA3" : anyShown ? grp.pts[0].flashColor : "#8A8AA3";
+                  const cx = xPix(grp.pts[0].x, XMIN, XMAX), cy = yPix(grp.pts[0].y, YMIN, YMAX);
+                  const onClick = () => grp.pts.forEach((p) => triggerReview(p.key));
+                  const anyFreshRing = grp.pts.some(
+                    (p) => labelState[p.key] === "shown"
+                  );
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick, children: [
+                    anyFreshRing && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "circle",
+                        {
+                          className: "ring",
+                          cx,
+                          cy,
+                          r: "7",
+                          fill: "none",
+                          stroke: "#3B4FC2",
+                          strokeWidth: "2.5"
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "circle",
+                        {
+                          className: "ring delay",
+                          cx,
+                          cy,
+                          r: "7",
+                          fill: "none",
+                          stroke: "#3B4FC2",
+                          strokeWidth: "2.5"
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "circle",
+                      {
+                        className: "dot",
+                        cx,
+                        cy,
+                        r: "6",
+                        fill: dotColor
+                      }
+                    ),
+                    grp.pts.map((p) => {
+                      const state = labelState[p.key];
+                      const showLabel = state === "shown" || state === "fading";
+                      if (!showLabel) return null;
+                      const isFading = state === "fading";
+                      const labelColor = p.falseAlarm ? "#8A8AA3" : p.flashColor;
+                      const labelW = Math.max(100, p.label.length * 7 + 20);
+                      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                        "g",
+                        {
+                          className: "label-badge" + (isFading ? " fading" : ""),
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "line",
+                              {
+                                x1: cx,
+                                y1: cy + (p.labelDy > 0 ? 7 : -7),
+                                x2: cx,
+                                y2: cy + p.labelDy,
+                                stroke: labelColor,
+                                strokeWidth: "1.5"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "rect",
+                              {
+                                x: cx + p.labelDx - labelW / 2,
+                                y: cy + p.labelDy - (p.labelDy > 0 ? 14 : 28),
+                                width: labelW,
+                                height: "26",
+                                rx: "13",
+                                fill: labelColor
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "text",
+                              {
+                                x: cx + p.labelDx,
+                                y: cy + p.labelDy - (p.labelDy > 0 ? 0 : 14) + 4,
+                                fontSize: "12",
+                                fontWeight: "700",
+                                fill: "white",
+                                textAnchor: "middle",
+                                children: p.label
+                              }
+                            )
+                          ]
+                        },
+                        p.key
+                      );
+                    })
+                  ] }, grp.key);
+                }),
+                // Permanent x-value labels along the axis \u2014 revealed alongside each
+                // point and never fade, unlike the floating label badges. Dedupe by
+                // x so coincident points (e.g. Faker's/Corner's stacked pairs)
+                // only get one tick, not two overlapping ones.
+                tier.points.filter((p) => pointRevealed(p)).reduce((acc, p) => {
+                  if (!acc.some((q) => q.x === p.x)) acc.push(p);
+                  return acc;
+                }, []).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                  "g",
+                  {
+                    style: {
+                      pointerEvents: "none"
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "line",
+                        {
+                          x1: xPix(p.x, XMIN, XMAX),
+                          y1: axisY - 4,
+                          x2: xPix(p.x, XMIN, XMAX),
+                          y2: axisY + 4,
+                          stroke: "#8A8AA3",
+                          strokeWidth: "1.5"
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "text",
+                        {
+                          x: xPix(p.x, XMIN, XMAX),
+                          y: axisY + 18,
+                          fontSize: "10.5",
+                          fontStyle: p.undefinedDeriv ? "italic" : "normal",
+                          textAnchor: "middle",
+                          fill: "#8A8AA3",
+                          children: renderSqrtSvg(p.tickLabel)
+                        }
+                      )
+                    ]
+                  },
+                  p.key + "-xaxis"
+                )),
+                (tier.domainBreaks || []).map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                  "g",
+                  {
+                    style: {
+                      pointerEvents: "none"
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "line",
+                        {
+                          x1: xPix(b.x, XMIN, XMAX),
+                          y1: axisY - 4,
+                          x2: xPix(b.x, XMIN, XMAX),
+                          y2: axisY + 4,
+                          stroke: "#8A8AA3",
+                          strokeWidth: "1.5"
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "text",
+                        {
+                          x: xPix(b.x, XMIN, XMAX),
+                          y: axisY + 18,
+                          fontSize: "10.5",
+                          fontStyle: "italic",
+                          textAnchor: "middle",
+                          fill: "#8A8AA3",
+                          children: b.tickLabel
+                        }
+                      )
+                    ]
+                  },
+                  b.key + "-xaxis"
+                )),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: VB_W - 15, y: axisY - 6, fontSize: "12", fill: "#8A8AA3", children: "x" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "text",
+                  {
+                    x: xPix(0, XMIN, XMAX) + 6,
+                    y: "14",
+                    fontSize: "12",
+                    fill: "#8A8AA3",
+                    children: "y"
+                  }
+                )
               ] }),
-              (0, import_jsx_runtime.jsxs)("div", { className: "slider-row", children: [
-                (0, import_jsx_runtime.jsx)("input", { type: "range", min: "0", max: "1", step: "0.001", value: pass1Progress, onChange: handlePass1Slider }),
-                (0, import_jsx_runtime.jsx)("input", { type: "range", min: "0", max: "1", step: "0.001", value: pass2Progress, disabled: !pass1Done, onChange: handlePass2Slider })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "util-row", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "speed-group", children: SPEED_OPTIONS.map((s) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "div",
+                  {
+                    className: "speed-opt" + (s === speed ? " active" : ""),
+                    onClick: () => setSpeed(s),
+                    children: s === 1 ? "1\xD7" : s === 0.5 ? "\xBD\xD7" : "\xBC\xD7"
+                  },
+                  s
+                )) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { className: "reveal-btn", onClick: handleReveal, children: "Reveal Graph" })
+              ] }),
+              !playing && pass1Progress === 0 && !revealedInstantly && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "instruction-text", children: [
+                "Click ",
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("b", { children: "Play" }),
+                " to reveal how the 1st and 2nd derivatives affect the shape of the curve."
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "controls-row", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    className: "play-btn" + (pass1Progress === 0 && !playing ? " pulsing" : ""),
+                    onClick: handlePlayClick,
+                    children: playing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PauseIcon, {}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PlayIcon, {})
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    className: "icon-btn",
+                    onClick: handleReset,
+                    title: "Reset this example",
+                    children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ResetIcon, {})
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "progress-track", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "progress-labels", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "1st Derivative Pass" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "2nd Derivative Pass" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "slider-row", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "input",
+                      {
+                        type: "range",
+                        min: "0",
+                        max: "1",
+                        step: "0.001",
+                        value: pass1Progress,
+                        onChange: handlePass1Slider
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "input",
+                      {
+                        type: "range",
+                        min: "0",
+                        max: "1",
+                        step: "0.001",
+                        value: pass2Progress,
+                        disabled: !pass1Done,
+                        onChange: handlePass2Slider
+                      }
+                    )
+                  ] })
+                ] })
               ] })
-            ] })
-          ] })
-        ] }),
-        (0, import_jsx_runtime.jsxs)("div", { className: "panel-card", children: [
-          (0, import_jsx_runtime.jsxs)("div", { className: "panel-section domain", children: [
-            (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "Domain Information" }),
-            tier.domainBreaks.length === 0 ? (0, import_jsx_runtime.jsx)("div", { className: "domain-note", children: "No discontinuities" }) : (0, import_jsx_runtime.jsx)("div", { className: "sign-rows", children: tier.domainBreaks.map((b) => {
-              const st = labelState[b.key];
-              const active = st === "shown" || st === "fading";
-              return (0, import_jsx_runtime.jsx)("div", {
-                className: "sign-row domain-row" + (active ? " active" : ""),
-                onClick: () => triggerReview(b.key),
-                children: (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: b.label })
-              }, b.key);
-            }) })
-          ] }),
-          (0, import_jsx_runtime.jsxs)("div", { className: "panel-section first", children: [
-            (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "First Derivative Information" }),
-            (0, import_jsx_runtime.jsxs)("svg", { className: "number-line", viewBox: "0 0 300 64", children: [
-              tier.pass1Signs.map((s, i) => (0, import_jsx_runtime.jsx)("text", { x: s.x, y: "16", fontSize: "16", fontWeight: "700", fill: s.color, textAnchor: "middle", children: s.sign }, i)),
-              activeInterval1 && (0, import_jsx_runtime.jsx)("rect", {
-                x: boundaryPixel(tier, activeInterval1.from, 1),
-                y: "31",
-                width: boundaryPixel(tier, activeInterval1.to, 1) - boundaryPixel(tier, activeInterval1.from, 1),
-                height: "12",
-                rx: "6",
-                fill: "#3FA66A",
-                opacity: "0.18"
-              }),
-              (0, import_jsx_runtime.jsx)("line", { x1: "10", y1: "37", x2: "290", y2: "37", stroke: "#DCDCF0", strokeWidth: "2" }),
-              tier.points.filter((p) => p.pass === 1).map((p) => {
-                const revealed = pointRevealed(p);
-                if (!revealed) return null;
-                const st = labelState[p.key];
-                const active = st === "shown" || st === "fading";
-                const nlColor = p.falseAlarm ? "#8A8AA3" : active ? p.flashColor : "#8A8AA3";
-                return (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick: () => triggerReview(p.key), children: [
-                  st === "shown" && (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring", cx: p.tickCx, cy: "37", r: "6", fill: "none", stroke: nlColor, strokeWidth: "2" }),
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring delay", cx: p.tickCx, cy: "37", r: "6", fill: "none", stroke: nlColor, strokeWidth: "2" })
-                  ] }),
-                  (0, import_jsx_runtime.jsx)("circle", { className: "dot", cx: p.tickCx, cy: "37", r: "5", fill: nlColor, style: { transition: "fill 0.3s ease" } })
-                ] }, p.key);
-              }),
-              tier.points.filter((p) => p.pass === 1).map((p) => (0, import_jsx_runtime.jsx)("text", { x: p.tickCx - 4, y: "56", fontSize: "11", fontStyle: p.undefinedDeriv ? "italic" : "normal", fill: "#8A8AA3", children: renderSqrtSvg(p.tickLabel) }, p.key + "lbl")),
-              (tier.domainBreaks || []).map((b) => {
-                const cx1 = b.tickCx1 !== void 0 ? b.tickCx1 : b.tickCx;
-                const bst = labelState[b.key];
-                const bActive = bst === "shown" || bst === "fading";
-                return (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick: () => triggerReview(b.key), children: [
-                  bst === "shown" && (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring", cx: cx1, cy: "37", r: "6", fill: "none", stroke: "#3B4FC2", strokeWidth: "2" }),
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring delay", cx: cx1, cy: "37", r: "6", fill: "none", stroke: "#3B4FC2", strokeWidth: "2" })
-                  ] }),
-                  (0, import_jsx_runtime.jsx)("circle", { cx: cx1, cy: "37", r: "5", fill: "#FCFCFE", stroke: bActive ? "#3B4FC2" : "#8A8AA3", strokeWidth: "2", style: { transition: "stroke 0.3s ease" } })
-                ] }, b.key);
-              }),
-              (tier.domainBreaks || []).map((b) => (0, import_jsx_runtime.jsx)("text", { x: (b.tickCx1 !== void 0 ? b.tickCx1 : b.tickCx) - 4, y: "56", fontSize: "11", fontStyle: "italic", fill: "#8A8AA3", children: b.tickLabel }, b.key + "lbl"))
             ] }),
-            (0, import_jsx_runtime.jsxs)("div", { className: "sign-rows", children: [
-              (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [(0, import_jsx_runtime.jsx)("span", { className: "sign-label pos", children: "Increasing:" }), (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.increasing) })] }),
-              (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [(0, import_jsx_runtime.jsx)("span", { className: "sign-label neg", children: "Decreasing:" }), (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.decreasing) })] })
-            ] })
-          ] }),
-          (0, import_jsx_runtime.jsxs)("div", { className: "panel-section second", children: [
-            (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "Second Derivative Information" }),
-            (0, import_jsx_runtime.jsxs)("svg", { className: "number-line", viewBox: "0 0 300 64", children: [
-              tier.pass2Signs.map((s, i) => (0, import_jsx_runtime.jsx)("text", { x: s.x, y: "16", fontSize: "16", fontWeight: "700", fill: s.color, textAnchor: "middle", children: s.sign }, i)),
-              activeInterval2 && (0, import_jsx_runtime.jsx)("rect", {
-                x: boundaryPixel(tier, activeInterval2.from, 2),
-                y: "31",
-                width: boundaryPixel(tier, activeInterval2.to, 2) - boundaryPixel(tier, activeInterval2.from, 2),
-                height: "12",
-                rx: "6",
-                fill: "#3FA66A",
-                opacity: "0.18"
-              }),
-              (0, import_jsx_runtime.jsx)("line", { x1: "10", y1: "37", x2: "290", y2: "37", stroke: "#DCDCF0", strokeWidth: "2" }),
-              tier.points.filter((p) => p.pass === 2).map((p) => {
-                const revealed = pointRevealed(p);
-                if (!revealed) return null;
-                const st = labelState[p.key];
-                const active = st === "shown" || st === "fading";
-                const nlColor = p.falseAlarm ? "#8A8AA3" : active ? p.flashColor : "#8A8AA3";
-                return (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick: () => triggerReview(p.key), children: [
-                  st === "shown" && (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring", cx: p.tickCx, cy: "37", r: "6", fill: "none", stroke: nlColor, strokeWidth: "2" }),
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring delay", cx: p.tickCx, cy: "37", r: "6", fill: "none", stroke: nlColor, strokeWidth: "2" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "panel-card", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "panel-section domain", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "Domain Information" }),
+                tier.domainBreaks.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "domain-note", children: "No discontinuities" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "sign-rows", children: tier.domainBreaks.map((b) => {
+                  const st = labelState[b.key];
+                  const active = st === "shown" || st === "fading";
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "div",
+                    {
+                      className: "sign-row domain-row" + (active ? " active" : ""),
+                      onClick: () => triggerReview(b.key),
+                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: b.label })
+                    },
+                    b.key
+                  );
+                }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "panel-section first", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "First Derivative Information" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { className: "number-line", viewBox: "0 0 300 64", children: [
+                  tier.pass1Signs.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: s.x,
+                      y: "16",
+                      fontSize: "16",
+                      fontWeight: "700",
+                      fill: s.color,
+                      textAnchor: "middle",
+                      children: s.sign
+                    },
+                    i
+                  )),
+                  activeInterval1 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: boundaryPixel(tier, activeInterval1.from, 1),
+                      y: "31",
+                      width: boundaryPixel(tier, activeInterval1.to, 1) - boundaryPixel(tier, activeInterval1.from, 1),
+                      height: "12",
+                      rx: "6",
+                      fill: "#3FA66A",
+                      opacity: "0.18"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "line",
+                    {
+                      x1: "10",
+                      y1: "37",
+                      x2: "290",
+                      y2: "37",
+                      stroke: "#DCDCF0",
+                      strokeWidth: "2"
+                    }
+                  ),
+                  tier.points.filter((p) => p.pass === 1).map((p) => {
+                    const revealed = pointRevealed(p);
+                    if (!revealed) return null;
+                    const st = labelState[p.key];
+                    const active = st === "shown" || st === "fading";
+                    const nlColor = p.falseAlarm ? "#8A8AA3" : active ? p.flashColor : "#8A8AA3";
+                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "g",
+                      {
+                        className: "point-group",
+                        onClick: () => triggerReview(p.key),
+                        children: [
+                          st === "shown" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring",
+                                cx: p.tickCx,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: nlColor,
+                                strokeWidth: "2"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring delay",
+                                cx: p.tickCx,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: nlColor,
+                                strokeWidth: "2"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "circle",
+                            {
+                              className: "dot",
+                              cx: p.tickCx,
+                              cy: "37",
+                              r: "5",
+                              fill: nlColor,
+                              style: {
+                                transition: "fill 0.3s ease"
+                              }
+                            }
+                          )
+                        ]
+                      },
+                      p.key
+                    );
+                  }),
+                  tier.points.filter((p) => p.pass === 1).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: p.tickCx - 4,
+                      y: "56",
+                      fontSize: "11",
+                      fontStyle: p.undefinedDeriv ? "italic" : "normal",
+                      fill: "#8A8AA3",
+                      children: renderSqrtSvg(p.tickLabel)
+                    },
+                    p.key + "lbl"
+                  )),
+                  (tier.domainBreaks || []).map((b) => {
+                    const cx1 = b.tickCx1 !== void 0 ? b.tickCx1 : b.tickCx;
+                    const bst = labelState[b.key];
+                    const bActive = bst === "shown" || bst === "fading";
+                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "g",
+                      {
+                        className: "point-group",
+                        onClick: () => triggerReview(b.key),
+                        children: [
+                          bst === "shown" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring",
+                                cx: cx1,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: "#3B4FC2",
+                                strokeWidth: "2"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring delay",
+                                cx: cx1,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: "#3B4FC2",
+                                strokeWidth: "2"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "circle",
+                            {
+                              cx: cx1,
+                              cy: "37",
+                              r: "5",
+                              fill: "#FCFCFE",
+                              stroke: bActive ? "#3B4FC2" : "#8A8AA3",
+                              strokeWidth: "2",
+                              style: {
+                                transition: "stroke 0.3s ease"
+                              }
+                            }
+                          )
+                        ]
+                      },
+                      b.key
+                    );
+                  }),
+                  (tier.domainBreaks || []).map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: (b.tickCx1 !== void 0 ? b.tickCx1 : b.tickCx) - 4,
+                      y: "56",
+                      fontSize: "11",
+                      fontStyle: "italic",
+                      fill: "#8A8AA3",
+                      children: b.tickLabel
+                    },
+                    b.key + "lbl"
+                  ))
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-rows", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-label pos", children: "Increasing:" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.increasing) })
                   ] }),
-                  (0, import_jsx_runtime.jsx)("circle", { className: "dot", cx: p.tickCx, cy: "37", r: "5", fill: nlColor, style: { transition: "fill 0.3s ease" } })
-                ] }, p.key);
-              }),
-              tier.points.filter((p) => p.pass === 2).map((p) => (0, import_jsx_runtime.jsx)("text", { x: p.tickCx - 4, y: "56", fontSize: "11", fontStyle: p.undefinedDeriv ? "italic" : "normal", fill: "#8A8AA3", children: renderSqrtSvg(p.tickLabel) }, p.key + "lbl")),
-              (tier.domainBreaks || []).map((b) => {
-                const cx2 = b.tickCx2 !== void 0 ? b.tickCx2 : b.tickCx;
-                const bst = labelState[b.key];
-                const bActive = bst === "shown" || bst === "fading";
-                return (0, import_jsx_runtime.jsxs)("g", { className: "point-group", onClick: () => triggerReview(b.key), children: [
-                  bst === "shown" && (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring", cx: cx2, cy: "37", r: "6", fill: "none", stroke: "#3B4FC2", strokeWidth: "2" }),
-                    (0, import_jsx_runtime.jsx)("circle", { className: "ring delay", cx: cx2, cy: "37", r: "6", fill: "none", stroke: "#3B4FC2", strokeWidth: "2" })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-label neg", children: "Decreasing:" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.decreasing) })
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "panel-section second", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "panel-title", children: "Second Derivative Information" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { className: "number-line", viewBox: "0 0 300 64", children: [
+                  tier.pass2Signs.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: s.x,
+                      y: "16",
+                      fontSize: "16",
+                      fontWeight: "700",
+                      fill: s.color,
+                      textAnchor: "middle",
+                      children: s.sign
+                    },
+                    i
+                  )),
+                  activeInterval2 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "rect",
+                    {
+                      x: boundaryPixel(tier, activeInterval2.from, 2),
+                      y: "31",
+                      width: boundaryPixel(tier, activeInterval2.to, 2) - boundaryPixel(tier, activeInterval2.from, 2),
+                      height: "12",
+                      rx: "6",
+                      fill: "#3FA66A",
+                      opacity: "0.18"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "line",
+                    {
+                      x1: "10",
+                      y1: "37",
+                      x2: "290",
+                      y2: "37",
+                      stroke: "#DCDCF0",
+                      strokeWidth: "2"
+                    }
+                  ),
+                  tier.points.filter((p) => p.pass === 2).map((p) => {
+                    const revealed = pointRevealed(p);
+                    if (!revealed) return null;
+                    const st = labelState[p.key];
+                    const active = st === "shown" || st === "fading";
+                    const nlColor = p.falseAlarm ? "#8A8AA3" : active ? p.flashColor : "#8A8AA3";
+                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "g",
+                      {
+                        className: "point-group",
+                        onClick: () => triggerReview(p.key),
+                        children: [
+                          st === "shown" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring",
+                                cx: p.tickCx,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: nlColor,
+                                strokeWidth: "2"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring delay",
+                                cx: p.tickCx,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: nlColor,
+                                strokeWidth: "2"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "circle",
+                            {
+                              className: "dot",
+                              cx: p.tickCx,
+                              cy: "37",
+                              r: "5",
+                              fill: nlColor,
+                              style: {
+                                transition: "fill 0.3s ease"
+                              }
+                            }
+                          )
+                        ]
+                      },
+                      p.key
+                    );
+                  }),
+                  tier.points.filter((p) => p.pass === 2).map((p) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: p.tickCx - 4,
+                      y: "56",
+                      fontSize: "11",
+                      fontStyle: p.undefinedDeriv ? "italic" : "normal",
+                      fill: "#8A8AA3",
+                      children: renderSqrtSvg(p.tickLabel)
+                    },
+                    p.key + "lbl"
+                  )),
+                  (tier.domainBreaks || []).map((b) => {
+                    const cx2 = b.tickCx2 !== void 0 ? b.tickCx2 : b.tickCx;
+                    const bst = labelState[b.key];
+                    const bActive = bst === "shown" || bst === "fading";
+                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "g",
+                      {
+                        className: "point-group",
+                        onClick: () => triggerReview(b.key),
+                        children: [
+                          bst === "shown" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring",
+                                cx: cx2,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: "#3B4FC2",
+                                strokeWidth: "2"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "circle",
+                              {
+                                className: "ring delay",
+                                cx: cx2,
+                                cy: "37",
+                                r: "6",
+                                fill: "none",
+                                stroke: "#3B4FC2",
+                                strokeWidth: "2"
+                              }
+                            )
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "circle",
+                            {
+                              cx: cx2,
+                              cy: "37",
+                              r: "5",
+                              fill: "#FCFCFE",
+                              stroke: bActive ? "#3B4FC2" : "#8A8AA3",
+                              strokeWidth: "2",
+                              style: {
+                                transition: "stroke 0.3s ease"
+                              }
+                            }
+                          )
+                        ]
+                      },
+                      b.key
+                    );
+                  }),
+                  (tier.domainBreaks || []).map((b) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "text",
+                    {
+                      x: (b.tickCx2 !== void 0 ? b.tickCx2 : b.tickCx) - 4,
+                      y: "56",
+                      fontSize: "11",
+                      fontStyle: "italic",
+                      fill: "#8A8AA3",
+                      children: b.tickLabel
+                    },
+                    b.key + "lbl"
+                  ))
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-rows", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-label pos", children: "Concave Up:" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.concaveUp) })
                   ] }),
-                  (0, import_jsx_runtime.jsx)("circle", { cx: cx2, cy: "37", r: "5", fill: "#FCFCFE", stroke: bActive ? "#3B4FC2" : "#8A8AA3", strokeWidth: "2", style: { transition: "stroke 0.3s ease" } })
-                ] }, b.key);
-              }),
-              (tier.domainBreaks || []).map((b) => (0, import_jsx_runtime.jsx)("text", { x: (b.tickCx2 !== void 0 ? b.tickCx2 : b.tickCx) - 4, y: "56", fontSize: "11", fontStyle: "italic", fill: "#8A8AA3", children: b.tickLabel }, b.key + "lbl"))
-            ] }),
-            (0, import_jsx_runtime.jsxs)("div", { className: "sign-rows", children: [
-              (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [(0, import_jsx_runtime.jsx)("span", { className: "sign-label pos", children: "Concave Up:" }), (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.concaveUp) })] }),
-              (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [(0, import_jsx_runtime.jsx)("span", { className: "sign-label neg", children: "Concave Down:" }), (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.concaveDown) })] })
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "sign-row", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-label neg", children: "Concave Down:" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "sign-value", children: renderSqrtHtml(tier.concaveDown) })
+                  ] })
+                ] })
+              ] })
             ] })
           ] })
         ] })
       ] }),
-      (0, import_jsx_runtime.jsx)("div", { className: "footer-note", children: "Curve Sketching Studio \u2014 " + TIERS.filter((t) => t.ready).length + " of " + TIERS.length + " tiers wired" })
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageCredit, {})
+    ] });
+  }
+  function PageCredit() {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "page-credit", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "page-credit-chip", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: "../../../assets/favicon.svg", alt: "", width: "28", height: "28" }) }),
+      "Professor Kyle Knee \xB7 Harper College Mathematics"
     ] });
   }
   function PlayIcon() {
-    return (0, import_jsx_runtime.jsx)("svg", { viewBox: "0 0 24 24", children: (0, import_jsx_runtime.jsx)("polygon", { points: "5,3 21,12 5,21", fill: "white" }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", { viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("polygon", { points: "5,3 21,12 5,21", fill: "white" }) });
   }
   function PauseIcon() {
-    return (0, import_jsx_runtime.jsxs)("svg", { viewBox: "0 0 24 24", children: [
-      (0, import_jsx_runtime.jsx)("rect", { x: "5", y: "4", width: "5", height: "16", fill: "white" }),
-      (0, import_jsx_runtime.jsx)("rect", { x: "14", y: "4", width: "5", height: "16", fill: "white" })
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { viewBox: "0 0 24 24", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", { x: "5", y: "4", width: "5", height: "16", fill: "white" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", { x: "14", y: "4", width: "5", height: "16", fill: "white" })
     ] });
   }
   function ResetIcon() {
-    return (0, import_jsx_runtime.jsx)("svg", {
-      viewBox: "0 0 24 24",
-      width: "16",
-      height: "16",
-      children: (0, import_jsx_runtime.jsx)("path", { d: "M12 5V2L7 6l5 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z", fill: "#6E6E86" })
-    });
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", { viewBox: "0 0 24 24", width: "16", height: "16", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+      "path",
+      {
+        d: "M12 5V2L7 6l5 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z",
+        fill: "#6E6E86"
+      }
+    ) });
   }
   var root = (0, import_client.createRoot)(document.getElementById("root"));
-  root.render((0, import_jsx_runtime.jsx)(App, {}));
+  root.render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}));
 })();
 /*! Bundled license information:
 

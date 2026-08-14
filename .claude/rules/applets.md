@@ -20,7 +20,11 @@ Applets/
 ├── shared/                       Header code every migrated applet loads — see below
 │   ├── applet-header.css
 │   └── applet-header.js
-├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system)
+├── Calc 1/                       Flat *.html files, no JSX source alongside (predates this system),
+│                                   except Curve Sketching (below), which is migrated
+│   └── Curve Sketching/            Migrated — curve-sketching-v13.html is the shipped bundle,
+│                                     curve-sketching-v13.jsx + curve-sketching-styles.css the source;
+│                                     has its own spec_4.md
 ├── Calc 2/
 │   ├── Polar Graphing/            Migrated — polar-graphing-applet.html is the shipped bundle,
 │   │                                 app.jsx the source; has its own spec_4.md
@@ -39,12 +43,13 @@ Applets/
     │                                 spec_2_1_1_1.md
     └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
 ```
-**Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, and Taylor Series & Remainder
-Explorer have been migrated** to the full-viewport layout described below; Calc 3's other two
-applets and everything under Calc 1 still use their own one-off header (or none at all) and haven't
-been touched. Migrating one means: hand-matching its own JSX gradient banner and page-level credit
-row to the canonical spec (see "Header pattern" below) and rebuilding its bundle. None of the
-migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header pattern" for why.
+**Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, Taylor Series & Remainder
+Explorer, and Curve Sketching Studio have been migrated** to the full-viewport layout described
+below; Calc 3's other two applets and the rest of Calc 1 still use their own one-off header (or none
+at all) and haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
+page-level credit row to the canonical spec (see "Header pattern" below) and rebuilding its bundle.
+None of the migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header
+pattern" for why.
 
 ## Per-applet design-decision logs
 Files named `spec.md` (or a variant like `spec_4.md`) are per-applet logs of settled decisions, open
@@ -116,8 +121,23 @@ differentiation, not symbolic/finite-difference). Its post-migration layout/sizi
 for the full list) were also hand-edited in parallel across `TaylorSeriesApplet.jsx` and the shipped
 HTML, same no-toolchain-available constraint as Polar Graphing.
 
-**Three full-viewport gotchas worth checking on any migrated applet**, all first caught (and fixed)
-on Taylor Series Explorer:
+**Curve Sketching Studio** is built like Quadric Surfaces (`import`-based source, real ES module
+imports for React/react-dom) rather than the classic-transform-concatenation pattern the other three
+migrated applets use — it was decompiled from a compiled bundle into real JSX in a prior handoff (see
+its own `spec_4.md`), and Node/esbuild were actually available for its header migration, so the
+straightforward `esbuild --bundle --format=iife --jsx=automatic` recipe (against `react@19`/
+`react-dom@19`) was used to rebuild it rather than hand-editing compiled output. It's also the first
+migrated applet to keep a real external stylesheet (`curve-sketching-styles.css`, inlined into the
+shipped HTML's `<style>` block) instead of styling everything via inline JSX `style={{}}` objects —
+its `<head>` links `../../shared/applet-header.css` for the shared full-viewport rules *and* keeps its
+own `<style>` block for its class-based component styles, both loading alongside each other rather
+than one replacing the other. It's also the applet that surfaced the fourth full-viewport gotcha below
+(the CSS Grid `minmax(0, Nfr)` one) — its two-column `.main-grid` had no responsive breakpoint at all
+until a later round of work added one, at which point the missing `minmax(0, …)` caused a real
+horizontal-overflow bug on phones, not just a hypothetical one.
+
+**Four full-viewport gotchas worth checking on any migrated applet** — the first three caught (and
+fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio:
 - The **card** itself (the flex child holding the banner *and* the content, not just an inner content
   wrapper) needs its own explicit `max-width: 1200px; margin: 0 auto` — capping only an inner wrapper
   while the outer card is unconstrained lets the gradient banner stretch full-bleed across the page
@@ -136,6 +156,15 @@ on Taylor Series Explorer:
   native aspect ratio, which both visually pushes fixed-position overlay text (e.g. a top-left corner
   label) away from the box's actual top-left corner, and — if ever assumed otherwise — would silently
   desync pointer coordinates from data coordinates in the letterboxed margin.
+- The *horizontal* twin of the `min-height: 0` gotcha above: a CSS Grid `Nfr` column's implicit
+  minimum width is `auto` (its content's natural/min-content width), not `0`, so a wide-content column
+  that's expected to *shrink* on narrow viewports needs `minmax(0, Nfr)` instead of a bare `Nfr` — a
+  bare `Nfr` lets that column's content stretch the whole grid (and everything above it that trusts
+  `width: 100%`) past the viewport instead of shrinking, causing a page-level horizontal scrollbar with
+  content clipped off the right edge. Flexbox children have the same default (`min-width: auto`) and
+  need the equivalent explicit `min-width: 0` — hit on Curve Sketching Studio by two side-by-side
+  `<input type="range">` sliders inside a flex row, which refused to shrink below their own browser-
+  default intrinsic width no matter how narrow their flex container got.
 
 ## Header pattern
 Every migrated applet's HTML shell loads only the shared CSS file, for its full-viewport layout
