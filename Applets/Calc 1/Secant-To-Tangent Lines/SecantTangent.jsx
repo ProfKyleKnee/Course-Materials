@@ -160,6 +160,29 @@ function displayNum(v, decimals = 3) {
   return v.toFixed(decimals);
 }
 
+// ============================================================================
+// AXIS TICKS (auto-scaling with zoom)
+// ============================================================================
+// Standard "nice number" step: rounds the raw span/targetCount down to a 1/2/5-times-a-power-of-10
+// step, so tick spacing stays readable (never e.g. "every 0.37 units") at any zoom level rather than
+// a fixed world-unit spacing that would go from crowded to sparse as the camera scale changes.
+function niceStep(span, targetCount) {
+  const rough = span / targetCount;
+  const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / mag;
+  let step;
+  if (norm < 1.5) step = 1;
+  else if (norm < 3.5) step = 2;
+  else if (norm < 7.5) step = 5;
+  else step = 10;
+  return step * mag;
+}
+function formatTick(v, step) {
+  const decimals = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+  const s = v.toFixed(decimals);
+  return s === '-0' ? '0' : s;
+}
+
 const TABLE_MAGNITUDES = [3, 2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.001];
 function buildTable(domain, a, currentH, fn) {
   const sign = currentH < 0 ? -1 : 1;
@@ -174,9 +197,9 @@ function buildTable(domain, a, currentH, fn) {
 // ============================================================================
 function Frac({ num, den, color }) {
   return (
-    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px', fontStyle: 'italic', color }}>
-      <span style={{ padding: '0 4px', lineHeight: 1.3, borderBottom: '1.5px solid currentColor' }}>{num}</span>
-      <span style={{ padding: '0 4px', lineHeight: 1.3 }}>{den}</span>
+    <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle', margin: '0 4px', fontStyle: 'italic', color, maxWidth: '100%' }}>
+      <span style={{ padding: '0 4px', lineHeight: 1.3, borderBottom: '1.5px solid currentColor', whiteSpace: 'normal', overflowWrap: 'break-word', textAlign: 'center' }}>{num}</span>
+      <span style={{ padding: '0 4px', lineHeight: 1.3, whiteSpace: 'normal', overflowWrap: 'break-word', textAlign: 'center' }}>{den}</span>
     </span>
   );
 }
@@ -189,19 +212,75 @@ function LimStack({ sub }) {
   );
 }
 
+// Crossfades a bit of HTML/text whenever `value` changes, instead of the notation toggle's old
+// instant swap: fades the outgoing label to 0 opacity, swaps the displayed content while invisible,
+// then fades the new one back in. Used everywhere the a,a+h <-> x,a notation choice changes a
+// label — the readout cards, formula/derivation panel, table headers, slider caption, and fused-
+// input prefixes all wrap their notation-dependent text in this instead of interpolating it
+// straight into a template string, so the toggle reads as a transition rather than a jump-cut.
+// 480ms per phase (fade-out, then fade-in) so the full round trip lands around 960ms -- matching
+// the Tangent toggle's own reveal (the tangent line / f'(a) readout card / side-column accordions
+// all use 960ms cubic-bezier(0.4,0,0.2,1)). An earlier 160ms-per-phase version read as an instant
+// snap next to those slower reveals.
+const NOTATION_FADE_MS = 480;
+const NOTATION_FADE_EASING = 'cubic-bezier(0.4,0,0.2,1)';
+// `alt` is the label's *other* possible value (e.g. pass 'h' alongside a current value of 'x − a')
+// — every notation-dependent label only ever has two possible strings, and they're almost always
+// different widths ('h' vs 'x − a', 'a+h' vs 'x'). Without reserving room for both, the surrounding
+// layout (input boxes, table columns, card padding) snapped to the new width the instant the state
+// flipped even though the *text* was fading smoothly — that snap was the residual "jump" after the
+// opacity crossfade was already in place. Stacking both strings (one always hidden) in the same CSS
+// grid cell makes the wrapper's own intrinsic width the max of the two, permanently, so nothing
+// around it moves when the visible one swaps.
+function Fade({ children, alt }) {
+  const [display, setDisplay] = useState(children);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (children === display) return;
+    setVisible(false);
+    const t = setTimeout(() => { setDisplay(children); setVisible(true); }, NOTATION_FADE_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [children]);
+  return (
+    <span style={{ display: 'inline-grid' }}>
+      <span style={{ gridArea: '1 / 1', visibility: 'hidden' }}>{children}</span>
+      {alt !== undefined && <span style={{ gridArea: '1 / 1', visibility: 'hidden' }}>{alt}</span>}
+      <span style={{ gridArea: '1 / 1', opacity: visible ? 1 : 0, transition: `opacity ${NOTATION_FADE_MS}ms ${NOTATION_FADE_EASING}` }}>{display}</span>
+    </span>
+  );
+}
+// Same crossfade, as a <tspan> — <text> children inside an <svg> can't hold a plain <span>.
+function FadeTspan({ value }) {
+  const [display, setDisplay] = useState(value);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    if (value === display) return;
+    setVisible(false);
+    const t = setTimeout(() => { setDisplay(value); setVisible(true); }, NOTATION_FADE_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [value]);
+  return <tspan style={{ opacity: visible ? 1 : 0, transition: `opacity ${NOTATION_FADE_MS}ms ${NOTATION_FADE_EASING}` }}>{display}</tspan>;
+}
+
 export default function SecantTangent() {
   // ---- function state ----
-  const [functionKey, setFunctionKey] = useState('x^2');
-  const [customExpr, setCustomExpr] = useState('');
+  // Defaults to a curated demo Kyle settled on live (a cubic, not a preset) rather than the flat
+  // x^2/a=1/h=2 starting point -- functionKey 'custom' so no preset pill shows active, matching
+  // that none of them are the actual function shown. autofit() runs on mount and reframes the
+  // camera to fit this exact a/h/function combination, so no separate camera default is needed.
+  const [functionKey, setFunctionKey] = useState('custom');
+  const [customExpr, setCustomExpr] = useState('x(x-1)(x+1)');
   const [customExprText, setCustomExprText] = useState('');
   const [customError, setCustomError] = useState(null);
-  const [fnInputText, setFnInputText] = useState('x^2');
+  const [fnInputText, setFnInputText] = useState('x(x-1)(x+1)');
 
   // ---- point state ----
-  const [aVal, setAVal] = useState(1);
-  const [aText, setAText] = useState('1.00');
-  const [hVal, setHVal] = useState(0.842);
-  const [hText, setHText] = useState('0.842');
+  const [aVal, setAVal] = useState(0.5);
+  const [aText, setAText] = useState('0.50');
+  const [hVal, setHVal] = useState(0.672);
+  const [hText, setHText] = useState('0.672');
   const [aWarning, setAWarning] = useState(null);
 
   // ---- notation / toggles ----
@@ -307,7 +386,11 @@ export default function SecantTangent() {
   }
 
   const secantLine = lineToEdges(aVal, fa, dq);
-  const tangentLine = showTangent ? lineToEdges(aVal, fa, fprime) : null;
+  // Computed unconditionally (not just when showTangent is true) so the <line> below can stay
+  // mounted at all times and its opacity transition actually plays -- gating this on showTangent
+  // meant the element itself mounted/unmounted in the same render as the opacity flipped, so the
+  // "fade" never had a previous frame to animate from and just snapped in/out at full opacity.
+  const tangentLine = lineToEdges(aVal, fa, fprime);
 
   // ---- pixel positions ----
   const pA = worldToPx(aVal, fa);
@@ -529,7 +612,12 @@ export default function SecantTangent() {
   useEffect(() => () => { if (playAnimRef.current) cancelAnimationFrame(playAnimRef.current.raf); }, []);
 
   // ---- slider (log-scaled) ----
-  const SLIDER_MAX_MAG = 5, SLIDER_MIN_MAG = 0.001;
+  // Max magnitude is the default h itself (0.672, see useState above), not an arbitrary constant --
+  // that's what makes the slider thumb start pinned at the far left on load, matching the default
+  // secant, rather than landing partway along a scale that goes well past where the demo starts.
+  // Dragging the point or typing a larger h still works (h isn't clamped to this), it just shows as
+  // pinned-left on the slider since sliderToMag can't represent anything above this max.
+  const SLIDER_MAX_MAG = 0.672, SLIDER_MIN_MAG = 0.001;
   function magToSlider(mag) {
     const clamped = Math.max(SLIDER_MIN_MAG, Math.min(SLIDER_MAX_MAG, mag));
     return 1 - (Math.log(clamped / SLIDER_MIN_MAG) / Math.log(SLIDER_MAX_MAG / SLIDER_MIN_MAG));
@@ -558,13 +646,27 @@ export default function SecantTangent() {
   const tangentSlide = showTangent;
 
   return (
-    <div style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", background: COLORS.bg, padding: 20, borderRadius: 24 }}>
-      <div style={{ maxWidth: 900, margin: '0 auto', background: COLORS.card, borderRadius: 20, boxShadow: '0 2px 14px rgba(59,79,200,0.08)', padding: 18 }}>
+    <div style={{
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      background: '#E8E8F2', height: '100%', padding: '24px 24px 0', boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{
+        maxWidth: 1200, width: '100%', margin: '0 auto', borderRadius: 20,
+        boxShadow: '0 4px 24px rgba(60,60,90,0.14)', overflow: 'hidden', flexShrink: 0,
+        background: COLORS.card, display: 'flex', flexDirection: 'column',
+      }}>
+        <Banner />
+        <div style={{ background: COLORS.bg, padding: 20 }}>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+        <div style={{ flex: 1, minWidth: 0, background: COLORS.card, borderRadius: 20, boxShadow: '0 2px 14px rgba(59,79,200,0.08)', padding: 18 }}>
 
         {/* ================= GRAPH ================= */}
         <div style={{ background: 'linear-gradient(135deg, #EFEFF9, #F7F7FC)', borderRadius: 16, height: 400, position: 'relative', overflow: 'hidden' }} ref={svgOuterRef}>
           <svg viewBox={`0 0 ${BASE_W} ${BASE_H}`} width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block', cursor: panning ? 'grabbing' : 'grab' }} onPointerDown={onBackgroundPointerDown}>
-            {/* axes */}
+            {/* axes + tick marks -- tick spacing is recomputed from the current visible range every
+                render (via niceStep), so it auto-adjusts as the camera zooms in/out instead of
+                staying at a fixed world-unit interval that would go from crowded to sparse. */}
             {(() => {
               const [xMin, xMax] = visibleXRange;
               const [yMin, yMax] = visibleYRange;
@@ -572,10 +674,26 @@ export default function SecantTangent() {
               if (yMin <= 0 && yMax >= 0) {
                 const pLeft = worldToPx(xMin, 0), pRight = worldToPx(xMax, 0);
                 axisLines.push(<line key="xaxis" x1={pLeft.sx} y1={pLeft.sy} x2={pRight.sx} y2={pRight.sy} stroke="#C4C4DC" strokeWidth="1.3" />);
+                const stepX = niceStep(xMax - xMin, 8);
+                const startX = Math.ceil(xMin / stepX) * stepX;
+                for (let tx = startX; tx <= xMax + stepX * 1e-6; tx += stepX) {
+                  if (Math.abs(tx) < stepX * 1e-6) continue; // origin marked by the axes crossing, not a tick
+                  const p = worldToPx(tx, 0);
+                  axisLines.push(<line key={`xt${tx}`} x1={p.sx} y1={p.sy - 4} x2={p.sx} y2={p.sy + 4} stroke="#C4C4DC" strokeWidth="1.2" />);
+                  axisLines.push(<text key={`xtl${tx}`} x={p.sx} y={p.sy + 15} fontSize="9.5" fill="#9A9AB5" textAnchor="middle">{formatTick(tx, stepX)}</text>);
+                }
               }
               if (xMin <= 0 && xMax >= 0) {
                 const pTop = worldToPx(0, yMax), pBot = worldToPx(0, yMin);
                 axisLines.push(<line key="yaxis" x1={pTop.sx} y1={pTop.sy} x2={pBot.sx} y2={pBot.sy} stroke="#C4C4DC" strokeWidth="1.3" />);
+                const stepY = niceStep(yMax - yMin, 6);
+                const startY = Math.ceil(yMin / stepY) * stepY;
+                for (let ty = startY; ty <= yMax + stepY * 1e-6; ty += stepY) {
+                  if (Math.abs(ty) < stepY * 1e-6) continue;
+                  const p = worldToPx(0, ty);
+                  axisLines.push(<line key={`yt${ty}`} x1={p.sx - 4} y1={p.sy} x2={p.sx + 4} y2={p.sy} stroke="#C4C4DC" strokeWidth="1.2" />);
+                  axisLines.push(<text key={`ytl${ty}`} x={p.sx - 7} y={p.sy + 3} fontSize="9.5" fill="#9A9AB5" textAnchor="end">{formatTick(ty, stepY)}</text>);
+                }
               }
               return axisLines;
             })()}
@@ -597,28 +715,28 @@ export default function SecantTangent() {
             <line x1={secantLine.x1} y1={secantLine.y1} x2={secantLine.x2} y2={secantLine.y2} stroke={COLORS.secant} strokeWidth="2.6" />
 
             {/* tangent line */}
-            {tangentLine && (
-              <line
-                x1={tangentLine.x1} y1={tangentLine.y1} x2={tangentLine.x2} y2={tangentLine.y2}
-                stroke={COLORS.amber} strokeWidth="2.2"
-                style={{ opacity: tangentSlide ? 1 : 0, transition: 'opacity 960ms cubic-bezier(0.4,0,0.2,1)' }}
-              />
-            )}
+            <line
+              x1={tangentLine.x1} y1={tangentLine.y1} x2={tangentLine.x2} y2={tangentLine.y2}
+              stroke={COLORS.amber} strokeWidth="2.2"
+              style={{ opacity: tangentSlide ? 1 : 0, transition: 'opacity 960ms cubic-bezier(0.4,0,0.2,1)' }}
+            />
 
-            {/* rise & run overlay */}
-            {riseRunVisible && (() => {
+            {/* rise & run overlay -- always mounted (not gated on riseRunVisible) for the same
+                reason as the tangent line above: an element that mounts/unmounts with the render
+                that flips its own opacity never gets to animate that flip. */}
+            {(() => {
               const SIZE = 8;
               const dxSign = pAH.sx >= pCorner.sx ? 1 : -1;
               const dySign = pA.sy >= pCorner.sy ? 1 : -1;
               const rectX = dxSign > 0 ? pCorner.sx : pCorner.sx - SIZE;
               const rectY = dySign > 0 ? pCorner.sy : pCorner.sy - SIZE;
               return (
-                <g>
+                <g style={{ opacity: riseRunVisible ? 1 : 0, transition: 'opacity 960ms cubic-bezier(0.4,0,0.2,1)' }}>
                   <line x1={pCorner.sx} y1={pCorner.sy} x2={pAH.sx} y2={pAH.sy} stroke={COLORS.green} strokeWidth="1.6" />
                   <line x1={pCorner.sx} y1={pCorner.sy} x2={pA.sx} y2={pA.sy} stroke={COLORS.green} strokeWidth="1.6" />
                   <rect x={rectX} y={rectY} width={SIZE} height={SIZE} fill="none" stroke={COLORS.green} strokeWidth="1.2" />
-                  <text x={(pCorner.sx + pAH.sx) / 2} y={pCorner.sy + (dySign > 0 ? -8 : 16)} fontSize="12.5" fill={COLORS.green} fontStyle="italic" textAnchor="middle">{deltaLabel}</text>
-                  <text x={pCorner.sx + (dxSign > 0 ? -8 : 8)} y={(pCorner.sy + pA.sy) / 2} fontSize="12.5" fill={COLORS.green} fontStyle="italic" textAnchor={dxSign > 0 ? 'end' : 'start'}>f({pointLabel}) − f(a)</text>
+                  <text x={(pCorner.sx + pAH.sx) / 2} y={pCorner.sy + (dySign > 0 ? -8 : 16)} fontSize="12.5" fill={COLORS.green} fontStyle="italic" textAnchor="middle"><FadeTspan value={deltaLabel} /></text>
+                  <text x={pCorner.sx + (dxSign > 0 ? -8 : 8)} y={(pCorner.sy + pA.sy) / 2} fontSize="12.5" fill={COLORS.green} fontStyle="italic" textAnchor={dxSign > 0 ? 'end' : 'start'}>f(<FadeTspan value={pointLabel} />) − f(a)</text>
                 </g>
               );
             })()}
@@ -631,9 +749,9 @@ export default function SecantTangent() {
             <circle
               cx={pAH.sx} cy={pAH.sy} r="9" fill="white" stroke={COLORS.accent2} strokeWidth="2.5"
               style={{ cursor: 'grab' }}
-              onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); stopPlay(); setDragging(true); }}
+              onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); stopPlay(); setManualTrailOn(true); setDragging(true); }}
             />
-            <text x={pAH.sx + 10} y={pAH.sy - 10} fontSize="14" fill={COLORS.secant} fontStyle="italic">{pointLabel}</text>
+            <text x={pAH.sx + 10} y={pAH.sy - 10} fontSize="14" fill={COLORS.secant} fontStyle="italic"><FadeTspan value={pointLabel} /></text>
           </svg>
 
           <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -643,12 +761,24 @@ export default function SecantTangent() {
           </div>
         </div>
 
-        {/* ================= f(x) BANNER ================= */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, paddingBottom: 14, borderBottom: `1px solid ${COLORS.border}`, flexWrap: 'wrap' }}>
-          <div style={{ display: 'inline-flex', border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: 'hidden', fontSize: 12.5, flex: 1, minWidth: 160 }}>
-            <div style={{ background: COLORS.bg, padding: '6px 10px', color: COLORS.muted, fontWeight: 600, fontStyle: 'italic', whiteSpace: 'nowrap' }}>f(x) =</div>
+        {/* ================= f(x) BANNER =================
+            Matches the Riemann Sum Explorer's Function control exactly (see
+            .claude/rules/applets.md's "Function input pill" convention) -- a light-blue "f(x) ="
+            prefix seamed directly into a white input (no gap/border between them, rounded only on
+            the outer corners), with an uppercase "Function" label above it, rather than this
+            applet's own earlier single-tone pill. */}
+        <div style={{ marginTop: 14, paddingBottom: 14, borderBottom: `1px solid ${COLORS.border}` }}>
+          <div style={{ fontSize: 11, letterSpacing: 1, color: COLORS.eyebrow, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8 }}>Function</div>
+          <div style={{ display: 'flex', alignItems: 'stretch', width: '100%' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', padding: '0 14px',
+              background: '#EFEFFA', border: `1px solid ${COLORS.border}`, borderRight: 'none',
+              borderRadius: '20px 0 0 20px', color: COLORS.accent, fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap',
+            }}>
+              f(x) =
+            </div>
             <input
-              style={{ border: 'none', padding: '6px 10px', width: '100%', fontSize: 12.5, fontFamily: 'inherit', outline: 'none' }}
+              style={{ width: '100%', boxSizing: 'border-box', background: '#FFFFFF', border: `1px solid ${COLORS.border}`, borderRadius: '0 20px 20px 0', padding: '10px 16px', color: COLORS.text, fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
               value={fnInputText}
               onChange={(e) => setFnInputText(e.target.value)}
               onBlur={() => {
@@ -660,10 +790,13 @@ export default function SecantTangent() {
               onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
             />
           </div>
-          <div style={{ display: 'flex', gap: 6, flexShrink: 0, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
             {PRESET_ORDER.map(k => (
               <button key={k} onClick={() => { setFunctionKey(k); setFnInputText(PRESETS[k].expr); setCustomError(null); }}
-                style={{ ...pillStyle, ...(functionKey === k ? pillActiveStyle : {}) }}>{PRESETS[k].label}</button>
+                style={{
+                  background: functionKey === k ? COLORS.accent : '#FFFFFF', color: functionKey === k ? '#FFFFFF' : COLORS.muted,
+                  border: `1px solid ${COLORS.border}`, borderRadius: 20, padding: '5px 12px', fontSize: 12,
+                }}>{PRESETS[k].label}</button>
             ))}
           </div>
         </div>
@@ -671,9 +804,9 @@ export default function SecantTangent() {
 
         {/* ================= READOUT ROW (Option A) ================= */}
         <div style={{ display: 'flex', gap: 10, marginTop: 14, alignItems: 'stretch' }}>
-          <ReadoutCard eyebrow={isXA ? 'x − a' : 'h'} math value={displayNum(hVal, 3)} />
+          <ReadoutCard eyebrow={<Fade alt={isXA ? 'h' : 'x − a'}>{isXA ? 'x − a' : 'h'}</Fade>} math value={displayNum(hVal, 3)} />
           <ReadoutCard eyebrow="a" math value={`(${displayNum(aVal, 2)}, ${displayNum(fa, 2)})`} small />
-          <ReadoutCard eyebrow={pointLabel} math value={`(${displayNum(xVal, 2)}, ${displayNum(fah, 2)})`} small color={COLORS.secant} />
+          <ReadoutCard eyebrow={<Fade alt={isXA ? 'a+h' : 'x'}>{pointLabel}</Fade>} math value={`(${displayNum(xVal, 2)}, ${displayNum(fah, 2)})`} small color={COLORS.secant} />
           <div style={{
             background: COLORS.bg, borderRadius: 14, padding: '10px 14px', textAlign: 'center', display: 'flex', flexDirection: 'column',
             flex: tangentSlide ? 1.6 : 2, minWidth: 0, transition: 'flex 960ms cubic-bezier(0.4,0,0.2,1)'
@@ -681,7 +814,7 @@ export default function SecantTangent() {
             <div style={{ fontSize: 15, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4 }}>Difference Quotient</div>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', fontSize: 13.5, flexWrap: 'wrap', gap: 2, color: COLORS.accent, fontWeight: 700 }}>
-                <Frac num={`f(${pointLabel}) − f(a)`} den={dqDenomLabel} />
+                <Frac num={<>f(<Fade alt={isXA ? 'a+h' : 'x'}>{pointLabel}</Fade>) − f(a)</>} den={<Fade alt={isXA ? 'h' : 'x − a'}>{dqDenomLabel}</Fade>} />
                 <span>=</span>
                 <span>{displayNum(dq, 3)}</span>
               </div>
@@ -700,105 +833,189 @@ export default function SecantTangent() {
           </div>
         </div>
 
-        {/* ================= SLIDER / PLAY / INPUTS ================= */}
-        <div style={{ display: 'flex', gap: 20, marginTop: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: 220 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4, fontStyle: 'italic' }}>{isXA ? 'x → a' : 'h → 0'}</div>
+        {/* ================= SLIDER / PLAY / SHOW SECANT LINES ================= */}
+        <div style={{ display: 'flex', gap: 14, marginTop: 16, alignItems: 'center' }}>
+          <button onClick={() => playing ? stopPlay() : startPlay()} style={playBtnStyle}>{playing ? '⏸' : '▶'}</button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4, fontStyle: 'italic' }}><Fade alt={isXA ? 'h → 0' : 'x → a'}>{isXA ? 'x → a' : 'h → 0'}</Fade></div>
             <input type="range" min="0" max="1" step="0.001" value={sliderPos} onChange={onSliderChange} style={{ width: '100%' }} />
           </div>
-          <button onClick={() => playing ? stopPlay() : startPlay()} style={playBtnStyle}>{playing ? '⏸' : '▶'}</button>
           <button
             onClick={() => {
               if (playing) { setEchoes([]); return; } // Play still owns the trail — clear only, stays in "Clear" mode
               if (manualTrailOn) { setEchoes([]); setManualTrailOn(false); }
               else { setManualTrailOn(true); }
             }}
-            style={{ ...pillStyle, ...(manualTrailOn ? { background: COLORS.secant, borderColor: COLORS.secant, color: 'white' } : {}) }}
+            style={{ ...pillStyle, flexShrink: 0, ...(manualTrailOn ? { background: COLORS.secant, borderColor: COLORS.secant, color: 'white' } : {}) }}
             title={manualTrailOn ? 'Clear the accumulated secant lines' : 'Leave a fading trail of secant lines while dragging or sliding'}
           >
             {manualTrailOn ? 'Clear Secant Lines' : 'Show Secant Lines'}
           </button>
-          <FusedInput prefix="a =" value={aText} onChange={setAText} onCommit={() => commitA(parseFloat(aText))} />
-          <FusedInput prefix={isXA ? 'x − a =' : 'h ='} value={hText} onChange={setHText} onCommit={() => { stopPlay(); commitH(parseFloat(hText)); }} />
-          <button
-            onClick={() => setNotation(n => n === 'ah' ? 'xa' : 'ah')}
-            title={isXA ? 'Switch to a, a+h notation' : 'Switch to x, a notation'}
-            style={{ ...pillStyle, display: 'flex', alignItems: 'center', gap: 5, fontStyle: 'italic' }}
-          >
-            a, a+h <span style={{ fontStyle: 'normal', color: COLORS.accent }}>⇄</span> x, a
-          </button>
+        </div>
+
+        {/* ================= INPUTS (left) + OVERLAY TOGGLES (right-aligned, same row) ================= */}
+        <div style={{ display: 'flex', gap: 10, marginTop: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <FusedInput prefix="a =" value={aText} onChange={setAText} onCommit={() => commitA(parseFloat(aText))} />
+            <FusedInput prefix={<Fade alt={isXA ? 'h =' : 'x − a ='}>{isXA ? 'x − a =' : 'h ='}</Fade>} value={hText} onChange={setHText} onCommit={() => { stopPlay(); commitH(parseFloat(hText)); }} />
+            <button
+              onClick={() => setNotation(n => n === 'ah' ? 'xa' : 'ah')}
+              title={isXA ? 'Switch to a, a+h notation' : 'Switch to x, a notation'}
+              style={{ ...pillStyle, display: 'flex', alignItems: 'center', gap: 5, fontStyle: 'italic' }}
+            >
+              a, a+h <span style={{ fontStyle: 'normal', color: COLORS.accent }}>⇄</span> x, a
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <ToggleBtn label="Rise & Run" on={showRiseRun} color={COLORS.green} onClick={() => setShowRiseRun(v => !v)} />
+            <ToggleBtn label="Tangent" on={showTangent} color={COLORS.amber} onClick={() => setShowTangent(v => !v)} />
+          </div>
         </div>
         {aWarning && <div style={{ color: COLORS.warning, fontSize: 12, marginTop: 6 }}>{aWarning}</div>}
-
-        {/* ================= TOGGLE ROW ================= */}
-        <div style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
-          <ToggleBtn label="Rise & Run" on={showRiseRun} color={COLORS.green} onClick={() => setShowRiseRun(v => !v)} />
-          <ToggleBtn label="Tangent" on={showTangent} color={COLORS.amber} onClick={() => setShowTangent(v => !v)} />
-          <ToggleBtn label="Table" on={showTable} color={COLORS.accent} onClick={() => setShowTable(v => !v)} />
         </div>
 
-        {/* ================= TABLE ================= */}
-        {showTable && (
-          <div style={{ marginTop: 14, background: COLORS.bg, borderRadius: 14, padding: '12px 16px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
-              <thead>
-                <tr>
-                  <th style={thStyleMath}>{isXA ? 'x − a' : 'h'}</th>
-                  <th style={thStyleMath}>{pointLabel}</th>
-                  <th style={thStyleWord}>Difference Quotient</th>
-                </tr>
-              </thead>
-              <tbody>
-                {buildTable(activeFn.domain, aVal, hVal, activeFn.fn).map(row => (
-                  <tr key={row.key} style={row.isLast ? { color: COLORS.accent, fontWeight: 700 } : {}}>
-                    <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.h, 3)}</td>
-                    <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.xVal, 3)}</td>
-                    <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.dq, 3)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* ================= SIDE COLUMN: TABLE + FORMULA & DERIVATION =================
+            Off to the side rather than stacked into the main column's own flow. Fixed width at all
+            times (doesn't grow when a panel opens) -- Table/Derivation's own content is kept compact
+            enough to fit this width, rather than the column resizing itself to fit the content.
+            Both panels' bodies are always mounted (not conditionally rendered) so opening/closing can
+            animate via max-height + opacity -- matching the Tangent toggle's own fade+resize timing
+            (960ms cubic-bezier(0.4,0,0.2,1), same curve as the readout row's f'(a) card) instead of
+            the instant snap a conditional `{open && (...)}` mount would give. */}
+        <div style={{ width: 260, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: COLORS.card, borderRadius: 16, boxShadow: '0 2px 14px rgba(59,79,200,0.08)', overflow: 'hidden' }}>
+            <div onClick={() => setShowTable(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 14px', fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: 'pointer' }}>
+              <span>{showTable ? '▾' : '▸'} Table</span>
+            </div>
+            <div style={{
+              maxHeight: showTable ? 320 : 0, opacity: showTable ? 1 : 0, overflow: 'hidden',
+              transition: 'max-height 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1)',
+            }}>
+              <div style={{ padding: '0 12px 12px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
+                  <thead>
+                    <tr>
+                      <th style={thStyleMath}><Fade alt={isXA ? 'h' : 'x − a'}>{isXA ? 'x − a' : 'h'}</Fade></th>
+                      <th style={thStyleMath}><Fade alt={isXA ? 'a+h' : 'x'}>{pointLabel}</Fade></th>
+                      <th style={thStyleWord}>Diff. Quotient</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {buildTable(activeFn.domain, aVal, hVal, activeFn.fn).map(row => (
+                      <tr key={row.key} style={row.isLast ? { color: COLORS.accent, fontWeight: 700 } : {}}>
+                        <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.h, 3)}</td>
+                        <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.xVal, 3)}</td>
+                        <td style={{ ...tdStyle, borderBottom: row.isLast ? 'none' : `1px solid ${COLORS.border}` }}>{displayNum(row.dq, 3)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* ================= FORMULA & DERIVATION PANEL ================= */}
-        <div style={{ borderTop: `1px solid ${COLORS.border}`, marginTop: 14, paddingTop: 12 }}>
-          <div onClick={() => setDerivOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: 'pointer' }}>
-            <span>{derivOpen ? '▾' : '▸'} Formula & Derivation</span>
-          </div>
-          {derivOpen && (
-            <div style={{ marginTop: 12, fontSize: 14, color: COLORS.text, lineHeight: 2.4, background: COLORS.bg, borderRadius: 12, padding: '18px 20px' }}>
-              <div style={{ marginBottom: 14 }}>
-                <div style={eyebrowLabel}>{isXA ? 'Slope of the secant line' : 'Slope of the secant line'}</div>
-                <div style={eqRow}>
-                  <Frac num={`f(${pointLabel}) − f(a)`} den={dqDenomLabel} />
-                  <span>=</span>
-                  <Frac num={`f(${displayNum(xVal, 2)}) − f(${displayNum(aVal, 2)})`} den={displayNum(hVal, 3)} />
-                  <span>=</span>
-                  <span style={{ color: COLORS.secant, fontWeight: 700 }}>{displayNum(dq, 3)}</span>
+          <div style={{ background: COLORS.card, borderRadius: 16, boxShadow: '0 2px 14px rgba(59,79,200,0.08)', overflow: 'hidden' }}>
+            <div onClick={() => setDerivOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 14px', fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: 'pointer' }}>
+              <span>{derivOpen ? '▾' : '▸'} Formula & Derivation</span>
+            </div>
+            <div style={{
+              maxHeight: derivOpen ? 340 : 0, opacity: derivOpen ? 1 : 0, overflow: 'hidden',
+              transition: 'max-height 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1)',
+            }}>
+              <div style={{ padding: '0 12px 12px', fontSize: 12.5, color: COLORS.text, lineHeight: 1.4 }}>
+                <div style={{ marginBottom: 8, background: COLORS.bg, borderRadius: 10, padding: '7px 9px' }}>
+                  <div style={eyebrowLabel}>Slope of the secant line</div>
+                  <div style={eqRow}>
+                    <Frac num={<>f(<Fade alt={isXA ? 'a+h' : 'x'}>{pointLabel}</Fade>) − f(a)</>} den={<Fade alt={isXA ? 'h' : 'x − a'}>{dqDenomLabel}</Fade>} />
+                    <span>=</span>
+                    <span style={{ color: COLORS.secant, fontWeight: 700 }}>{displayNum(dq, 3)}</span>
+                  </div>
                 </div>
-              </div>
-              <div style={{ marginBottom: 14 }}>
-                <div style={eyebrowLabel}>Definition of the derivative</div>
-                <div style={eqRow}>
-                  <span style={{ fontStyle: 'italic' }}>f '(a)</span>
-                  <span>=</span>
-                  <LimStack sub={isXA ? 'x→a' : 'h→0'} />
-                  <Frac num={`f(${pointLabel}) − f(a)`} den={dqDenomLabel} />
+                {/* Definition row: the fraction sits on its own centered line below "f '(a) = lim"
+                    rather than inline with it -- inline, the lim stack + fraction together ran wider
+                    than this column and overflowed past the card's edge. */}
+                <div style={{ marginBottom: 8, background: COLORS.bg, borderRadius: 10, padding: '7px 9px' }}>
+                  <div style={eyebrowLabel}>Definition of the derivative</div>
+                  {/* Back on one line per Kyle's request -- font size dropped to 11 (from the
+                      shared eqRow's 12.5) and wrap disabled just for this row since the earlier
+                      two-line version was specifically to avoid this row overflowing the column;
+                      keeping it on one line only works at this smaller size. */}
+                  <div style={{ ...eqRow, fontSize: 11, flexWrap: 'nowrap', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontStyle: 'italic' }}>f '(a)</span>
+                    <span>=</span>
+                    <LimStack sub={<Fade alt={isXA ? 'h→0' : 'x→a'}>{isXA ? 'x→a' : 'h→0'}</Fade>} />
+                    <Frac num={<>f(<Fade alt={isXA ? 'a+h' : 'x'}>{pointLabel}</Fade>) − f(a)</>} den={<Fade alt={isXA ? 'h' : 'x − a'}>{dqDenomLabel}</Fade>} />
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div style={{ ...eyebrowLabel, fontStyle: 'italic', textTransform: 'none' }}>at a = {displayNum(aVal, 2)}</div>
-                <div style={eqRow}>
-                  <span style={{ fontStyle: 'italic' }}>f '({displayNum(aVal, 2)})</span>
-                  <span>=</span>
-                  <span style={{ color: COLORS.amber, fontWeight: 700 }}>{displayNum(fprime, 3)}</span>
+                <div style={{ background: COLORS.bg, borderRadius: 10, padding: '7px 9px' }}>
+                  <div style={{ ...eyebrowLabel, fontStyle: 'italic', textTransform: 'none' }}>at a = {displayNum(aVal, 2)}</div>
+                  <div style={eqRow}>
+                    <span style={{ fontStyle: 'italic' }}>f '({displayNum(aVal, 2)})</span>
+                    <span>=</span>
+                    <span style={{ color: COLORS.amber, fontWeight: 700 }}>{displayNum(fprime, 3)}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        </div>
+        </div>
         </div>
       </div>
+      <PageCredit />
+    </div>
+  );
+}
+
+function Banner() {
+  return (
+    <div style={{
+      position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', gap: 16, padding: '16px 28px', flexShrink: 0,
+      background: 'linear-gradient(135deg, #3B4FC2, #4A5CD6)',
+    }}>
+      <svg
+        viewBox="0 0 1200 130" preserveAspectRatio="none"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.14, pointerEvents: 'none' }}
+      >
+        <path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" stroke="white" strokeWidth="2.5" fill="none" />
+      </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative', zIndex: 1 }}>
+        <a
+          href="../../../browse.html#/applets"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5, color: 'rgba(255,255,255,0.88)',
+            textDecoration: 'none', fontSize: 12.5, fontWeight: 600, whiteSpace: 'nowrap',
+            padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.12)',
+          }}
+        >
+          ← All Applets
+        </a>
+        <div style={{ width: 1, alignSelf: 'stretch', background: 'rgba(255,255,255,0.22)' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Calculus I · Unit 2
+          </div>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#FFFFFF', letterSpacing: '-0.005em' }}>Secant-to-Tangent Line</h1>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PageCredit() {
+  return (
+    <div style={{
+      marginTop: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 11, padding: '18px 20px 26px', fontSize: 13.5, color: COLORS.eyebrow,
+    }}>
+      <span style={{
+        width: 40, height: 40, borderRadius: '50%', background: '#FFFFFF', border: `1px solid ${COLORS.border}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }
@@ -832,14 +1049,19 @@ function FusedInput({ prefix, value, onChange, onCommit }) {
   );
 }
 
+// Off state keeps a colored border/text (a "ghost" outline of its own color) instead of the
+// neutral gray every other pill uses -- Rise & Run and Tangent are colored controls, and a plain
+// gray resting state made them unreadable as such until clicked. On state fills solid. Both states
+// fade into each other rather than snap (280ms, slightly slower than the notation crossfade's
+// 160ms since this is swapping a whole filled background, not just text).
 function ToggleBtn({ label, on, color, onClick }) {
   return (
     <button onClick={onClick} style={{
       ...pillStyle,
       background: on ? color : COLORS.bg,
-      borderColor: on ? color : COLORS.border,
-      color: on ? 'white' : COLORS.text,
-      transition: 'background 200ms, border-color 200ms, color 200ms',
+      borderColor: color,
+      color: on ? 'white' : color,
+      transition: 'background 280ms ease, color 280ms ease',
     }}>{label}: {on ? 'On' : 'Off'}</button>
   );
 }
@@ -848,8 +1070,8 @@ const zoomBtnStyle = { width: 28, height: 28, borderRadius: '50%', background: '
 const playBtnStyle = { width: 34, height: 34, borderRadius: '50%', background: COLORS.accent, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, border: 'none', cursor: 'pointer' };
 const pillStyle = { borderRadius: 20, padding: '6px 16px', fontSize: 12.5, fontWeight: 600, background: COLORS.bg, borderWidth: 1, borderStyle: 'solid', borderColor: COLORS.border, color: COLORS.text, whiteSpace: 'nowrap', cursor: 'pointer' };
 const pillActiveStyle = { background: COLORS.accent, color: 'white', borderColor: COLORS.accent };
-const thStyleMath = { textAlign: 'left', color: COLORS.eyebrow, fontWeight: 700, fontStyle: 'italic', fontSize: 12, padding: '4px 8px', borderBottom: `1px solid ${COLORS.border}` };
-const thStyleWord = { textAlign: 'left', color: COLORS.eyebrow, fontWeight: 700, textTransform: 'uppercase', fontSize: 10.5, padding: '4px 8px', borderBottom: `1px solid ${COLORS.border}` };
-const tdStyle = { padding: '4px 8px', fontVariantNumeric: 'tabular-nums' };
+const thStyleMath = { textAlign: 'left', color: COLORS.eyebrow, fontWeight: 700, fontStyle: 'italic', fontSize: 11, padding: '3px 4px', borderBottom: `1px solid ${COLORS.border}` };
+const thStyleWord = { textAlign: 'left', color: COLORS.eyebrow, fontWeight: 700, textTransform: 'uppercase', fontSize: 9.5, padding: '3px 4px', borderBottom: `1px solid ${COLORS.border}` };
+const tdStyle = { padding: '3px 4px', fontVariantNumeric: 'tabular-nums' };
 const eyebrowLabel = { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: COLORS.eyebrow, marginBottom: 4 };
-const eqRow = { display: 'flex', alignItems: 'center', fontSize: 15, flexWrap: 'wrap', gap: 2 };
+const eqRow = { display: 'flex', alignItems: 'center', fontSize: 12.5, flexWrap: 'wrap', gap: 2 };

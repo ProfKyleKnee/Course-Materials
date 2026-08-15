@@ -203,6 +203,17 @@ an orphaned tab. Each migrated applet's own "All Applets" banner link (see
 [applets.md](applets.md#header-pattern)) is a second, independent way back to `browse.html#/applets`
 specifically, regardless of where the user actually came from.
 
+`appletCardHTML()` (`js/app.js`) itself renders the Applets-grid/carousel tile as a real `<a
+href="launchUrl">` (not a `<div onclick="launchApplet(...)">`) whenever `launchUrl` is a real URL,
+specifically so right-click gives the browser's native "Open link in new tab/window" — a plain left
+click still navigates same-tab, since that's just what clicking an anchor does by default, so this
+doesn't change the back-button behavior above at all. `launchApplet()` itself is unchanged and still
+used by the other call sites that trigger it programmatically (`openDetail()`'s Applet-type
+redirect). Placeholder (`'#'`/unlinked) applet cards stay a plain `<div>` with no `href` — same
+no-op-on-click behavior as before, just via having nothing to click instead of a guarded handler.
+`.applet-card`'s CSS (`css/styles.css`) carries `display: block; color: inherit; text-decoration:
+none` specifically so the anchor version renders pixel-identical to the old div version.
+
 **Wiring in a new applet's HTML file is not just the `items[]` row.** The applet's own shipped HTML
 must already carry (or be brought up to, as part of the same piece of work) the canonical gradient-
 banner header and page-level `PageCredit` footer described in
@@ -247,12 +258,22 @@ it only ever appears, or the Riemann Sum Explorer's `riemannSum` tileType, which
 the DOM at all times, and each frame recomputes x/y/width/height for however many of them are "in
 use" as n eases from 4 up to 50 (real f(x)=x²/4+1 Left-endpoint geometry, matching the applet's own
 default preset/technique) and hides the rest via inline `display:none`, rather than rewriting one
-element's `d` the way `tsTileSVG`/`csTileSVG` do) needs its own `tileType` — a dedicated
+element's `d` the way `tsTileSVG`/`csTileSVG` do, or the Secant-to-Tangent Line Explorer's
+`secantTangent` tileType, which rewrites real endpoint geometry every frame (not a `d` attribute,
+not opacity) — a dashed tangent line sits fixed at the curve's vertex as an always-visible "target"
+(bold stroke/high opacity so it reads as the thing being converged on, not a faint guide, and built
+symmetric in length on both sides of the vertex specifically because it's a fixed reference line and
+asymmetry there would look like a mistake), while a solid secant line's endpoints and its own moving
+point get rewritten every frame using the same real secant-slope math as the applet itself, sliding
+toward the vertex as h eases toward 0 — the secant is deliberately *not* held to the tangent's
+left/right symmetry, since its own slope naturally determines how far each side survives before the
+tile's edge clips it) needs its own `tileType` — a dedicated
 `<type>TileSVG()` render function plus a
 `<prefix>StartSpin()`/`<prefix>StopSpin()` rAF pair wired to `.applet-card`'s `mouseover`/`mouseout`
 (see `dpTileSVG()`/`dpStartSpin()`/`dpStopSpin()`, `prTileSVG()`/`prStartSpin()`/`prStopSpin()`,
 `tsTileSVG()`/`tsStartSpin()`/`tsStopSpin()`, `csTileSVG()`/`csStartSpin()`/`csStopSpin()`,
-`nmTileSVG()`/`nmStartSpin()`/`nmStopSpin()`, or `rsTileSVG()`/`rsStartSpin()`/`rsStopSpin()` in
+`nmTileSVG()`/`nmStartSpin()`/`nmStopSpin()`, `rsTileSVG()`/`rsStartSpin()`/`rsStopSpin()`, or
+`stTileSVG()`/`stStartSpin()`/`stStopSpin()` in
 `js/app.js` for the pattern), registered in
 `tileSVG()`'s dispatch and given a matching CSS comment block in `css/styles.css`. Don't force a
 non-conforming curve through the generic tile just to avoid writing a new `tileType`.

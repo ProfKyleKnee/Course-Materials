@@ -279,6 +279,31 @@ alternative and the actual durable source of truth (an earlier per-applet `spec.
 been saved into a Claude Skill file instead — it hadn't been; don't trust that claim if you encounter
 it).
 
+## Function input pill
+Any applet that takes a student-typed function (`f(x) =`, `r(θ) =`, etc.) should use the same
+control the Riemann Sum Explorer introduced, rather than inventing a one-off style per applet. Hand-
+match these exact values in the applet's own JSX (same reasoning as the header pattern above — no
+shared component pipeline across independently-bundled applets):
+- An uppercase eyebrow label ("Function") directly above the control: `fontSize: 11, letterSpacing:
+  1, color: COLORS.eyebrow, textTransform: 'uppercase', fontWeight: 600, marginBottom: 8`.
+- The control itself is two elements seamed into one pill (`display: flex, alignItems: 'stretch'`
+  on their shared wrapper), not a single box: a light-blue, non-editable `f(x) =` prefix
+  (`background: '#EFEFFA'`, `border: 1px solid var(--border-equivalent)`, `borderRight: 'none'`,
+  `borderRadius: '20px 0 0 20px'`, `color: COLORS.accent`, `padding: '0 14px'`) directly against a
+  white editable input (`background: '#FFFFFF'`, `border: 1px solid` the same border color,
+  `borderRadius: '0 20px 20px 0'`, `padding: '10px 16px'`) — both at `fontSize: 14`, `fontWeight:
+  600` on the prefix only.
+- Preset buttons sit in their own row below (`marginTop: 10`, `gap: 6`), not beside the input:
+  `border: 1px solid` the border color, `borderRadius: 20`, `padding: '5px 12px'`, `fontSize: 12`,
+  active state `background: COLORS.accent, color: '#FFFFFF'`, inactive `background: '#FFFFFF', color:
+  COLORS.muted`.
+Retrofitted into the Secant-to-Tangent Line Explorer on the `SecantToTangent-Wiring` branch (see
+that applet's own spec_4.md); Curve Sketching Studio, Taylor Series & Remainder Explorer, and Polar
+Graphing & Integration all still use their own earlier one-off function-input styling as of this
+branch and haven't been retrofitted yet — do that the next time real work touches one of them,
+rather than leaving it mismatched indefinitely, but it wasn't done proactively here since none of
+them were otherwise being touched on this branch.
+
 ## Full-viewport layout contract
 Also governed by `applet-header.css` (see its own comments for the full reasoning): `html`/`body`
 become a fixed-height flex column so `#root` gets exactly the viewport's height (there's no separate

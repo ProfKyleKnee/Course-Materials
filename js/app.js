@@ -361,6 +361,7 @@
     if (a.tileType === 'curveSketch') return csTileSVG();
     if (a.tileType === 'newtonTangent') return nmTileSVG();
     if (a.tileType === 'riemannSum') return rsTileSVG();
+    if (a.tileType === 'secantTangent') return stTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -1358,18 +1359,132 @@
     if (svg) rsStopSpin(svg);
   });
 
+  // ---------- Secant-to-Tangent Line Explorer card tile (tileType: 'secantTangent' in js/data.js) ----------
+  // Mirrors the applet's own core move rather than the generic curve+dot tile: a bold, dashed
+  // .st-tan line is the always-visible tangent "target" (same convention as Taylor Series'
+  // .ts-target) sitting at the parabola's vertex -- a horizontal tangent, the clearest and most
+  // recognizable case -- and the solid .st-sec secant line rotates into alignment with it as h
+  // shrinks, with .st-dotQ sliding along the curve toward the fixed point .st-dotP at that vertex.
+  // Real f(x)=0.4x^2 geometry, not decoration. stStartSpin/stUpdate rewrite .st-sec's endpoints and
+  // .st-dotQ's position every frame (a genuine geometry change, like rsUpdateRects, not an opacity
+  // fade), easing h from ST_H_START down to ST_H_END on a log-ish curve (matching the real
+  // applet's log-scaled slider), holding briefly once secant and tangent are visually merged, then
+  // snapping back to the "before" picture and repeating. At rest the tile shows that "before"
+  // picture (h at its largest, secant clearly separated from the tangent target).
+  var ST_A = 0, ST_XMIN = -2.4, ST_XMAX = 2.4, ST_PAD = 8;
+  var ST_SCALE_X = (100 - 2 * ST_PAD) / (ST_XMAX - ST_XMIN);
+  var ST_YSPAN = 2.6, ST_SCALE_Y = (100 - 2 * ST_PAD) / ST_YSPAN;
+  var ST_H_START = 1.6, ST_H_END = 0.05;
+  function stF(x) { return 0.4 * x * x; }
+  function stPx(x) { return ST_PAD + (x - ST_XMIN) * ST_SCALE_X; }
+  function stPy(y) { return (100 - ST_PAD) - y * ST_SCALE_Y; }
+  var ST_FA = stF(ST_A);
+  var ST_FPRIME = 0.8 * ST_A;
+  // Tangent and secant share this x-range, and it's built symmetric around the vertex (ST_A) --
+  // not just "a little past Q's span" -- specifically so the horizontal tangent line has equal
+  // length on both sides of the vertex, per Kyle's request. The secant isn't held to that same
+  // symmetry: since it has real slope, extending it across this same wide, symmetric range still
+  // lets it behave asymmetrically on its own (its left extension dips away from the curve and gets
+  // clipped by the viewBox sooner at large h, growing longer as h shrinks and the line flattens;
+  // its right extension follows the curve upward and clips against the top edge instead) -- that
+  // asymmetry is expected and fine, only the tangent's own length needs to match on both sides.
+  var ST_HALF_SPAN = ST_H_START + 0.6;
+  var ST_TX1 = ST_A - ST_HALF_SPAN;
+  var ST_TX2 = ST_A + ST_HALF_SPAN;
+  function stLineY(x0, y0, slope, x) { return y0 + slope * (x - x0); }
+  var ST_CURVE_D = (function () {
+    let d = '';
+    const steps = 32;
+    for (let i = 0; i <= steps; i++) {
+      const x = ST_XMIN + (ST_XMAX - ST_XMIN) * i / steps;
+      d += (i === 0 ? 'M' : 'L') + stPx(x).toFixed(1) + ',' + stPy(stF(x)).toFixed(1) + ' ';
+    }
+    return d.trim();
+  })();
+  var ST_P = { x: stPx(ST_A), y: stPy(ST_FA) };
+  var ST_T1 = { x: stPx(ST_TX1), y: stPy(stLineY(ST_A, ST_FA, ST_FPRIME, ST_TX1)) };
+  var ST_T2 = { x: stPx(ST_TX2), y: stPy(stLineY(ST_A, ST_FA, ST_FPRIME, ST_TX2)) };
+  function stSecantGeom(h) {
+    const xq = ST_A + h, fq = stF(xq), slope = (fq - ST_FA) / h;
+    return {
+      S1: { x: stPx(ST_TX1), y: stPy(stLineY(ST_A, ST_FA, slope, ST_TX1)) },
+      S2: { x: stPx(ST_TX2), y: stPy(stLineY(ST_A, ST_FA, slope, ST_TX2)) },
+      Q: { x: stPx(xq), y: stPy(fq) },
+    };
+  }
+  function stTileSVG() {
+    const g = stSecantGeom(ST_H_START);
+    return `<svg class="st-tile" viewBox="0 0 100 100">
+      <path class="curve-path" d="${ST_CURVE_D}"/>
+      <line class="st-tan" x1="${ST_T1.x.toFixed(1)}" y1="${ST_T1.y.toFixed(1)}" x2="${ST_T2.x.toFixed(1)}" y2="${ST_T2.y.toFixed(1)}"/>
+      <line class="st-sec" x1="${g.S1.x.toFixed(1)}" y1="${g.S1.y.toFixed(1)}" x2="${g.S2.x.toFixed(1)}" y2="${g.S2.y.toFixed(1)}"/>
+      <circle class="st-dotP" cx="${ST_P.x.toFixed(1)}" cy="${ST_P.y.toFixed(1)}" r="3"/>
+      <circle class="st-dotQ" cx="${g.Q.x.toFixed(1)}" cy="${g.Q.y.toFixed(1)}" r="3"/>
+    </svg>`;
+  }
+  function stUpdate(svg, h) {
+    const g = stSecantGeom(h);
+    const sec = svg.querySelector('.st-sec');
+    sec.setAttribute('x1', g.S1.x.toFixed(1)); sec.setAttribute('y1', g.S1.y.toFixed(1));
+    sec.setAttribute('x2', g.S2.x.toFixed(1)); sec.setAttribute('y2', g.S2.y.toFixed(1));
+    const dotQ = svg.querySelector('.st-dotQ');
+    dotQ.setAttribute('cx', g.Q.x.toFixed(1)); dotQ.setAttribute('cy', g.Q.y.toFixed(1));
+  }
+  var ST_SWEEP_MS = 2200, ST_HOLD_MS = 550, ST_LOOP_MS = ST_SWEEP_MS + ST_HOLD_MS;
+  function stEase(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t); }
+  var stSpins = new Map();
+  function stStartSpin(svg) {
+    if (stSpins.has(svg)) return;
+    const start = performance.now();
+    function frame(now) {
+      const t = (now - start) % ST_LOOP_MS;
+      const h = t <= ST_SWEEP_MS
+        ? ST_H_START * Math.pow(ST_H_END / ST_H_START, stEase(t / ST_SWEEP_MS))
+        : ST_H_END;
+      stUpdate(svg, h);
+      stSpins.set(svg, requestAnimationFrame(frame));
+    }
+    stSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function stStopSpin(svg) {
+    const id = stSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    stSpins.delete(svg);
+    stUpdate(svg, ST_H_START);
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.st-tile');
+    if (svg) stStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.st-tile');
+    if (svg) stStopSpin(svg);
+  });
+
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
   // courseCarouselsHTML calls these with no second argument, so top-level pages get no accent bar ----------
+  // v20: a real <a href> (not a <div onclick>) whenever the applet has a real launchUrl, so
+  // right-click gives the browser's native "Open link in new tab/window" — a plain click still
+  // navigates in the same tab exactly as launchApplet() always did, since that's just what
+  // clicking an <a href> does by default. Placeholder ('#'/empty) applets stay a plain <div> with
+  // no href at all, matching the existing no-op convention for unlinked cards elsewhere in the site
+  // rather than giving them a dead link to right-click.
   function appletCardHTML(a, unitColor) {
     const styleAttr = unitColor ? ` style="--unit-color:${unitColor};"` : '';
-    return `<div class="applet-card"${styleAttr} onclick="launchApplet('${a.id}')">
+    const isPlaceholder = !a.launchUrl || a.launchUrl === '#';
+    const tag = isPlaceholder ? 'div' : 'a';
+    const hrefAttr = isPlaceholder ? '' : ` href="${a.launchUrl}"`;
+    return `<${tag} class="applet-card"${styleAttr}${hrefAttr}>
       <div class="ac-eyebrow">Applet</div>
       <div class="ac-title">${a.title}</div>
       <div class="ac-body">
         <div class="ac-tile">${tileSVG(a)}</div>
         <div class="ac-desc">${a.desc}<span class="course-tag">${a.course}</span>${recentBadgeHTML(a.updated)}</div>
       </div>
-    </div>`;
+    </${tag}>`;
   }
 
   function cardHTML(i, unitColor) {

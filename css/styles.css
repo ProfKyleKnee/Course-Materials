@@ -134,6 +134,7 @@
 
   .applet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
   .applet-card {
+    display: block; color: inherit; text-decoration: none;
     background: var(--card); border-radius: 16px; padding: 14px; cursor: pointer;
     box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s;
     border: 1px solid transparent; border-top: 4px solid var(--unit-color, transparent);
@@ -255,6 +256,23 @@
      *count* that's animating), hiding whichever of the up-to-50 pooled rects aren't in use via
      inline display:none. */
   .rs-rect { fill: var(--accent); fill-opacity: 0.35; stroke: var(--accent); stroke-width: 0.6; }
+
+  /* ---------- Secant-to-Tangent Line Explorer card tile (tileType: 'secantTangent' in
+     js/data.js) ----------
+     .st-tan (the tangent line) is the always-visible dashed "target" the solid .st-sec secant
+     line rotates into, same convention as Taylor Series' .ts-target. Unlike that tile though,
+     what's animating here is real endpoint geometry, not an opacity fade or a `d` lerp — js/app.js's
+     stStartSpin/stUpdate rewrite .st-sec's x1/y1/x2/y2 and .st-dotQ's cx/cy every frame while
+     hovered, using the same real secant-slope math as the applet itself, since Q has to travel
+     along the curve toward a fixed P rather than around one hardcoded landing point the way the
+     generic tile's ring markers assume. Sits at the parabola's vertex (a horizontal tangent) rather
+     than an arbitrary point, and is drawn bold (heavier stroke, higher opacity than the original
+     1.6/0.7) so it reads clearly as the target the secant is converging toward, not a faint guide
+     line. */
+  .st-tan { fill: none; stroke: #C98F3E; stroke-width: 2.6; stroke-dasharray: 4,3; opacity: 0.9; }
+  .st-sec { fill: none; stroke: #C1556B; stroke-width: 2.4; }
+  .st-dotP { fill: var(--accent); }
+  .st-dotQ { fill: #C1556B; }
 
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
