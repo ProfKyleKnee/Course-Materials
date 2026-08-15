@@ -81,7 +81,26 @@ height, and a second cross-listing of the same shipped applet into Calculus II (
 same `launchUrl`, no duplicate build — see `.claude/rules/wiring.md`'s new "Cross-listing an applet
 across two courses" section) with the banner kicker updated to name both courses/units it's filed
 under, separated by a dedicated divider `<span>` for visual breathing room — added on the
-`ReimannSums-Wiring` branch (not yet merged to `main`).
+`ReimannSums-Wiring` branch (not yet merged to `main`), plus the Calc 1 Secant-to-Tangent Line
+Explorer applet migrated to that same canonical header/footer pattern and wired into `js/data.js`
+for the first time (Unit 2, section 3.1), plus a dedicated `secantTangent` card-tile hover animation
+(a dashed tangent line, sitting bold and at the parabola's own vertex so it's symmetric in length on
+both sides, that a real solid secant line — genuine secant-slope math on f(x)=0.4x², not decoration
+— rotates into as h eases toward 0; see `.claude/rules/wiring.md`), a notation-toggle (`a, a+h ⇄ x,
+a`) crossfade that surfaced a genuine layout-jump bug (a faded label's wrapper had no fixed size, so
+it snapped to the new text's width the instant state flipped even though the text itself was fading
+— fixed by reserving space for both possible label strings via a CSS grid stack) and an identical
+latent bug on the graph's own tangent-line/Rise-&-Run-overlay fades (gating an element's *mount* on
+the same condition driving its opacity meant the fade had no previous frame to animate from and just
+snapped — fixed by always rendering the element and only toggling its opacity), a layout redesign
+that went through three real directions before landing on graph+core-controls in one main column
+with Table/Formula & Derivation in a fixed-width side column that never resizes when either panel
+opens, and the Riemann Sum Explorer's `f(x) =` input styling adopted as the new cross-applet
+standard (documented in `.claude/rules/applets.md`'s new "Function input pill" section — only this
+applet has been retrofitted to it so far) — added on the `SecantToTangent-Wiring` branch (not yet
+merged to `main`), plus a site-wide fix on that same branch making every applet card
+(`appletCardHTML()` in `js/app.js`) a real `<a href>` instead of a `<div onclick>` so right-click →
+"Open link in new tab" works natively, with a plain click still behaving exactly as before.
 
 ---
 

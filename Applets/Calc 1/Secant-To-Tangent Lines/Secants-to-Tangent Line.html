@@ -1,4 +1,20 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Secant-to-Tangent Line</title><style>body{margin:0;padding:24px 12px;background:#F5F5FA;}</style></head><body><div id="root"></div><script>(() => {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Secant-to-Tangent Line</title>
+<link rel="stylesheet" href="../../shared/applet-header.css">
+<style>
+  * { box-sizing: border-box; }
+  button { font-family: inherit; }
+  input[type="range"] { -webkit-appearance: none; height: 4px; background: #DCDCF0; border-radius: 2px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #3B4FC2; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -6,7 +22,11 @@
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __commonJS = (cb, mod) => function __require() {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    try {
+      return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+    } catch (e) {
+      throw mod = 0, e;
+    }
   };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
@@ -25,9 +45,9 @@
     mod
   ));
 
-  // ../.npm-global/lib/node_modules/react/cjs/react.development.js
+  // node_modules/react/cjs/react.development.js
   var require_react_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react.development.js"(exports, module) {
+    "node_modules/react/cjs/react.development.js"(exports, module) {
       "use strict";
       (function() {
         function defineDeprecationWarning(methodName, info) {
@@ -991,15 +1011,15 @@
         exports.useTransition = function() {
           return resolveDispatcher().useTransition();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/index.js
+  // node_modules/react/index.js
   var require_react = __commonJS({
-    "../.npm-global/lib/node_modules/react/index.js"(exports, module) {
+    "node_modules/react/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1009,9 +1029,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js
+  // node_modules/scheduler/cjs/scheduler.development.js
   var require_scheduler_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/cjs/scheduler.development.js"(exports) {
+    "node_modules/scheduler/cjs/scheduler.development.js"(exports) {
       "use strict";
       (function() {
         function performWorkUntilDeadline() {
@@ -1268,9 +1288,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js
+  // node_modules/scheduler/index.js
   var require_scheduler = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/node_modules/scheduler/index.js"(exports, module) {
+    "node_modules/scheduler/index.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -1280,9 +1300,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js
+  // node_modules/react-dom/cjs/react-dom.development.js
   var require_react_dom_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom.development.js"(exports) {
       "use strict";
       (function() {
         function noop() {
@@ -1518,15 +1538,15 @@
         exports.useFormStatus = function() {
           return resolveDispatcher().useHostTransitionStatus();
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/index.js
+  // node_modules/react-dom/index.js
   var require_react_dom = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/index.js"(exports, module) {
+    "node_modules/react-dom/index.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -1537,9 +1557,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js
+  // node_modules/react-dom/cjs/react-dom-client.development.js
   var require_react_dom_client_development = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
+    "node_modules/react-dom/cjs/react-dom-client.development.js"(exports) {
       "use strict";
       (function() {
         function findHook(fiber, id) {
@@ -21310,9 +21330,9 @@
         };
         (function() {
           var isomorphicReactPackageVersion = React3.version;
-          if ("19.2.5" !== isomorphicReactPackageVersion)
+          if ("19.2.8" !== isomorphicReactPackageVersion)
             throw Error(
-              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.5\nLearn more: https://react.dev/warnings/version-mismatch")
+              'Incompatible React versions: The "react" and "react-dom" packages must have the exact same version. Instead got:\n  - react:      ' + (isomorphicReactPackageVersion + "\n  - react-dom:  19.2.8\nLearn more: https://react.dev/warnings/version-mismatch")
             );
         })();
         "function" === typeof Map && null != Map.prototype && "function" === typeof Map.prototype.forEach && "function" === typeof Set && null != Set.prototype && "function" === typeof Set.prototype.clear && "function" === typeof Set.prototype.forEach || console.error(
@@ -21336,10 +21356,10 @@
         if (!(function() {
           var internals = {
             bundleType: 1,
-            version: "19.2.5",
+            version: "19.2.8",
             rendererPackageName: "react-dom",
             currentDispatcherRef: ReactSharedInternals,
-            reconcilerVersion: "19.2.5"
+            reconcilerVersion: "19.2.8"
           };
           internals.overrideHookState = overrideHookState;
           internals.overrideHookStateDeletePath = overrideHookStateDeletePath;
@@ -21430,15 +21450,15 @@
           listenToAllSupportedEvents(container);
           return new ReactDOMHydrationRoot(initialChildren);
         };
-        exports.version = "19.2.5";
+        exports.version = "19.2.8";
         "undefined" !== typeof __REACT_DEVTOOLS_GLOBAL_HOOK__ && "function" === typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop && __REACT_DEVTOOLS_GLOBAL_HOOK__.registerInternalModuleStop(Error());
       })();
     }
   });
 
-  // ../.npm-global/lib/node_modules/react-dom/client.js
+  // node_modules/react-dom/client.js
   var require_client = __commonJS({
-    "../.npm-global/lib/node_modules/react-dom/client.js"(exports, module) {
+    "node_modules/react-dom/client.js"(exports, module) {
       "use strict";
       if (false) {
         checkDCE();
@@ -21449,9 +21469,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js
+  // node_modules/react/cjs/react-jsx-runtime.development.js
   var require_react_jsx_runtime_development = __commonJS({
-    "../.npm-global/lib/node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
+    "node_modules/react/cjs/react-jsx-runtime.development.js"(exports) {
       "use strict";
       (function() {
         function getComponentNameFromType(type) {
@@ -21706,9 +21726,9 @@
     }
   });
 
-  // ../.npm-global/lib/node_modules/react/jsx-runtime.js
+  // node_modules/react/jsx-runtime.js
   var require_jsx_runtime = __commonJS({
-    "../.npm-global/lib/node_modules/react/jsx-runtime.js"(exports, module) {
+    "node_modules/react/jsx-runtime.js"(exports, module) {
       "use strict";
       if (false) {
         module.exports = null;
@@ -21718,11 +21738,11 @@
     }
   });
 
-  // src/main.jsx
+  // main.jsx
   var import_react2 = __toESM(require_react());
   var import_client = __toESM(require_client());
 
-  // src/SecantTangent.jsx
+  // SecantTangent.jsx
   var import_react = __toESM(require_react());
   var import_jsx_runtime = __toESM(require_jsx_runtime());
   var COLORS = {
@@ -21900,6 +21920,22 @@
     if (!Number.isFinite(v)) return "\u2014";
     return v.toFixed(decimals);
   }
+  function niceStep(span, targetCount) {
+    const rough = span / targetCount;
+    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+    const norm = rough / mag;
+    let step;
+    if (norm < 1.5) step = 1;
+    else if (norm < 3.5) step = 2;
+    else if (norm < 7.5) step = 5;
+    else step = 10;
+    return step * mag;
+  }
+  function formatTick(v, step) {
+    const decimals = Math.max(0, -Math.floor(Math.log10(step) + 1e-9));
+    const s = v.toFixed(decimals);
+    return s === "-0" ? "0" : s;
+  }
   var TABLE_MAGNITUDES = [3, 2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 1e-3];
   function buildTable(domain, a, currentH, fn) {
     const sign = currentH < 0 ? -1 : 1;
@@ -21909,9 +21945,9 @@
     });
   }
   function Frac({ num, den, color }) {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 4px", fontStyle: "italic", color }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "0 4px", lineHeight: 1.3, borderBottom: "1.5px solid currentColor" }, children: num }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "0 4px", lineHeight: 1.3 }, children: den })
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 4px", fontStyle: "italic", color, maxWidth: "100%" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "0 4px", lineHeight: 1.3, borderBottom: "1.5px solid currentColor", whiteSpace: "normal", overflowWrap: "break-word", textAlign: "center" }, children: num }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { padding: "0 4px", lineHeight: 1.3, whiteSpace: "normal", overflowWrap: "break-word", textAlign: "center" }, children: den })
     ] });
   }
   function LimStack({ sub }) {
@@ -21920,16 +21956,50 @@
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontSize: 11, color: COLORS.muted, fontStyle: "italic" }, children: sub })
     ] });
   }
+  var NOTATION_FADE_MS = 480;
+  var NOTATION_FADE_EASING = "cubic-bezier(0.4,0,0.2,1)";
+  function Fade({ children, alt }) {
+    const [display, setDisplay] = (0, import_react.useState)(children);
+    const [visible, setVisible] = (0, import_react.useState)(true);
+    (0, import_react.useEffect)(() => {
+      if (children === display) return;
+      setVisible(false);
+      const t = setTimeout(() => {
+        setDisplay(children);
+        setVisible(true);
+      }, NOTATION_FADE_MS);
+      return () => clearTimeout(t);
+    }, [children]);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { display: "inline-grid" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { gridArea: "1 / 1", visibility: "hidden" }, children }),
+      alt !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { gridArea: "1 / 1", visibility: "hidden" }, children: alt }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { gridArea: "1 / 1", opacity: visible ? 1 : 0, transition: `opacity ${NOTATION_FADE_MS}ms ${NOTATION_FADE_EASING}` }, children: display })
+    ] });
+  }
+  function FadeTspan({ value }) {
+    const [display, setDisplay] = (0, import_react.useState)(value);
+    const [visible, setVisible] = (0, import_react.useState)(true);
+    (0, import_react.useEffect)(() => {
+      if (value === display) return;
+      setVisible(false);
+      const t = setTimeout(() => {
+        setDisplay(value);
+        setVisible(true);
+      }, NOTATION_FADE_MS);
+      return () => clearTimeout(t);
+    }, [value]);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tspan", { style: { opacity: visible ? 1 : 0, transition: `opacity ${NOTATION_FADE_MS}ms ${NOTATION_FADE_EASING}` }, children: display });
+  }
   function SecantTangent() {
-    const [functionKey, setFunctionKey] = (0, import_react.useState)("x^2");
-    const [customExpr, setCustomExpr] = (0, import_react.useState)("");
+    const [functionKey, setFunctionKey] = (0, import_react.useState)("custom");
+    const [customExpr, setCustomExpr] = (0, import_react.useState)("x(x-1)(x+1)");
     const [customExprText, setCustomExprText] = (0, import_react.useState)("");
     const [customError, setCustomError] = (0, import_react.useState)(null);
-    const [fnInputText, setFnInputText] = (0, import_react.useState)("x^2");
-    const [aVal, setAVal] = (0, import_react.useState)(1);
-    const [aText, setAText] = (0, import_react.useState)("1.00");
-    const [hVal, setHVal] = (0, import_react.useState)(0.842);
-    const [hText, setHText] = (0, import_react.useState)("0.842");
+    const [fnInputText, setFnInputText] = (0, import_react.useState)("x(x-1)(x+1)");
+    const [aVal, setAVal] = (0, import_react.useState)(0.5);
+    const [aText, setAText] = (0, import_react.useState)("0.50");
+    const [hVal, setHVal] = (0, import_react.useState)(0.672);
+    const [hText, setHText] = (0, import_react.useState)("0.672");
     const [aWarning, setAWarning] = (0, import_react.useState)(null);
     const [notation, setNotation] = (0, import_react.useState)("ah");
     const [showRiseRun, setShowRiseRun] = (0, import_react.useState)(false);
@@ -22029,7 +22099,7 @@
       return { x1: p1.sx, y1: p1.sy, x2: p2.sx, y2: p2.sy };
     }
     const secantLine = lineToEdges(aVal, fa, dq);
-    const tangentLine = showTangent ? lineToEdges(aVal, fa, fprime) : null;
+    const tangentLine = lineToEdges(aVal, fa, fprime);
     const pA = worldToPx(aVal, fa);
     const pAH = worldToPx(xVal, fah);
     const pCorner = worldToPx(aVal, fah);
@@ -22232,7 +22302,7 @@
     (0, import_react.useEffect)(() => () => {
       if (playAnimRef.current) cancelAnimationFrame(playAnimRef.current.raf);
     }, []);
-    const SLIDER_MAX_MAG = 5, SLIDER_MIN_MAG = 1e-3;
+    const SLIDER_MAX_MAG = 0.672, SLIDER_MIN_MAG = 1e-3;
     function magToSlider(mag) {
       const clamped = Math.max(SLIDER_MIN_MAG, Math.min(SLIDER_MAX_MAG, mag));
       return 1 - Math.log(clamped / SLIDER_MIN_MAG) / Math.log(SLIDER_MAX_MAG / SLIDER_MIN_MAG);
@@ -22256,285 +22326,456 @@
     const deltaLabel = isXA ? "x \u2212 a" : "h";
     const dqDenomLabel = isXA ? "x \u2212 a" : "h";
     const tangentSlide = showTangent;
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif", background: COLORS.bg, padding: 20, borderRadius: 24 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { maxWidth: 900, margin: "0 auto", background: COLORS.card, borderRadius: 20, boxShadow: "0 2px 14px rgba(59,79,200,0.08)", padding: 18 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: "linear-gradient(135deg, #EFEFF9, #F7F7FC)", borderRadius: 16, height: 400, position: "relative", overflow: "hidden" }, ref: svgOuterRef, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { viewBox: `0 0 ${BASE_W} ${BASE_H}`, width: "100%", height: "100%", preserveAspectRatio: "none", style: { display: "block", cursor: panning ? "grabbing" : "grab" }, onPointerDown: onBackgroundPointerDown, children: [
-          (() => {
-            const [xMin, xMax] = visibleXRange;
-            const [yMin, yMax] = visibleYRange;
-            const axisLines = [];
-            if (yMin <= 0 && yMax >= 0) {
-              const pLeft = worldToPx(xMin, 0), pRight = worldToPx(xMax, 0);
-              axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pLeft.sx, y1: pLeft.sy, x2: pRight.sx, y2: pRight.sy, stroke: "#C4C4DC", strokeWidth: "1.3" }, "xaxis"));
-            }
-            if (xMin <= 0 && xMax >= 0) {
-              const pTop = worldToPx(0, yMax), pBot = worldToPx(0, yMin);
-              axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pTop.sx, y1: pTop.sy, x2: pBot.sx, y2: pBot.sy, stroke: "#C4C4DC", strokeWidth: "1.3" }, "yaxis"));
-            }
-            return axisLines;
-          })(),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: curvePath, stroke: COLORS.accent, strokeWidth: "2.5", fill: "none" }),
-          echoes.map((echo, i) => {
-            const eh = echo.h;
-            const efah = activeFn.domain(aVal + eh) ? activeFn.fn(aVal + eh) : fa;
-            const edq = differenceQuotient(activeFn.fn, aVal, eh);
-            const eline = lineToEdges(aVal, fa, edq);
-            const opacity = 0.1 + 0.65 * ((i + 1) / echoes.length);
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: eline.x1, y1: eline.y1, x2: eline.x2, y2: eline.y2, stroke: COLORS.secant, strokeWidth: "1.6", opacity }, echo.id);
-          }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: secantLine.x1, y1: secantLine.y1, x2: secantLine.x2, y2: secantLine.y2, stroke: COLORS.secant, strokeWidth: "2.6" }),
-          tangentLine && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "line",
-            {
-              x1: tangentLine.x1,
-              y1: tangentLine.y1,
-              x2: tangentLine.x2,
-              y2: tangentLine.y2,
-              stroke: COLORS.amber,
-              strokeWidth: "2.2",
-              style: { opacity: tangentSlide ? 1 : 0, transition: "opacity 960ms cubic-bezier(0.4,0,0.2,1)" }
-            }
-          ),
-          riseRunVisible && (() => {
-            const SIZE = 8;
-            const dxSign = pAH.sx >= pCorner.sx ? 1 : -1;
-            const dySign = pA.sy >= pCorner.sy ? 1 : -1;
-            const rectX = dxSign > 0 ? pCorner.sx : pCorner.sx - SIZE;
-            const rectY = dySign > 0 ? pCorner.sy : pCorner.sy - SIZE;
-            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pCorner.sx, y1: pCorner.sy, x2: pAH.sx, y2: pAH.sy, stroke: COLORS.green, strokeWidth: "1.6" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pCorner.sx, y1: pCorner.sy, x2: pA.sx, y2: pA.sy, stroke: COLORS.green, strokeWidth: "1.6" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", { x: rectX, y: rectY, width: SIZE, height: SIZE, fill: "none", stroke: COLORS.green, strokeWidth: "1.2" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: (pCorner.sx + pAH.sx) / 2, y: pCorner.sy + (dySign > 0 ? -8 : 16), fontSize: "12.5", fill: COLORS.green, fontStyle: "italic", textAnchor: "middle", children: deltaLabel }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", { x: pCorner.sx + (dxSign > 0 ? -8 : 8), y: (pCorner.sy + pA.sy) / 2, fontSize: "12.5", fill: COLORS.green, fontStyle: "italic", textAnchor: dxSign > 0 ? "end" : "start", children: [
-                "f(",
-                pointLabel,
-                ") \u2212 f(a)"
-              ] })
-            ] });
-          })(),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", { cx: pA.sx, cy: pA.sy, r: "5", fill: COLORS.accent }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: pA.sx - 12, y: pA.sy - 10, fontSize: "14", fill: COLORS.muted, fontStyle: "italic", children: "a" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "circle",
-            {
-              cx: pAH.sx,
-              cy: pAH.sy,
-              r: "9",
-              fill: "white",
-              stroke: COLORS.accent2,
-              strokeWidth: "2.5",
-              style: { cursor: "grab" },
-              onPointerDown: (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                stopPlay();
-                setDragging(true);
-              }
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: pAH.sx + 10, y: pAH.sy - 10, fontSize: "14", fill: COLORS.secant, fontStyle: "italic", children: pointLabel })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { position: "absolute", top: 12, right: 12, display: "flex", flexDirection: "column", gap: 6 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setCamera((c) => ({ ...c, scale: c.scale * 1.25 })), style: zoomBtnStyle, children: "+" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setCamera((c) => ({ ...c, scale: c.scale / 1.25 })), style: zoomBtnStyle, children: "\u2212" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: autofit, style: { ...zoomBtnStyle, fontSize: 11 }, children: "\u2922" })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 14, marginTop: 14, paddingBottom: 14, borderBottom: `1px solid ${COLORS.border}`, flexWrap: "wrap" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "inline-flex", border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: "hidden", fontSize: 12.5, flex: 1, minWidth: 160 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { background: COLORS.bg, padding: "6px 10px", color: COLORS.muted, fontWeight: 600, fontStyle: "italic", whiteSpace: "nowrap" }, children: "f(x) =" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              style: { border: "none", padding: "6px 10px", width: "100%", fontSize: 12.5, fontFamily: "inherit", outline: "none" },
-              value: fnInputText,
-              onChange: (e) => setFnInputText(e.target.value),
-              onBlur: () => {
-                const preset = PRESET_ORDER.find((k) => PRESETS[k].expr === fnInputText);
-                if (preset) {
-                  setFunctionKey(preset);
-                  return;
-                }
-                try {
-                  compileExpression(fnInputText);
-                  setFunctionKey("custom");
-                  setCustomExpr(fnInputText);
-                  setCustomError(null);
-                } catch (e) {
-                  setCustomError(e.message);
-                }
-              },
-              onKeyDown: (e) => {
-                if (e.key === "Enter") e.target.blur();
-              }
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: 6, flexShrink: 0, flexWrap: "wrap" }, children: PRESET_ORDER.map((k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => {
-              setFunctionKey(k);
-              setFnInputText(PRESETS[k].expr);
-              setCustomError(null);
-            },
-            style: { ...pillStyle, ...functionKey === k ? pillActiveStyle : {} },
-            children: PRESETS[k].label
-          },
-          k
-        )) })
-      ] }),
-      customError && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { color: COLORS.warning, fontSize: 12, marginTop: 6 }, children: [
-        "Couldn't parse that expression: ",
-        customError
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 14, alignItems: "stretch" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: isXA ? "x \u2212 a" : "h", math: true, value: displayNum(hVal, 3) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: "a", math: true, value: `(${displayNum(aVal, 2)}, ${displayNum(fa, 2)})`, small: true }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: pointLabel, math: true, value: `(${displayNum(xVal, 2)}, ${displayNum(fah, 2)})`, small: true, color: COLORS.secant }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
-          background: COLORS.bg,
-          borderRadius: 14,
-          padding: "10px 14px",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          flex: tangentSlide ? 1.6 : 2,
-          minWidth: 0,
-          transition: "flex 960ms cubic-bezier(0.4,0,0.2,1)"
-        }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4 }, children: "Difference Quotient" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", fontSize: 13.5, flexWrap: "wrap", gap: 2, color: COLORS.accent, fontWeight: 700 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: `f(${pointLabel}) \u2212 f(a)`, den: dqDenomLabel }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: displayNum(dq, 3) })
-          ] }) })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
-          background: tangentSlide ? "#FBF1E3" : COLORS.bg,
-          borderRadius: 14,
-          padding: "10px 14px",
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-          flex: tangentSlide ? 1 : 0,
-          opacity: tangentSlide ? 1 : 0,
-          minWidth: 0,
-          transition: "flex 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1), background 960ms"
-        }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.amber, fontStyle: "italic", marginBottom: 4 }, children: "f '(a)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.amber, fontStyle: "italic" }, children: displayNum(fprime, 3) }) })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 20, marginTop: 16, alignItems: "center", flexWrap: "wrap" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1, minWidth: 220 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4, fontStyle: "italic" }, children: isXA ? "x \u2192 a" : "h \u2192 0" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "range", min: "0", max: "1", step: "0.001", value: sliderPos, onChange: onSliderChange, style: { width: "100%" } })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => playing ? stopPlay() : startPlay(), style: playBtnStyle, children: playing ? "\u23F8" : "\u25B6" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => {
-              if (playing) {
-                setEchoes([]);
-                return;
-              }
-              if (manualTrailOn) {
-                setEchoes([]);
-                setManualTrailOn(false);
-              } else {
-                setManualTrailOn(true);
-              }
-            },
-            style: { ...pillStyle, ...manualTrailOn ? { background: COLORS.secant, borderColor: COLORS.secant, color: "white" } : {} },
-            title: manualTrailOn ? "Clear the accumulated secant lines" : "Leave a fading trail of secant lines while dragging or sliding",
-            children: manualTrailOn ? "Clear Secant Lines" : "Show Secant Lines"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FusedInput, { prefix: "a =", value: aText, onChange: setAText, onCommit: () => commitA(parseFloat(aText)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FusedInput, { prefix: isXA ? "x \u2212 a =" : "h =", value: hText, onChange: setHText, onCommit: () => {
-          stopPlay();
-          commitH(parseFloat(hText));
-        } }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-          "button",
-          {
-            onClick: () => setNotation((n) => n === "ah" ? "xa" : "ah"),
-            title: isXA ? "Switch to a, a+h notation" : "Switch to x, a notation",
-            style: { ...pillStyle, display: "flex", alignItems: "center", gap: 5, fontStyle: "italic" },
-            children: [
-              "a, a+h ",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontStyle: "normal", color: COLORS.accent }, children: "\u21C4" }),
-              " x, a"
-            ]
-          }
-        )
-      ] }),
-      aWarning && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: COLORS.warning, fontSize: 12, marginTop: 6 }, children: aWarning }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleBtn, { label: "Rise & Run", on: showRiseRun, color: COLORS.green, onClick: () => setShowRiseRun((v) => !v) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleBtn, { label: "Tangent", on: showTangent, color: COLORS.amber, onClick: () => setShowTangent((v) => !v) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleBtn, { label: "Table", on: showTable, color: COLORS.accent, onClick: () => setShowTable((v) => !v) })
-      ] }),
-      showTable && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginTop: 14, background: COLORS.bg, borderRadius: 14, padding: "12px 16px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12.5 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleMath, children: isXA ? "x \u2212 a" : "h" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleMath, children: pointLabel }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleWord, children: "Difference Quotient" })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: buildTable(activeFn.domain, aVal, hVal, activeFn.fn).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { style: row.isLast ? { color: COLORS.accent, fontWeight: 700 } : {}, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.h, 3) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.xVal, 3) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.dq, 3) })
-        ] }, row.key)) })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { borderTop: `1px solid ${COLORS.border}`, marginTop: 14, paddingTop: 12 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { onClick: () => setDerivOpen((v) => !v), style: { display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: "pointer" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-          derivOpen ? "\u25BE" : "\u25B8",
-          " Formula & Derivation"
-        ] }) }),
-        derivOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 12, fontSize: 14, color: COLORS.text, lineHeight: 2.4, background: COLORS.bg, borderRadius: 12, padding: "18px 20px" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 14 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: eyebrowLabel, children: isXA ? "Slope of the secant line" : "Slope of the secant line" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: eqRow, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: `f(${pointLabel}) \u2212 f(a)`, den: dqDenomLabel }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: `f(${displayNum(xVal, 2)}) \u2212 f(${displayNum(aVal, 2)})`, den: displayNum(hVal, 3) }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { color: COLORS.secant, fontWeight: 700 }, children: displayNum(dq, 3) })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 14 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: eyebrowLabel, children: "Definition of the derivative" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: eqRow, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontStyle: "italic" }, children: "f '(a)" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LimStack, { sub: isXA ? "x\u2192a" : "h\u21920" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: `f(${pointLabel}) \u2212 f(a)`, den: dqDenomLabel })
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...eyebrowLabel, fontStyle: "italic", textTransform: "none" }, children: [
-              "at a = ",
-              displayNum(aVal, 2)
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: eqRow, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontStyle: "italic" }, children: [
-                "f '(",
-                displayNum(aVal, 2),
-                ")"
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+      background: "#E8E8F2",
+      height: "100%",
+      padding: "24px 24px 0",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column"
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+        maxWidth: 1200,
+        width: "100%",
+        margin: "0 auto",
+        borderRadius: 20,
+        boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
+        overflow: "hidden",
+        flexShrink: 0,
+        background: COLORS.card,
+        display: "flex",
+        flexDirection: "column"
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Banner, {}),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { background: COLORS.bg, padding: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 20, alignItems: "flex-start" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1, minWidth: 0, background: COLORS.card, borderRadius: 20, boxShadow: "0 2px 14px rgba(59,79,200,0.08)", padding: 18 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: "linear-gradient(135deg, #EFEFF9, #F7F7FC)", borderRadius: 16, height: 400, position: "relative", overflow: "hidden" }, ref: svgOuterRef, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { viewBox: `0 0 ${BASE_W} ${BASE_H}`, width: "100%", height: "100%", preserveAspectRatio: "none", style: { display: "block", cursor: panning ? "grabbing" : "grab" }, onPointerDown: onBackgroundPointerDown, children: [
+                (() => {
+                  const [xMin, xMax] = visibleXRange;
+                  const [yMin, yMax] = visibleYRange;
+                  const axisLines = [];
+                  if (yMin <= 0 && yMax >= 0) {
+                    const pLeft = worldToPx(xMin, 0), pRight = worldToPx(xMax, 0);
+                    axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pLeft.sx, y1: pLeft.sy, x2: pRight.sx, y2: pRight.sy, stroke: "#C4C4DC", strokeWidth: "1.3" }, "xaxis"));
+                    const stepX = niceStep(xMax - xMin, 8);
+                    const startX = Math.ceil(xMin / stepX) * stepX;
+                    for (let tx = startX; tx <= xMax + stepX * 1e-6; tx += stepX) {
+                      if (Math.abs(tx) < stepX * 1e-6) continue;
+                      const p = worldToPx(tx, 0);
+                      axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: p.sx, y1: p.sy - 4, x2: p.sx, y2: p.sy + 4, stroke: "#C4C4DC", strokeWidth: "1.2" }, `xt${tx}`));
+                      axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: p.sx, y: p.sy + 15, fontSize: "9.5", fill: "#9A9AB5", textAnchor: "middle", children: formatTick(tx, stepX) }, `xtl${tx}`));
+                    }
+                  }
+                  if (xMin <= 0 && xMax >= 0) {
+                    const pTop = worldToPx(0, yMax), pBot = worldToPx(0, yMin);
+                    axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pTop.sx, y1: pTop.sy, x2: pBot.sx, y2: pBot.sy, stroke: "#C4C4DC", strokeWidth: "1.3" }, "yaxis"));
+                    const stepY = niceStep(yMax - yMin, 6);
+                    const startY = Math.ceil(yMin / stepY) * stepY;
+                    for (let ty = startY; ty <= yMax + stepY * 1e-6; ty += stepY) {
+                      if (Math.abs(ty) < stepY * 1e-6) continue;
+                      const p = worldToPx(0, ty);
+                      axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: p.sx - 4, y1: p.sy, x2: p.sx + 4, y2: p.sy, stroke: "#C4C4DC", strokeWidth: "1.2" }, `yt${ty}`));
+                      axisLines.push(/* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: p.sx - 7, y: p.sy + 3, fontSize: "9.5", fill: "#9A9AB5", textAnchor: "end", children: formatTick(ty, stepY) }, `ytl${ty}`));
+                    }
+                  }
+                  return axisLines;
+                })(),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: curvePath, stroke: COLORS.accent, strokeWidth: "2.5", fill: "none" }),
+                echoes.map((echo, i) => {
+                  const eh = echo.h;
+                  const efah = activeFn.domain(aVal + eh) ? activeFn.fn(aVal + eh) : fa;
+                  const edq = differenceQuotient(activeFn.fn, aVal, eh);
+                  const eline = lineToEdges(aVal, fa, edq);
+                  const opacity = 0.1 + 0.65 * ((i + 1) / echoes.length);
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: eline.x1, y1: eline.y1, x2: eline.x2, y2: eline.y2, stroke: COLORS.secant, strokeWidth: "1.6", opacity }, echo.id);
+                }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: secantLine.x1, y1: secantLine.y1, x2: secantLine.x2, y2: secantLine.y2, stroke: COLORS.secant, strokeWidth: "2.6" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "line",
+                  {
+                    x1: tangentLine.x1,
+                    y1: tangentLine.y1,
+                    x2: tangentLine.x2,
+                    y2: tangentLine.y2,
+                    stroke: COLORS.amber,
+                    strokeWidth: "2.2",
+                    style: { opacity: tangentSlide ? 1 : 0, transition: "opacity 960ms cubic-bezier(0.4,0,0.2,1)" }
+                  }
+                ),
+                (() => {
+                  const SIZE = 8;
+                  const dxSign = pAH.sx >= pCorner.sx ? 1 : -1;
+                  const dySign = pA.sy >= pCorner.sy ? 1 : -1;
+                  const rectX = dxSign > 0 ? pCorner.sx : pCorner.sx - SIZE;
+                  const rectY = dySign > 0 ? pCorner.sy : pCorner.sy - SIZE;
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("g", { style: { opacity: riseRunVisible ? 1 : 0, transition: "opacity 960ms cubic-bezier(0.4,0,0.2,1)" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pCorner.sx, y1: pCorner.sy, x2: pAH.sx, y2: pAH.sy, stroke: COLORS.green, strokeWidth: "1.6" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("line", { x1: pCorner.sx, y1: pCorner.sy, x2: pA.sx, y2: pA.sy, stroke: COLORS.green, strokeWidth: "1.6" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", { x: rectX, y: rectY, width: SIZE, height: SIZE, fill: "none", stroke: COLORS.green, strokeWidth: "1.2" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: (pCorner.sx + pAH.sx) / 2, y: pCorner.sy + (dySign > 0 ? -8 : 16), fontSize: "12.5", fill: COLORS.green, fontStyle: "italic", textAnchor: "middle", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FadeTspan, { value: deltaLabel }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("text", { x: pCorner.sx + (dxSign > 0 ? -8 : 8), y: (pCorner.sy + pA.sy) / 2, fontSize: "12.5", fill: COLORS.green, fontStyle: "italic", textAnchor: dxSign > 0 ? "end" : "start", children: [
+                      "f(",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FadeTspan, { value: pointLabel }),
+                      ") \u2212 f(a)"
+                    ] })
+                  ] });
+                })(),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", { cx: pA.sx, cy: pA.sy, r: "5", fill: COLORS.accent }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: pA.sx - 12, y: pA.sy - 10, fontSize: "14", fill: COLORS.muted, fontStyle: "italic", children: "a" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "circle",
+                  {
+                    cx: pAH.sx,
+                    cy: pAH.sy,
+                    r: "9",
+                    fill: "white",
+                    stroke: COLORS.accent2,
+                    strokeWidth: "2.5",
+                    style: { cursor: "grab" },
+                    onPointerDown: (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      stopPlay();
+                      setManualTrailOn(true);
+                      setDragging(true);
+                    }
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("text", { x: pAH.sx + 10, y: pAH.sy - 10, fontSize: "14", fill: COLORS.secant, fontStyle: "italic", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FadeTspan, { value: pointLabel }) })
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { color: COLORS.amber, fontWeight: 700 }, children: displayNum(fprime, 3) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { position: "absolute", top: 12, right: 12, display: "flex", flexDirection: "column", gap: 6 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setCamera((c) => ({ ...c, scale: c.scale * 1.25 })), style: zoomBtnStyle, children: "+" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setCamera((c) => ({ ...c, scale: c.scale / 1.25 })), style: zoomBtnStyle, children: "\u2212" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: autofit, style: { ...zoomBtnStyle, fontSize: 11 }, children: "\u2922" })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 14, paddingBottom: 14, borderBottom: `1px solid ${COLORS.border}` }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 11, letterSpacing: 1, color: COLORS.eyebrow, textTransform: "uppercase", fontWeight: 600, marginBottom: 8 }, children: "Function" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "stretch", width: "100%" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 14px",
+                  background: "#EFEFFA",
+                  border: `1px solid ${COLORS.border}`,
+                  borderRight: "none",
+                  borderRadius: "20px 0 0 20px",
+                  color: COLORS.accent,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap"
+                }, children: "f(x) =" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "input",
+                  {
+                    style: { width: "100%", boxSizing: "border-box", background: "#FFFFFF", border: `1px solid ${COLORS.border}`, borderRadius: "0 20px 20px 0", padding: "10px 16px", color: COLORS.text, fontSize: 14, fontFamily: "inherit", outline: "none" },
+                    value: fnInputText,
+                    onChange: (e) => setFnInputText(e.target.value),
+                    onBlur: () => {
+                      const preset = PRESET_ORDER.find((k) => PRESETS[k].expr === fnInputText);
+                      if (preset) {
+                        setFunctionKey(preset);
+                        return;
+                      }
+                      try {
+                        compileExpression(fnInputText);
+                        setFunctionKey("custom");
+                        setCustomExpr(fnInputText);
+                        setCustomError(null);
+                      } catch (e) {
+                        setCustomError(e.message);
+                      }
+                    },
+                    onKeyDown: (e) => {
+                      if (e.key === "Enter") e.target.blur();
+                    }
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }, children: PRESET_ORDER.map((k) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  onClick: () => {
+                    setFunctionKey(k);
+                    setFnInputText(PRESETS[k].expr);
+                    setCustomError(null);
+                  },
+                  style: {
+                    background: functionKey === k ? COLORS.accent : "#FFFFFF",
+                    color: functionKey === k ? "#FFFFFF" : COLORS.muted,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 20,
+                    padding: "5px 12px",
+                    fontSize: 12
+                  },
+                  children: PRESETS[k].label
+                },
+                k
+              )) })
+            ] }),
+            customError && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { color: COLORS.warning, fontSize: 12, marginTop: 6 }, children: [
+              "Couldn't parse that expression: ",
+              customError
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 14, alignItems: "stretch" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h" : "x \u2212 a", children: isXA ? "x \u2212 a" : "h" }), math: true, value: displayNum(hVal, 3) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: "a", math: true, value: `(${displayNum(aVal, 2)}, ${displayNum(fa, 2)})`, small: true }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ReadoutCard, { eyebrow: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "a+h" : "x", children: pointLabel }), math: true, value: `(${displayNum(xVal, 2)}, ${displayNum(fah, 2)})`, small: true, color: COLORS.secant }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+                background: COLORS.bg,
+                borderRadius: 14,
+                padding: "10px 14px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                flex: tangentSlide ? 1.6 : 2,
+                minWidth: 0,
+                transition: "flex 960ms cubic-bezier(0.4,0,0.2,1)"
+              }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4 }, children: "Difference Quotient" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", fontSize: 13.5, flexWrap: "wrap", gap: 2, color: COLORS.accent, fontWeight: 700 }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                    "f(",
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "a+h" : "x", children: pointLabel }),
+                    ") \u2212 f(a)"
+                  ] }), den: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h" : "x \u2212 a", children: dqDenomLabel }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: displayNum(dq, 3) })
+                ] }) })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+                background: tangentSlide ? "#FBF1E3" : COLORS.bg,
+                borderRadius: 14,
+                padding: "10px 14px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                flex: tangentSlide ? 1 : 0,
+                opacity: tangentSlide ? 1 : 0,
+                minWidth: 0,
+                transition: "flex 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1), background 960ms"
+              }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.amber, fontStyle: "italic", marginBottom: 4 }, children: "f '(a)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 15, fontWeight: 700, color: COLORS.amber, fontStyle: "italic" }, children: displayNum(fprime, 3) }) })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 14, marginTop: 16, alignItems: "center" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => playing ? stopPlay() : startPlay(), style: playBtnStyle, children: playing ? "\u23F8" : "\u25B6" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { flex: 1, minWidth: 0 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, fontWeight: 700, color: COLORS.eyebrow, marginBottom: 4, fontStyle: "italic" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h \u2192 0" : "x \u2192 a", children: isXA ? "x \u2192 a" : "h \u2192 0" }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "range", min: "0", max: "1", step: "0.001", value: sliderPos, onChange: onSliderChange, style: { width: "100%" } })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  onClick: () => {
+                    if (playing) {
+                      setEchoes([]);
+                      return;
+                    }
+                    if (manualTrailOn) {
+                      setEchoes([]);
+                      setManualTrailOn(false);
+                    } else {
+                      setManualTrailOn(true);
+                    }
+                  },
+                  style: { ...pillStyle, flexShrink: 0, ...manualTrailOn ? { background: COLORS.secant, borderColor: COLORS.secant, color: "white" } : {} },
+                  title: manualTrailOn ? "Clear the accumulated secant lines" : "Leave a fading trail of secant lines while dragging or sliding",
+                  children: manualTrailOn ? "Clear Secant Lines" : "Show Secant Lines"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 12, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FusedInput, { prefix: "a =", value: aText, onChange: setAText, onCommit: () => commitA(parseFloat(aText)) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(FusedInput, { prefix: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h =" : "x \u2212 a =", children: isXA ? "x \u2212 a =" : "h =" }), value: hText, onChange: setHText, onCommit: () => {
+                  stopPlay();
+                  commitH(parseFloat(hText));
+                } }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                  "button",
+                  {
+                    onClick: () => setNotation((n) => n === "ah" ? "xa" : "ah"),
+                    title: isXA ? "Switch to a, a+h notation" : "Switch to x, a notation",
+                    style: { ...pillStyle, display: "flex", alignItems: "center", gap: 5, fontStyle: "italic" },
+                    children: [
+                      "a, a+h ",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontStyle: "normal", color: COLORS.accent }, children: "\u21C4" }),
+                      " x, a"
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleBtn, { label: "Rise & Run", on: showRiseRun, color: COLORS.green, onClick: () => setShowRiseRun((v) => !v) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ToggleBtn, { label: "Tangent", on: showTangent, color: COLORS.amber, onClick: () => setShowTangent((v) => !v) })
+              ] })
+            ] }),
+            aWarning && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: COLORS.warning, fontSize: 12, marginTop: 6 }, children: aWarning })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { width: 260, flexShrink: 0, display: "flex", flexDirection: "column", gap: 12 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: COLORS.card, borderRadius: 16, boxShadow: "0 2px 14px rgba(59,79,200,0.08)", overflow: "hidden" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { onClick: () => setShowTable((v) => !v), style: { display: "flex", alignItems: "center", gap: 6, padding: "12px 14px", fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: "pointer" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                showTable ? "\u25BE" : "\u25B8",
+                " Table"
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+                maxHeight: showTable ? 320 : 0,
+                opacity: showTable ? 1 : 0,
+                overflow: "hidden",
+                transition: "max-height 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1)"
+              }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { padding: "0 12px 12px" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 11 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleMath, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h" : "x \u2212 a", children: isXA ? "x \u2212 a" : "h" }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleMath, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "a+h" : "x", children: pointLabel }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { style: thStyleWord, children: "Diff. Quotient" })
+                ] }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: buildTable(activeFn.domain, aVal, hVal, activeFn.fn).map((row) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { style: row.isLast ? { color: COLORS.accent, fontWeight: 700 } : {}, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.h, 3) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.xVal, 3) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { style: { ...tdStyle, borderBottom: row.isLast ? "none" : `1px solid ${COLORS.border}` }, children: displayNum(row.dq, 3) })
+                ] }, row.key)) })
+              ] }) }) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: COLORS.card, borderRadius: 16, boxShadow: "0 2px 14px rgba(59,79,200,0.08)", overflow: "hidden" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { onClick: () => setDerivOpen((v) => !v), style: { display: "flex", alignItems: "center", gap: 6, padding: "12px 14px", fontSize: 13, fontWeight: 700, color: COLORS.accent, cursor: "pointer" }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                derivOpen ? "\u25BE" : "\u25B8",
+                " Formula & Derivation"
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+                maxHeight: derivOpen ? 340 : 0,
+                opacity: derivOpen ? 1 : 0,
+                overflow: "hidden",
+                transition: "max-height 960ms cubic-bezier(0.4,0,0.2,1), opacity 960ms cubic-bezier(0.4,0,0.2,1)"
+              }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { padding: "0 12px 12px", fontSize: 12.5, color: COLORS.text, lineHeight: 1.4 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 8, background: COLORS.bg, borderRadius: 10, padding: "7px 9px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: eyebrowLabel, children: "Slope of the secant line" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: eqRow, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                      "f(",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "a+h" : "x", children: pointLabel }),
+                      ") \u2212 f(a)"
+                    ] }), den: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h" : "x \u2212 a", children: dqDenomLabel }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { color: COLORS.secant, fontWeight: 700 }, children: displayNum(dq, 3) })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 8, background: COLORS.bg, borderRadius: 10, padding: "7px 9px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: eyebrowLabel, children: "Definition of the derivative" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...eqRow, fontSize: 11, flexWrap: "nowrap", whiteSpace: "nowrap" }, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { fontStyle: "italic" }, children: "f '(a)" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(LimStack, { sub: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h\u21920" : "x\u2192a", children: isXA ? "x\u2192a" : "h\u21920" }) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Frac, { num: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                      "f(",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "a+h" : "x", children: pointLabel }),
+                      ") \u2212 f(a)"
+                    ] }), den: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Fade, { alt: isXA ? "h" : "x \u2212 a", children: dqDenomLabel }) })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: COLORS.bg, borderRadius: 10, padding: "7px 9px" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { ...eyebrowLabel, fontStyle: "italic", textTransform: "none" }, children: [
+                    "at a = ",
+                    displayNum(aVal, 2)
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: eqRow, children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: { fontStyle: "italic" }, children: [
+                      "f '(",
+                      displayNum(aVal, 2),
+                      ")"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "=" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: { color: COLORS.amber, fontWeight: 700 }, children: displayNum(fprime, 3) })
+                  ] })
+                ] })
+              ] }) })
             ] })
           ] })
+        ] }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageCredit, {})
+    ] });
+  }
+  function Banner() {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      position: "relative",
+      overflow: "hidden",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 16,
+      padding: "16px 28px",
+      flexShrink: 0,
+      background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)"
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        "svg",
+        {
+          viewBox: "0 0 1200 130",
+          preserveAspectRatio: "none",
+          style: { position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" },
+          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75", stroke: "white", strokeWidth: "2.5", fill: "none" })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "a",
+          {
+            href: "../../../browse.html#/applets",
+            style: {
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              color: "rgba(255,255,255,0.88)",
+              textDecoration: "none",
+              fontSize: 12.5,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              padding: "6px 10px",
+              borderRadius: 8,
+              background: "rgba(255,255,255,0.12)"
+            },
+            children: "\u2190 All Applets"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 2 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }, children: "Calculus I \xB7 Unit 2" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { style: { margin: 0, fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }, children: "Secant-to-Tangent Line" })
         ] })
       ] })
-    ] }) });
+    ] });
+  }
+  function PageCredit() {
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      marginTop: "auto",
+      flexShrink: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 11,
+      padding: "18px 20px 26px",
+      fontSize: 13.5,
+      color: COLORS.eyebrow
+    }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { style: {
+        width: 40,
+        height: 40,
+        borderRadius: "50%",
+        background: "#FFFFFF",
+        border: `1px solid ${COLORS.border}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0
+      }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: "../../../assets/favicon.svg", alt: "", width: "28", height: "28" }) }),
+      "Professor Kyle Knee \xB7 Harper College Mathematics"
+    ] });
   }
   function ReadoutCard({ eyebrow, value, math, small, color }) {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { background: COLORS.bg, borderRadius: 14, padding: "10px 14px", textAlign: "center", flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }, children: [
@@ -22566,9 +22807,9 @@
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick, style: {
       ...pillStyle,
       background: on ? color : COLORS.bg,
-      borderColor: on ? color : COLORS.border,
-      color: on ? "white" : COLORS.text,
-      transition: "background 200ms, border-color 200ms, color 200ms"
+      borderColor: color,
+      color: on ? "white" : color,
+      transition: "background 280ms ease, color 280ms ease"
     }, children: [
       label,
       ": ",
@@ -22579,13 +22820,13 @@
   var playBtnStyle = { width: 34, height: 34, borderRadius: "50%", background: COLORS.accent, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, border: "none", cursor: "pointer" };
   var pillStyle = { borderRadius: 20, padding: "6px 16px", fontSize: 12.5, fontWeight: 600, background: COLORS.bg, borderWidth: 1, borderStyle: "solid", borderColor: COLORS.border, color: COLORS.text, whiteSpace: "nowrap", cursor: "pointer" };
   var pillActiveStyle = { background: COLORS.accent, color: "white", borderColor: COLORS.accent };
-  var thStyleMath = { textAlign: "left", color: COLORS.eyebrow, fontWeight: 700, fontStyle: "italic", fontSize: 12, padding: "4px 8px", borderBottom: `1px solid ${COLORS.border}` };
-  var thStyleWord = { textAlign: "left", color: COLORS.eyebrow, fontWeight: 700, textTransform: "uppercase", fontSize: 10.5, padding: "4px 8px", borderBottom: `1px solid ${COLORS.border}` };
-  var tdStyle = { padding: "4px 8px", fontVariantNumeric: "tabular-nums" };
+  var thStyleMath = { textAlign: "left", color: COLORS.eyebrow, fontWeight: 700, fontStyle: "italic", fontSize: 11, padding: "3px 4px", borderBottom: `1px solid ${COLORS.border}` };
+  var thStyleWord = { textAlign: "left", color: COLORS.eyebrow, fontWeight: 700, textTransform: "uppercase", fontSize: 9.5, padding: "3px 4px", borderBottom: `1px solid ${COLORS.border}` };
+  var tdStyle = { padding: "3px 4px", fontVariantNumeric: "tabular-nums" };
   var eyebrowLabel = { fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: COLORS.eyebrow, marginBottom: 4 };
-  var eqRow = { display: "flex", alignItems: "center", fontSize: 15, flexWrap: "wrap", gap: 2 };
+  var eqRow = { display: "flex", alignItems: "center", fontSize: 12.5, flexWrap: "wrap", gap: 2 };
 
-  // src/main.jsx
+  // main.jsx
   var import_jsx_runtime2 = __toESM(require_jsx_runtime());
   var root = (0, import_client.createRoot)(document.getElementById("root"));
   root.render(/* @__PURE__ */ (0, import_jsx_runtime2.jsx)(SecantTangent, {}));
@@ -22647,4 +22888,7 @@ react/cjs/react-jsx-runtime.development.js:
    * LICENSE file in the root directory of this source tree.
    *)
 */
-</script></body></html>
+
+</script>
+</body>
+</html>
