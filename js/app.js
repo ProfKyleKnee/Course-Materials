@@ -362,6 +362,7 @@
     if (a.tileType === 'newtonTangent') return nmTileSVG();
     if (a.tileType === 'riemannSum') return rsTileSVG();
     if (a.tileType === 'secantTangent') return stTileSVG();
+    if (a.tileType === 'relatedRates') return rrTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
       <line class="axis-line" x1="8" y1="58" x2="8" y2="4"/>
@@ -1462,6 +1463,90 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.st-tile');
     if (svg) stStopSpin(svg);
+  });
+
+  // ---------- Related Rates Studio card tile (tileType: 'relatedRates' in js/data.js) ----------
+  // A point-down cone tank (the applet's own default shape), filling as f eases from RR_F_START up
+  // to RR_F_END and holding, then resetting. Drawn with the same 3D-perspective convention the real
+  // applet's own TankScenario uses for every shape: a flattened rim ellipse (ry = rx * an ellipse
+  // ratio, not a circle) rather than a flat-topped triangle, straight side walls tangent to the
+  // ellipse's own left/right extremes, and the water's top surface is its own ellipse sitting over
+  // an elliptical-bottomed fill path -- mirrors the real app's `... A rCurrentPx waterRimRy 0 0 0 ...`
+  // arc-based water path (RbottomPx is 0 for a point-down cone there too, since the apex has no
+  // radius, so the path collapses to the same apex-to-arc-to-apex teardrop shape used here).
+  // .rr-water-fill/.rr-water-surf are rewritten every frame via rrUpdate (real geometry, like
+  // rs-rect/st-sec, not an opacity fade). The dh/dt readout echoes the app's own Readout component
+  // (small uppercase label over a bold value) and uses real dh/dt = C / f^2 cone math (constant
+  // dV/dt divided by the shrinking cross-sectional area) so the number is always positive and
+  // genuinely decelerates as the tank fills, exactly like the real applet's own DH/DT card -- the
+  // specific constant C is tuned only for a readable two-decimal range at this tile's tiny scale,
+  // not for real-world units.
+  var RR_CX = 50, RR_APEX_Y = 84, RR_RIM_Y = 16, RR_RIM_RX = 24, RR_ELLIPSE_K = 0.24;
+  var RR_RIM_RY = RR_RIM_RX * RR_ELLIPSE_K;
+  var RR_F_START = 0.16, RR_F_END = 1.0, RR_DHDT_C = 0.05;
+  function rrWaterGeom(f) {
+    const rx = f * RR_RIM_RX;
+    return { rx, ry: rx * RR_ELLIPSE_K, y: RR_APEX_Y - f * (RR_APEX_Y - RR_RIM_Y) };
+  }
+  function rrWaterPath(g) {
+    if (g.rx <= 0.01) return '';
+    const xL = (RR_CX - g.rx).toFixed(1), xR = (RR_CX + g.rx).toFixed(1), y = g.y.toFixed(1);
+    return `M ${RR_CX} ${RR_APEX_Y} L ${xL} ${y} A ${g.rx.toFixed(1)} ${g.ry.toFixed(1)} 0 0 0 ${xR} ${y} Z`;
+  }
+  function rrDhdt(f) { return RR_DHDT_C / (f * f); }
+  function rrTileSVG() {
+    const g = rrWaterGeom(RR_F_START);
+    return `<svg class="rr-tile" viewBox="0 0 100 100">
+      <path class="rr-water-fill" d="${rrWaterPath(g)}"/>
+      <ellipse class="rr-water-surf" cx="${RR_CX}" cy="${g.y.toFixed(1)}" rx="${g.rx.toFixed(1)}" ry="${g.ry.toFixed(1)}"/>
+      <line class="rr-side" x1="${RR_CX - RR_RIM_RX}" y1="${RR_RIM_Y}" x2="${RR_CX}" y2="${RR_APEX_Y}"/>
+      <line class="rr-side" x1="${RR_CX + RR_RIM_RX}" y1="${RR_RIM_Y}" x2="${RR_CX}" y2="${RR_APEX_Y}"/>
+      <ellipse class="rr-rim" cx="${RR_CX}" cy="${RR_RIM_Y}" rx="${RR_RIM_RX}" ry="${RR_RIM_RY}"/>
+      <text class="rr-label" x="97" y="76" text-anchor="end">dh/dt</text>
+      <text class="rr-value" x="97" y="90" text-anchor="end">${rrDhdt(RR_F_START).toFixed(2)}</text>
+    </svg>`;
+  }
+  function rrUpdate(svg, f) {
+    const g = rrWaterGeom(f);
+    svg.querySelector('.rr-water-fill').setAttribute('d', rrWaterPath(g));
+    const surf = svg.querySelector('.rr-water-surf');
+    surf.setAttribute('cy', g.y.toFixed(1));
+    surf.setAttribute('rx', g.rx.toFixed(1));
+    surf.setAttribute('ry', g.ry.toFixed(1));
+    svg.querySelector('.rr-value').textContent = rrDhdt(f).toFixed(2);
+  }
+  var RR_RAMP_MS = 2400, RR_HOLD_MS = 550, RR_LOOP_MS = RR_RAMP_MS + RR_HOLD_MS;
+  function rrEase(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t); }
+  var rrSpins = new Map();
+  function rrStartSpin(svg) {
+    if (rrSpins.has(svg)) return;
+    const start = performance.now();
+    function frame(now) {
+      const t = (now - start) % RR_LOOP_MS;
+      const f = t <= RR_RAMP_MS
+        ? RR_F_START + (RR_F_END - RR_F_START) * rrEase(t / RR_RAMP_MS)
+        : RR_F_END;
+      rrUpdate(svg, f);
+      rrSpins.set(svg, requestAnimationFrame(frame));
+    }
+    rrSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function rrStopSpin(svg) {
+    const id = rrSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    rrSpins.delete(svg);
+    rrUpdate(svg, RR_F_START);
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.rr-tile');
+    if (svg) rrStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.rr-tile');
+    if (svg) rrStopSpin(svg);
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —

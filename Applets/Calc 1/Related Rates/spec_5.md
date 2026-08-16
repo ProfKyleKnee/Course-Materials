@@ -1,12 +1,34 @@
 # Related Rates Studio — Project Spec
 
 _Course: Calc 1_
-_Folder: Applets/Calc 1/Related Rates Studio/_
-_Last updated: July 22, 2026_
+_Folder: Applets/Calc 1/Related Rates/_
+_Last updated: August 15, 2026_
 
 ## Current status
 
-The "Filling/Draining Tank" scenario is fully built and polished: 6 shapes across two icon-rail groups — **Vertical**: Cylinder, Box (Box/Frustum), Cone (Point down/Point up/Frustum), Hourglass, Sphere/Hemisphere (Bowl/Dome/Full Sphere); **Horizontal**: Trough (V-Shaped/Semicircular/Trapezoidal). All shapes share one physics/rendering architecture, cross-fade smoothly between each other, and every sub-variant morphs continuously within its own shape. Rate values (dV/dt, dr/dt, etc.) are now directly editable, not just slider-driven. A standalone single-file HTML export has been built and validated (opens via `file://`, no network dependencies, ~257KB). The other three tabs (Sliding Ladder, Shadow & Streetlamp, Two Ships Departing) are still placeholder-only. Next planned shape is **Horizontal Cylinder** (tank on its side, filling as a circular segment) — the last item to complete the Horizontal group.
+Migrated into the canonical gradient-banner header/PageCredit footer pattern (see
+`.claude/rules/applets.md`) and wired into `js/data.js` for the first time (Unit 3, section 4.1),
+on the `RelatedRate-Wiring` branch. Only `RelatedRatesStudio()`'s outer App shell changed — the
+eyebrow/title block was replaced by the shared `Banner()`, the notebook tabs and unit switcher moved
+into the card body directly below the banner (same "tabs live in the white card body" convention
+Curve Sketching Studio established), and the outer wrapper switched from `minHeight: "100vh"` to
+`height: "100%"` per the full-viewport contract. None of `TankScenario`'s internals were touched.
+Rebuilt via the same `esbuild --bundle --format=iife --jsx=automatic` recipe as Quadric Surfaces/
+Curve Sketching/Newton's Method (real `import`-based source, `react@19`/`react-dom@19`), not a
+hand-splice. Card tile (`tileType: 'relatedRates'`) is a new dedicated animation: a point-down cone
+(the applet's own default shape) fills with the same 3D-perspective convention the real
+`TankScenario` uses for every shape — a flattened rim ellipse, straight side walls tangent to it, and
+an elliptical-bottomed `.rr-water-fill` path topped by its own `.rr-water-surf` ellipse, all rewritten
+every frame — rather than the flat 2D triangle/polygon the tile shipped with initially. A small
+`dh/dt = ` readout sits inside the tile itself (echoing the app's own Readout component) computed
+from real `C / f²` cone math so it's always positive and visibly decelerates as the tank fills —
+deliberately kept inside the tiny ~51px icon box rather than moved out to normal-size text next to
+it, per explicit direction, even though every other applet's tile is purely visual. The card's own
+`desc` text was reworded to describe related rates generally rather than the tank scenario
+specifically, since three of the four tabs aren't tank problems at all — matches the other applet
+cards' four-line description height.
+
+The "Filling/Draining Tank" scenario is fully built and polished: 6 shapes across two icon-rail groups — **Vertical**: Cylinder, Box (Box/Frustum), Cone (Point down/Point up/Frustum), Hourglass, Sphere/Hemisphere (Bowl/Dome/Full Sphere); **Horizontal**: Trough (V-Shaped/Semicircular/Trapezoidal). All shapes share one physics/rendering architecture, cross-fade smoothly between each other, and every sub-variant morphs continuously within its own shape. Rate values (dV/dt, dr/dt, etc.) are now directly editable, not just slider-driven. A standalone single-file HTML export has been built and validated (opens via `file://`, no network dependencies). The other three tabs (Sliding Ladder, Shadow & Streetlamp, Two Ships Departing) are still placeholder-only and were shipped as-is, matching how this repo has wired in other partially-complete applets before. Next planned shape is **Horizontal Cylinder** (tank on its side, filling as a circular segment) — the last item to complete the Horizontal group.
 
 ## Pedagogical goal
 

@@ -274,6 +274,23 @@
   .st-dotP { fill: var(--accent); }
   .st-dotQ { fill: #C1556B; }
 
+  /* ---------- Related Rates Studio card tile (tileType: 'relatedRates' in js/data.js) ----------
+     Matches the real applet's own 3D-perspective tank convention (flattened rim/water ellipses, not
+     a flat-topped triangle) rather than the generic curve+dot tile. .rr-water-fill/.rr-water-surf
+     are re-drawn every frame by js/app.js's rrUpdate as the cone fills (genuine geometry, like
+     .rs-rect and .st-sec, not an opacity fade), sitting behind the .rr-side/.rr-rim outline so the
+     tank's stroke stays crisp over the rising fill — same paint order and the same waterFill/
+     waterSurface color pair as the real applet's TankScenario. .rr-label/.rr-value echo the real
+     applet's own Readout component (small uppercase label over a bold value) — tiny at this tile's
+     ~51px scale by design, per Kyle's own call to keep the readout inside the icon box rather than
+     move it out to normal-size text. */
+  .rr-side { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .rr-rim { fill: none; stroke: var(--accent); stroke-width: 3; }
+  .rr-water-fill { fill: #8FA3E8; fill-opacity: 0.85; stroke: none; }
+  .rr-water-surf { fill: #5C74D6; fill-opacity: 0.9; stroke: none; }
+  .rr-label { font-size: 8px; font-weight: 600; fill: var(--muted); font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; }
+  .rr-value { font-size: 13px; font-weight: 800; fill: var(--accent); font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; }
+
   .jump-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .jump-link { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; padding: 4px 2px; border-bottom: 1px dotted var(--accent-2); }
   .jump-link:hover { color: var(--accent); }

@@ -100,7 +100,25 @@ standard (documented in `.claude/rules/applets.md`'s new "Function input pill" s
 applet has been retrofitted to it so far) — added on the `SecantToTangent-Wiring` branch (not yet
 merged to `main`), plus a site-wide fix on that same branch making every applet card
 (`appletCardHTML()` in `js/app.js`) a real `<a href>` instead of a `<div onclick>` so right-click →
-"Open link in new tab" works natively, with a plain click still behaving exactly as before.
+"Open link in new tab" works natively, with a plain click still behaving exactly as before, plus the
+Calc 1 Related Rates Studio applet migrated to that same canonical header/footer pattern (rebuilt via
+the same `import`-based esbuild recipe as Quadric Surfaces/Curve Sketching/Newton's Method, with only
+the outer App shell touched — the tab switcher and unit toggle moved into the card body below the
+banner, `TankScenario`'s internals untouched) and wired into `js/data.js` for the first time (Unit 3,
+section 4.1) with its still-placeholder Sliding Ladder/Shadow & Streetlamp/Two Ships Departing tabs
+shipped as-is, plus a dedicated `relatedRates` card-tile hover animation (a point-down cone tank —
+the applet's own default shape — rendered with the same 3D-perspective convention the real
+`TankScenario` uses for every shape, a flattened rim ellipse and elliptical-bottomed water fill
+rather than a flat 2D triangle, filling via real geometry rewritten every frame, not the generic
+curve+dot tile, with a small live `dh/dt = ` readout inside the tile itself computed from real
+`C / f²` cone math so the number is always positive and visibly decelerates as the tank fills;
+deliberately kept inside the tile's own tiny ~51px icon box rather than moved out to normal-size text
+beside it, by explicit request, even though no other applet's card tile embeds numeric text), a card
+`desc` reworded to describe related rates generally rather than the tank scenario specifically (since
+three of the four tabs aren't tank problems), and the removal of the two dummy `Applet` placeholder
+items that previously stood in for Precalculus's Unit Circle Explorer and Linear Algebra's
+Eigenvalues & Eigenvectors (both `launchUrl: '#'`, never real applets) — added on the
+`RelatedRate-Wiring` branch (not yet merged to `main`).
 
 ---
 
@@ -284,8 +302,13 @@ pulls `resource` items out of the unit computation entirely and renders them in 
 (nonexistent) unit.
 
 For courses in `coursesInDevelopment` (Precalculus, Linear Algebra, Discrete, Statistics), every
-file/URL field in the dataset is still a single hand-written placeholder item per type with `'#'`
-values. **Calculus I, II, and III are the exception** — every `LectureGuideNotes`, `Worksheet`, and
+file/URL field in the dataset is still a single hand-written placeholder item with `'#'` values —
+not necessarily one per type, though: Precalculus and Linear Algebra each carry only a
+`LectureGuideNotes` placeholder, Discrete only a `Worksheet`, and Statistics both; none of the four
+has ever had a `LectureVideo` placeholder, and Precalculus/Linear Algebra's one-off `Applet`
+placeholders (Unit Circle Explorer, Eigenvalues & Eigenvectors) were removed on the
+`RelatedRate-Wiring` branch as dead weight with no real applet behind them.
+**Calculus I, II, and III are the exception** — every `LectureGuideNotes`, `Worksheet`, and
 (for Calc I/II) `LectureVideo` item has a real `guideFile`/`notesFile`/`worksheetFile`/
 `solutionsFile` (a path into `Course Materials/Calc <N>/...`, see above) or `playlistUrl` (a real
 YouTube playlist link). Calc III's `LectureVideo` items are a mix — see the `inProgress` note above.

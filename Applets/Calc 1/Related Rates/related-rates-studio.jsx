@@ -3479,81 +3479,154 @@ export default function RelatedRatesStudio() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        width: "100%",
-        background: COLORS.bg,
         fontFamily: FONT,
-        padding: "28px 24px 40px",
+        background: COLORS.bg,
+        height: "100%",
+        padding: "24px 24px 0",
         boxSizing: "border-box",
+        color: COLORS.text,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: COLORS.eyebrow }}>
-              Calculus 1 · Related Rates
-            </span>
-            <h1 style={{ margin: "4px 0 0", fontSize: 24, fontWeight: 700, color: COLORS.text }}>Related Rates Studio</h1>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 4, background: COLORS.card, borderRadius: 20, padding: 4, boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }}>
-            {UNITS.map((u) => (
-              <button
-                key={u}
-                onClick={() => setUnit(u)}
-                style={{
-                  border: "none",
-                  borderRadius: 16,
-                  padding: "6px 12px",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  fontFamily: FONT,
-                  cursor: "pointer",
-                  background: unit === u ? COLORS.accent : "transparent",
-                  color: unit === u ? "#FFFFFF" : COLORS.muted,
-                }}
-              >
-                {u}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Notebook-style tabs (style A) */}
-        <div style={{ display: "flex", gap: 4, paddingLeft: 10 }}>
-          {TABS.map((name, i) => (
-            <button
-              key={name}
-              onClick={() => setActiveTab(i)}
+      <div
+        style={{
+          maxWidth: 1200,
+          width: "100%",
+          margin: "0 auto",
+          borderRadius: 20,
+          boxShadow: "0 4px 24px rgba(60,60,90,0.14)",
+          overflow: "hidden",
+          flexShrink: 0,
+          background: COLORS.card,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Banner />
+        <div style={{ padding: "20px 24px 32px" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 0, flexWrap: "wrap", gap: 12 }}>
+              {/* Notebook-style tabs (style A) */}
+              <div style={{ display: "flex", gap: 4, paddingLeft: 10 }}>
+                {TABS.map((name, i) => (
+                  <button
+                    key={name}
+                    onClick={() => setActiveTab(i)}
+                    style={{
+                      background: activeTab === i ? COLORS.card : COLORS.tabInactive,
+                      color: activeTab === i ? COLORS.accent : COLORS.muted,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: "10px 10px 0 0",
+                      padding: "9px 18px",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: FONT,
+                      cursor: "pointer",
+                      position: "relative",
+                      top: 1,
+                      zIndex: activeTab === i ? 2 : 1,
+                    }}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, background: COLORS.card, borderRadius: 20, padding: 4, boxShadow: "0 1px 3px rgba(60,60,90,0.07)" }}>
+                {UNITS.map((u) => (
+                  <button
+                    key={u}
+                    onClick={() => setUnit(u)}
+                    style={{
+                      border: "none",
+                      borderRadius: 16,
+                      padding: "6px 12px",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      fontFamily: FONT,
+                      cursor: "pointer",
+                      background: unit === u ? COLORS.accent : "transparent",
+                      color: unit === u ? "#FFFFFF" : COLORS.muted,
+                    }}
+                  >
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div
               style={{
-                background: activeTab === i ? COLORS.card : COLORS.tabInactive,
-                color: activeTab === i ? COLORS.accent : COLORS.muted,
+                background: COLORS.card,
                 border: `1px solid ${COLORS.border}`,
-                borderRadius: "10px 10px 0 0",
-                padding: "9px 18px",
-                fontSize: 13,
-                fontWeight: 600,
-                fontFamily: FONT,
-                cursor: "pointer",
-                position: "relative",
-                top: 1,
-                zIndex: activeTab === i ? 2 : 1,
+                borderRadius: "0 12px 12px 12px",
+                padding: 20,
               }}
             >
-              {name}
-            </button>
-          ))}
-        </div>
-        <div
-          style={{
-            background: COLORS.card,
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: "0 12px 12px 12px",
-            padding: 20,
-          }}
-        >
-          {activeTab === 0 ? <TankScenario unit={unit} /> : <PlaceholderScenario name={TABS[activeTab]} />}
+              {activeTab === 0 ? <TankScenario unit={unit} /> : <PlaceholderScenario name={TABS[activeTab]} />}
+            </div>
+          </div>
         </div>
       </div>
+      <PageCredit />
+    </div>
+  );
+}
+
+function Banner() {
+  return (
+    <div
+      style={{
+        position: "relative", overflow: "hidden", display: "flex", alignItems: "center",
+        justifyContent: "space-between", gap: 16, padding: "16px 28px", flexShrink: 0,
+        background: "linear-gradient(135deg, #3B4FC2, #4A5CD6)",
+      }}
+    >
+      <svg
+        viewBox="0 0 1200 130" preserveAspectRatio="none"
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.14, pointerEvents: "none" }}
+      >
+        <path d="M0 95 C 200 15, 340 120, 560 45 S 900 5, 1200 75" stroke="white" strokeWidth="2.5" fill="none" />
+      </svg>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, position: "relative", zIndex: 1 }}>
+        <a
+          href="../../../browse.html#/applets"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 5, color: "rgba(255,255,255,0.88)",
+            textDecoration: "none", fontSize: 12.5, fontWeight: 600, whiteSpace: "nowrap",
+            padding: "6px 10px", borderRadius: 8, background: "rgba(255,255,255,0.12)",
+          }}
+        >
+          ← All Applets
+        </a>
+        <div style={{ width: 1, alignSelf: "stretch", background: "rgba(255,255,255,0.22)" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.65)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Calculus I · Unit 3
+          </div>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.005em" }}>Related Rates Studio</h1>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PageCredit() {
+  return (
+    <div
+      style={{
+        marginTop: "auto", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 11, padding: "18px 20px 26px", fontSize: 13.5, color: COLORS.eyebrow,
+      }}
+    >
+      <span
+        style={{
+          width: 40, height: 40, borderRadius: "50%", background: "#FFFFFF", border: `1px solid ${COLORS.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}
+      >
+        <img src="../../../assets/favicon.svg" alt="" width="28" height="28" />
+      </span>
+      Professor Kyle Knee · Harper College Mathematics
     </div>
   );
 }
