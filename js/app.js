@@ -2001,8 +2001,50 @@
     const h = (window.location.hash || '').replace(/^#/, '');
     if (h === '/applets') return { level: 'typeBrowse', type: 'Applet' };
     if (h === '/lecture-videos') return { level: 'typeBrowse', type: 'LectureVideo' };
+    if (h === '/worksheets') return { level: 'typeBrowse', type: 'Worksheet' };
+    if (h === '/lecture-guides-notes') return { level: 'typeBrowse', type: 'LectureGuideNotes' };
+    if (h === '/course-materials' || h === '') return { level: 'courseMaterials' };
+
+    // /course-materials/<courseSlug>/<type>[/unit-<n>] — a course's type-browse (tier3) page
+    let m = h.match(/^\/course-materials\/([^/]+)\/([^/]+?)(?:\/unit-([^/]+))?$/);
+    if (m) {
+      const course = courseOrder.find(c => slug(c) === m[1]);
+      const type = typeOrder.includes(m[2]) ? m[2] : null;
+      if (course && type) {
+        return { level: 'tier3', entry: 'course', course, type, isolatedUnit: m[3] || null, subtypeFilter: null };
+      }
+    }
+    // /course-materials/<courseSlug> — a course's landing page (tier2)
+    m = h.match(/^\/course-materials\/([^/]+)$/);
+    if (m) {
+      const course = courseOrder.find(c => slug(c) === m[1]);
+      if (course) return { level: 'tier2', entry: 'course', course };
+    }
+    // /type/<type>/<courseSlug>[/unit-<n>] — a type's course-filtered browse (tier3) page
+    m = h.match(/^\/type\/([^/]+)\/([^/]+?)(?:\/unit-([^/]+))?$/);
+    if (m) {
+      const type = typeOrder.includes(m[1]) ? m[1] : null;
+      const course = courseOrder.find(c => slug(c) === m[2]);
+      if (type && course) {
+        return { level: 'tier3', entry: 'type', course, type, isolatedUnit: m[3] || null, subtypeFilter: null };
+      }
+    }
+    // /item/<id> — an item detail page
+    m = h.match(/^\/item\/([^/]+)$/);
+    if (m && items.find(i => i.id === m[1])) return { level: 'detail', id: m[1] };
+
     return { level: 'courseMaterials' };
   }
   state = stateFromHash();
   try { history.replaceState(state, '', '#' + statePath(state)); } catch (e) { /* ignore */ }
   render();
+
+  // A hash-only change (e.g. typing/editing the URL's #route directly while browse.html is
+  // already open) is a same-document navigation — the browser doesn't reload the page, and
+  // doesn't fire popstate either, so without this listener the route above only ever gets
+  // parsed once, on the page's very first load.
+  window.addEventListener('hashchange', function () {
+    state = stateFromHash();
+    try { history.replaceState(state, '', '#' + statePath(state)); } catch (e) { /* ignore */ }
+    render();
+  });
