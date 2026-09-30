@@ -1298,3 +1298,13 @@
   // js/home.js (excluded from the hero "Courses" stat count). Remove a course from this list once
   // its real catalog replaces the placeholder items. ----------
   const coursesInDevelopment = ["Precalculus", "Linear Algebra", "Discrete", "Statistics"];
+
+  // ---------- indefinite lockdown (2026-09-30): every Applet item id except Quadric Surfaces
+  // Explorer ('a-c3-41'), temporarily taken out of circulation site-wide. Shared between
+  // js/app.js (same caution-tape + "In Development" treatment as coursesInDevelopment above,
+  // applied per-card instead of per-course, plus a pointer-events lock so the card can't be
+  // clicked/launched) and js/home.js (excluded from the hero "Applets" stat count). The applets'
+  // own shipped HTML files are untouched and still fully usable directly — this only hides them
+  // from browse.html's nav/carousels. Clear this list (or remove individual ids) to bring an
+  // applet back; nothing else needs to change. ----------
+  const disabledApplets = ["a-c1-31", "a-c1-41", "a-c1-45", "a-c1-49", "a-c1-51", "a-c2-26", "a-c2-41", "a-c2-52", "a-c3-13", "a-c3-33"];

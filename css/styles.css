@@ -140,6 +140,14 @@
     border: 1px solid transparent; border-top: 4px solid var(--unit-color, transparent);
   }
   .applet-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); border-left-color: var(--border); border-right-color: var(--border); border-bottom-color: var(--border); }
+
+  /* ---------- applet-level counterpart to .course-directory-card-locked above: an individual
+     applet card temporarily taken out of circulation (disabledApplets in js/data.js) rather than
+     a whole course. Grayed out and pointer-events-locked instead of removed from the DOM, so the
+     caution-tape/pill treatment below still renders and the card can't be clicked or hovered into
+     its tile animation. ---------- */
+  .applet-card-disabled { cursor: default; filter: grayscale(1); opacity: 0.6; pointer-events: none; }
+  .applet-card-disabled:hover { transform: none; box-shadow: 0 1px 3px rgba(60,60,90,0.07); border-left-color: transparent; border-right-color: transparent; border-bottom-color: transparent; }
   .ac-eyebrow { text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 700; margin-bottom: 3px; }
   .ac-title { font-size: 14.5px; font-weight: 700; line-height: 1.25; margin-bottom: 10px; }
   .ac-body { display: flex; gap: 12px; align-items: flex-start; }

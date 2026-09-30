@@ -48,7 +48,10 @@ function renderHeroStats() {
     else animateStat(el, n);
   };
   set('courses', courseOrder.filter(c => items.some(i => i.course === c) && !coursesInDevelopment.includes(c)).length);
-  typeOrder.forEach(t => set(t, items.filter(i => i.type === t).length));
+  typeOrder.forEach(t => {
+    const inType = items.filter(i => i.type === t);
+    set(t, t === 'Applet' ? inType.filter(i => !disabledApplets.includes(i.id)).length : inType.length);
+  });
 }
 renderHeroStats();
 
