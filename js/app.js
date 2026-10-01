@@ -1608,10 +1608,14 @@
 
   // ---------- v18: sidebar content is now shared between the top-level typeBrowse page and the
   // course-specific tier3 page for the same type — same copy either way, since it's type-level,
-  // not course-level, information. Icon now sits inline with the heading instead of stacked above it. ----------
+  // not course-level, information. Icon now sits inline with the heading instead of stacked above it.
+  // v20: an optional course param appends a course-specific Bulk Download (ZIP) section (see
+  // js/downloads.js) below that same copy — only passed in on tier3 (which always has a specific
+  // course, even when reached via openTier3('type', ...) off the top-level carousel), never on
+  // typeBrowse, which spans every course at once and has no single course to bundle. ----------
   const sidebarTypes = ['LectureVideo', 'Worksheet', 'LectureGuideNotes'];
 
-  function sidebarContentForType(type) {
+  function sidebarContentForType(type, course) {
     if (type === 'LectureVideo') {
       return `
         <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.LectureVideo}</div><h3>Lecture Videos on YouTube</h3></div>
@@ -1624,6 +1628,7 @@
         <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.Worksheet}</div><h3>Worksheets</h3></div>
         <p>${worksheetsOrgText}</p>
         <p>${worksheetsUseText}</p>
+        ${course ? worksheetDownloadSectionHTML(course) : ''}
       `;
     }
     if (type === 'LectureGuideNotes') {
@@ -1631,6 +1636,7 @@
         <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.LectureGuideNotes}</div><h3>Lecture Guides/Notes</h3></div>
         <p>${guidesOrgText}</p>
         <p>${guidesUseText}</p>
+        ${course ? guideNotesDownloadSectionHTML(course) : ''}
       `;
     }
     return '';
@@ -1640,7 +1646,10 @@
     const card = document.getElementById('sidebar-card');
     card.className = 'sidebar-card';
     if (state.level === 'typeBrowse' || state.level === 'tier3') {
-      card.innerHTML = sidebarContentForType(state.type);
+      const courseForDownload = state.level === 'tier3' ? state.course : null;
+      card.innerHTML = sidebarContentForType(state.type, courseForDownload);
+    } else if (state.level === 'tier2' && state.entry === 'course') {
+      card.innerHTML = courseDownloadSidebarHTML(state.course);
     }
   }
 
@@ -1750,25 +1759,32 @@
     return subtypeChipsHTML + chipsHTML + rows + resourcesHTML;
   }
 
-  // Lines the sidebar card's resting position up with the jump row (course chips on typeBrowse,
-  // unit chips on tier3) instead of the very top of the main column, so it doesn't sit noticeably
-  // higher than the content it's next to. Matches the .page-shell breakpoint (900px) where the
-  // sidebar drops below the main column instead of sitting beside it — no offset needed there.
-  function alignSidebarToJumpRow() {
+  // Lines the sidebar card's resting position up with a landmark in the main column (the jump row
+  // on typeBrowse/tier3, the course-info blurb box on tier2) instead of the very top of the main
+  // column, so it doesn't sit noticeably higher than the content it's next to. Matches the
+  // .page-shell breakpoint (900px) where the sidebar drops below the main column instead of
+  // sitting beside it — no offset needed there.
+  function alignSidebarTo(selector) {
     const sidebar = document.getElementById('sidebar-card');
     if (!sidebar) return;
-    const jumpRow = document.querySelector('#page .jump-row');
-    if (!jumpRow || window.innerWidth <= 900) { sidebar.style.marginTop = ''; return; }
+    const target = document.querySelector(`#page ${selector}`);
+    if (!target || window.innerWidth <= 900) { sidebar.style.marginTop = ''; return; }
     // offsetTop is relative to the nearest *positioned* ancestor — neither #page nor .page-shell
     // has one, so it was resolving all the way up to the document, not to the sidebar's own
     // starting position. Comparing bounding rects instead measures the actual on-screen gap.
     sidebar.style.marginTop = '0px';
-    const delta = jumpRow.getBoundingClientRect().top - sidebar.getBoundingClientRect().top;
+    const delta = target.getBoundingClientRect().top - sidebar.getBoundingClientRect().top;
     sidebar.style.marginTop = Math.max(0, delta) + 'px';
   }
-  window.addEventListener('resize', () => {
+  function alignSidebarToJumpRow() { alignSidebarTo('.jump-row'); }
+  // v20: tier2's course landing page has no .jump-row, but does have a .course-info blurb box —
+  // its "Download Everything" box (courseDownloadSidebarHTML) aligns to that instead, so it reads
+  // as paired with the course description rather than starting level with the page title above it.
+  function realignSidebar() {
     if (state.level === 'typeBrowse' || state.level === 'tier3') alignSidebarToJumpRow();
-  });
+    else if (state.level === 'tier2' && state.entry === 'course') alignSidebarTo('.course-info');
+  }
+  window.addEventListener('resize', realignSidebar);
 
   function render() {
     updateNavHighlight();
@@ -1777,8 +1793,11 @@
     const shell = document.querySelector('.page-shell');
     // v18: sidebar now applies on both the top-level typeBrowse page AND the course-specific tier3
     // page, for the same three types; Applets stays sidebar-less on both.
+    // v20: also applies on the tier2 course landing page, for its new "Download Everything" box —
+    // the dead tier2 type-entry branch (entry !== 'course') still gets no sidebar, same as before.
     const showSidebar = (state.level === 'typeBrowse' && sidebarTypes.includes(state.type))
-      || (state.level === 'tier3' && sidebarTypes.includes(state.type));
+      || (state.level === 'tier3' && sidebarTypes.includes(state.type))
+      || (state.level === 'tier2' && state.entry === 'course');
     if (showSidebar) { shell.classList.remove('no-sidebar'); renderSidebar(); }
     else { shell.classList.add('no-sidebar'); }
 
@@ -1844,7 +1863,7 @@
         <div class="result-count">${countText}</div>
         ${courseCarouselsHTML(t)}
       `;
-      alignSidebarToJumpRow();
+      realignSidebar();
       return;
     }
 
@@ -1898,6 +1917,10 @@
         ${infoHTML}
         ${tilesHTML}
       `;
+      // Aligns the "Download Everything" box to .course-info on entry === 'course'; on the dead
+      // type-entry branch there's no sidebar shown at all (see showSidebar above), so this just
+      // clears any marginTop left over from whichever page the sidebar was last aligned on.
+      realignSidebar();
       return;
     }
 
@@ -1909,7 +1932,7 @@
         ${titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`, state.course)}
         ${tier3BodyHTML(matches, state.course, state.type)}
       `;
-      alignSidebarToJumpRow();
+      realignSidebar();
       return;
     }
 

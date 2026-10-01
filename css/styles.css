@@ -63,6 +63,34 @@
   .sidebar-icon-inline svg { width: 22px; height: 22px; stroke: var(--accent); fill: none; stroke-width: 1.6; }
   .sidebar-header-row h3 { margin: 0; }
 
+  /* ---------- v20: bulk-download (ZIP) sections appended inside the Worksheets/Lecture
+     Guides-Notes sidebar boxes (js/downloads.js's worksheetDownloadSectionHTML/
+     guideNotesDownloadSectionHTML), plus the brand-new "Download Everything" box on the course
+     landing page (courseDownloadSidebarHTML) — see wiring.md for which page gets which. The
+     divider+label is how an existing box signals "this next part is a different section" rather
+     than more of the same blurb copy above it; the buttons reuse .file-link's own pill look
+     (var(--soft) background, accent text) so they read as part of the same visual language as
+     every other download link on the site, just as <button> instead of <a> since clicking one
+     triggers JS instead of navigating. ---------- */
+  .dl-divider { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 14px; }
+  .dl-section-label { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-2); margin-bottom: 10px; }
+  .dl-section-label svg { width: 14px; height: 14px; stroke: var(--accent-2); fill: none; stroke-width: 2; }
+  .dl-format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .dl-format-col-head { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-bottom: 8px; }
+  .dl-btn-stack { display: flex; flex-direction: column; gap: 8px; }
+  .dl-single-row { display: flex; gap: 10px; }
+  .dl-btn {
+    display: flex; align-items: center; justify-content: center; width: 100%;
+    background: var(--soft); color: var(--accent); font-weight: 600; font-size: 12.5px;
+    font-family: inherit; line-height: 1.3; text-align: center;
+    border: none; border-radius: 10px; padding: 9px 8px; cursor: pointer; transition: background 0.15s;
+  }
+  .dl-single-row .dl-btn { padding: 10px 8px; font-size: 13px; }
+  .dl-btn:hover { background: var(--border); }
+  .dl-btn.loading { color: var(--muted); cursor: wait; }
+  .dl-btn.disabled, .dl-btn:disabled { background: var(--bg); color: var(--eyebrow); cursor: not-allowed; border: 1px dashed var(--border); }
+  .dl-btn.disabled:hover, .dl-btn:disabled:hover { background: var(--bg); }
+
   .breadcrumb { font-size: 13px; color: var(--muted); margin-bottom: 18px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .breadcrumb span.crumb { cursor: pointer; }
   .breadcrumb span.crumb:hover { color: var(--accent); text-decoration: underline; }
