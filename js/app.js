@@ -87,7 +87,13 @@
       const friendlySlug = { Applet: 'applets', LectureVideo: 'lecture-videos', Worksheet: 'worksheets', LectureGuideNotes: 'lecture-guides-notes' };
       return '/' + (friendlySlug[s.type] || s.type.toLowerCase());
     }
-    if (s.level === 'tier2') return s.entry === 'course' ? `/course-materials/${slug(s.course)}` : `/type/${s.type}`;
+    if (s.level === 'tier2') {
+      if (s.entry !== 'course') return `/type/${s.type}`;
+      return `/course-materials/${slug(s.course)}` + (s.view === 'topic' ? '/topics' : '');
+    }
+    if (s.level === 'unit') {
+      return `/course-materials/${slug(s.course)}/` + (s.unit === 'resources' ? 'resources' : `unit-${unitLabel(s.course, s.unit)}`);
+    }
     if (s.level === 'tier3') {
       let base = s.entry === 'course' ? `/course-materials/${slug(s.course)}/${s.type}` : `/type/${s.type}/${slug(s.course)}`;
       if (s.isolatedUnit) base += `/unit-${s.isolatedUnit}`;
@@ -148,6 +154,29 @@
     return (overrides && overrides[u]) || u;
   }
 
+  // ---------- v21: unit titles for the browse-by-topic view and the unit pages. Keyed by the same raw
+  // unitOf() value the grouping uses (so Calc I is keyed by chapter 2-5, Calc II's merged Unit 4 by
+  // '4'). Every title is the chapter folder name under Course Materials/<Course>/Notes/ — keep the
+  // two in sync when a folder is renamed. ----------
+  const unitTitles = {
+    'Calculus I': { '2': 'Limits', '3': 'Derivatives', '4': 'Applications of Derivatives', '5': 'Integration' },
+    'Calculus II': { '1': 'Applications of Integrals', '2': 'Integration Techniques', '3': 'Infinite Series', '4': 'Power Series; Polar & Parametric Curves & Conics' },
+    'Calculus III': { '1': 'Three-Dimensional Space; Vectors', '2': 'Vector-Valued Functions', '3': 'Partial Derivatives', '4': 'Multiple Integrals', '5': 'Topics In Vector Calculus' },
+  };
+  function unitTitle(course, u) {
+    return (unitTitles[course] && unitTitles[course][u]) || '';
+  }
+  // Raw unit keys (unitOf values) a course has real, non-resource items in, in numeric order.
+  function courseUnitKeys(course) {
+    return [...new Set(items.filter(i => i.course === course && !i.resource).map(unitOf))]
+      .sort((a, b) => Number(a) - Number(b));
+  }
+  // The URL carries the number students actually see ("unit-1" for Calc I's Chapter 2), so a
+  // route's label has to be mapped back to the raw key the rest of the code groups by.
+  function unitFromLabel(course, label) {
+    return courseUnitKeys(course).find(u => unitLabel(course, u) === label) || null;
+  }
+
   const RECENT_WINDOW_DAYS = 30;
   function isRecentlyUpdated(dateStr) {
     const updated = new Date(dateStr + 'T00:00:00');
@@ -191,11 +220,31 @@
     if (state.level === 'typeBrowse' && state.type === 'LectureVideo') { setCurrentNav('nav-videos'); return; }
     if (state.level === 'courseMaterials') { setCurrentNav('nav-coursematerials'); return; }
     if (['tier2', 'tier3'].includes(state.level) && state.entry === 'course') { setCurrentNav('nav-coursematerials'); return; }
-    if (state.level === 'detail') { setCurrentNav('nav-coursematerials'); return; }
+    if (state.level === 'unit' || state.level === 'detail') { setCurrentNav('nav-coursematerials'); return; }
   }
 
   function goToCourseMaterials() { navigate({ level: 'courseMaterials' }); }
-  function enterCourse(course) { navigate({ level: 'tier2', entry: 'course', course }); }
+
+  // ---------- v21: course landing page has two entry points, "by type" (the four tiles) and "by topic"
+  // (a unit list). The last choice is remembered per browser; it's only a convenience, so every
+  // read/write is wrapped and the page works the same without it. ----------
+  const LANDING_VIEW_KEY = 'cm-landing-view';
+  function savedLandingView() {
+    try { return localStorage.getItem(LANDING_VIEW_KEY) === 'topic' ? 'topic' : 'type'; } catch (e) { return 'type'; }
+  }
+  function enterCourse(course) { navigate({ level: 'tier2', entry: 'course', course, view: savedLandingView() }); }
+  function setLandingView(view) {
+    try { localStorage.setItem(LANDING_VIEW_KEY, view); } catch (e) { /* ignore */ }
+    navigate(Object.assign({}, state, { view }));
+  }
+  function openUnit(course, unit) {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    navigate({ level: 'unit', course, unit });
+  }
+  function jumpToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   // ---------- v17: all four material types now open the same course-carousel browse page ----------
   // (previously Worksheet/LectureGuideNotes routed to the old tier2 folder-tile page instead)
@@ -341,6 +390,11 @@
       if (state.isolatedUnit) {
         parts.push(`<span class="sep">/</span><span class="current-crumb">Unit ${unitLabel(state.course, state.isolatedUnit)}</span>`);
       }
+    }
+    if (state.level === 'unit') {
+      parts.push(`<span class="sep">/</span><span class="crumb" onclick="goToCourseMaterials()">Course Materials</span>`);
+      parts.push(`<span class="sep">/</span><span class="crumb" onclick="navigate({ level: 'tier2', entry: 'course', course: '${state.course}', view: 'topic' })">${state.course}</span>`);
+      parts.push(`<span class="sep">/</span><span class="current-crumb">${state.unit === 'resources' ? 'Resources' : 'Unit ' + unitLabel(state.course, state.unit)}</span>`);
     }
     if (state.level === 'detail') {
       const item = items.find(i => i.id === state.id);
@@ -1651,7 +1705,159 @@
       card.innerHTML = sidebarContentForType(state.type, courseForDownload);
     } else if (state.level === 'tier2' && state.entry === 'course') {
       card.innerHTML = courseDownloadSidebarHTML(state.course);
+    } else if (state.level === 'unit') {
+      const bands = unitBands(state.course, state.unit);
+      const jumpHTML = bands.length > 1 ? `<div class="unit-jump">
+        <div class="unit-jump-label">Jump to section</div>
+        ${bands.map(b => `<a class="unit-jump-link" onclick="jumpToSection('${b.id}')">${b.num ? `<b>${b.num}</b>` : ''}${b.title}</a>`).join('')}
+      </div>` : '';
+      card.innerHTML = courseDownloadSidebarHTML(state.course) + jumpHTML;
     }
+  }
+
+  // ---------- v21: unit pages (browse-by-topic). One band per section, every material type mixed together
+  // inside it, in the same tile style for all four types. Each tile opens the existing item detail
+  // page, which already bundles everything else filed under that section. ----------
+
+  // Sub-sections (5.2.1, 5.2.2) collapse into their parent band (5.2); a section with no sub-sections
+  // keys as itself, and the placeholder "X.0" section (Skills Checks) keeps its own band.
+  function bandKeyOfSection(s) {
+    const p = s.split('.');
+    return p.length > 2 ? p.slice(0, 2).join('.') : s;
+  }
+  // Same chapter -> unit mapping unitOf() uses, but for one section string, so an item that lists
+  // sections in more than one place ("4.2 & 4.4", or an applet covering 5.2 and 5.3.2) can be
+  // checked section by section.
+  function unitOfSection(course, s) {
+    const chapter = s.split('.')[0] || '0';
+    const merge = unitMergeOverrides[course];
+    return (merge && merge[chapter]) || chapter;
+  }
+  // The unit page's band keys an item belongs under: one per distinct section it lists that falls in
+  // this unit, so a multi-section worksheet or applet shows up in every band it covers.
+  function itemBandKeysInUnit(item, unit) {
+    return [...new Set((item.sections || [])
+      .filter(s => unitOfSection(item.course, s) === unit)
+      .map(bandKeyOfSection))];
+  }
+  function itemsInUnit(course, unit) {
+    return items.filter(i => i.course === course && !i.resource && itemBandKeysInUnit(i, unit).length);
+  }
+  function bandKeyCompare(a, b) {
+    const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const d = (pa[i] || 0) - (pb[i] || 0);
+      if (d) return d;
+    }
+    return 0;
+  }
+  // A band's title: an item that spans several sub-sections of this one band (a 5.2.1 & 5.2.2
+  // worksheet) already carries the joined label ("Line Integrals & Work Integrals"), so prefer it.
+  // Otherwise take the label most items agree on — Blended worksheets sometimes use their own
+  // wording, and an item spanning two *different* sections (4.2 & 4.4) would name the wrong one.
+  // Ties go to the earliest item, which is a Lecture Guide since bands sort guides first.
+  // Applets have no sectionLabel and are ignored here.
+  function bandTitleOf(bandItems, key) {
+    const spanning = bandItems.find(i => i.sectionLabel && (i.sections || []).length > 1
+      && i.sections.every(s => s.split('.').slice(0, 2).join('.') === key));
+    if (spanning) return spanning.sectionLabel;
+    const counts = new Map();
+    bandItems.forEach(i => { if (i.sectionLabel) counts.set(i.sectionLabel, (counts.get(i.sectionLabel) || 0) + 1); });
+    let best = '', bestN = 0;
+    counts.forEach((n, label) => { if (n > bestN) { best = label; bestN = n; } });
+    return best;
+  }
+  const unitBandTypeRank = { LectureGuideNotes: 0, Worksheet: 1, LectureVideo: 2, Applet: 3 };
+  function unitBandItemCompare(a, b) {
+    return (unitBandTypeRank[a.type] - unitBandTypeRank[b.type])
+      || sectionCompare(a, b)
+      || ((a.subtype === 'Blended') - (b.subtype === 'Blended'));
+  }
+  // Returns [{ id, key, num, title, items }] for one unit, or a single un-numbered "Resources" band.
+  function unitBands(course, unit) {
+    const courseItems = items.filter(i => i.course === course);
+    if (unit === 'resources') {
+      const res = courseItems.filter(i => i.resource).sort(unitBandItemCompare);
+      return res.length ? [{ id: 'sec-resources', key: 'resources', num: '', title: 'Review packets & reference sheets', items: res }] : [];
+    }
+    const byKey = {};
+    itemsInUnit(course, unit).forEach(i => {
+      itemBandKeysInUnit(i, unit).forEach(k => { (byKey[k] = byKey[k] || []).push(i); });
+    });
+    return Object.keys(byKey).sort(bandKeyCompare).map(key => {
+      const bandItems = byKey[key].sort(unitBandItemCompare);
+      const isSkillCheck = key.split('.')[1] === '0';
+      return { id: 'sec-' + key.replace(/\./g, '-'), key, num: isSkillCheck ? '' : key, title: bandTitleOf(bandItems, key) || (isSkillCheck ? 'Skills Check' : ''), items: bandItems };
+    });
+  }
+
+  function unitItemTileHTML(i, color) {
+    return `<div class="unit-item" style="--unit-color:${color};" onclick="openDetail('${i.id}')">
+      <div class="ui-row"><div class="ui-icon">${typeIconSVG[i.type]}</div><div class="ui-type">${typeLabel[i.type]}</div></div>
+      <div class="ui-title">${i.title}</div>
+      <div>
+        ${i.subtype === 'Blended' ? `<span class="item-pill">Blended/Honors</span>` : ''}
+        ${i.inProgress ? `<span class="item-pill in-progress-pill">In Progress</span>` : ''}
+        ${recentBadgeHTML(i.updated)}
+      </div>
+    </div>`;
+  }
+
+  function unitPageHTML(course, unit) {
+    const bands = unitBands(course, unit);
+    const isRes = unit === 'resources';
+    const color = isRes ? 'var(--border)' : (unitColorMap(courseUnitKeys(course))[unit] || 'var(--accent-2)');
+    const title = isRes ? 'Resources' : unitTitle(course, unit);
+    const eyebrow = `${course}${isRes ? '' : ' · Unit ' + unitLabel(course, unit)}`;
+    const bandsHTML = bands.map(b => `
+      <section class="unit-band" id="${b.id}">
+        <div class="unit-band-head">
+          ${b.num ? `<span class="unit-band-num">${b.num}</span>` : ''}
+          <span class="unit-band-title">${b.title}</span>
+          <span class="unit-band-count">${b.items.length} item${b.items.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="unit-items">${b.items.map(i => unitItemTileHTML(i, color)).join('')}</div>
+      </section>`).join('');
+    return `
+      <div class="unit-head" style="--unit-color:${color};">
+        <div class="unit-eyebrow">${eyebrow}</div>
+        <div class="unit-title">${title || (isRes ? 'Resources' : 'Unit ' + unitLabel(course, unit))}</div>
+      </div>
+      <div class="unit-bands">${bandsHTML || '<div class="empty-state">Nothing here yet.</div>'}</div>`;
+  }
+
+  // The topic-view list on a course's landing page: one row per unit (title + per-type counts),
+  // then a Resources row at the end when the course has any course-wide review/reference items.
+  function topicListHTML(course) {
+    const keys = courseUnitKeys(course);
+    const colors = unitColorMap(keys);
+    const chips = list => typeOrder.map(t => {
+      const n = list.filter(i => i.type === t).length;
+      return n ? `<span class="cd-count-chip">${typeLabel[t]}: ${n}</span>` : '';
+    }).join('');
+    const rows = keys.map(u => {
+      const inUnit = itemsInUnit(course, u);
+      const t = unitTitle(course, u);
+      return `<div class="unit-row" style="--unit-color:${colors[u]};" onclick="openUnit('${course}','${u}')">
+        <div class="unit-row-bar"></div>
+        <div class="unit-row-body">
+          <div class="unit-row-title"><span class="unit-row-num">Unit ${unitLabel(course, u)}</span>${t}</div>
+          <div class="cd-counts">${chips(inUnit)}</div>
+        </div>
+        <div class="unit-row-go">${chevronRightSVG}</div>
+      </div>`;
+    }).join('');
+    const res = items.filter(i => i.course === course && i.resource);
+    const resRow = res.length ? `<div class="unit-row unit-row-resources" onclick="openUnit('${course}','resources')">
+        <div class="unit-row-bar"></div>
+        <div class="unit-row-body">
+          <div class="unit-row-title"><span class="unit-row-num">Extras</span>Resources</div>
+          <div class="unit-row-sub">Review packets and reference sheets that don't belong to a single unit.</div>
+          <div class="cd-counts">${chips(res)}</div>
+        </div>
+        <div class="unit-row-go">${chevronRightSVG}</div>
+      </div>` : '';
+    return `<div class="unit-list">${rows}${resRow}</div>`;
   }
 
   // ---------- v16: top-level course carousels (Applets / Lecture Videos overview pages) ----------
@@ -1787,6 +1993,7 @@
     if (state.level === 'typeBrowse') alignSidebarTo('.result-count');
     else if (state.level === 'tier3') alignSidebarToJumpRow();
     else if (state.level === 'tier2' && state.entry === 'course') alignSidebarTo('.course-info');
+    else if (state.level === 'unit') alignSidebarTo('.unit-head');
   }
   window.addEventListener('resize', realignSidebar);
 
@@ -1801,7 +2008,8 @@
     // the dead tier2 type-entry branch (entry !== 'course') still gets no sidebar, same as before.
     const showSidebar = (state.level === 'typeBrowse' && sidebarTypes.includes(state.type))
       || (state.level === 'tier3' && sidebarTypes.includes(state.type))
-      || (state.level === 'tier2' && state.entry === 'course');
+      || (state.level === 'tier2' && state.entry === 'course')
+      || state.level === 'unit';
     if (showSidebar) { shell.classList.remove('no-sidebar'); renderSidebar(); }
     else { shell.classList.add('no-sidebar'); }
 
@@ -1886,7 +2094,8 @@
           </div>`;
         }
         const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
-        tilesHTML = `<div class="tile-grid">${availableTypes.map(t => {
+        const topicView = state.view === 'topic';
+        const typeTilesHTML = `<div class="tile-grid">${availableTypes.map(t => {
           const count = items.filter(i => i.course === state.course && i.type === t).length;
           return `<div class="tile" onclick="openTier3('course','${state.course}','${t}')">
             <div class="icon-badge">${typeIconSVG[t]}</div>
@@ -1894,6 +2103,14 @@
             <div class="count">${count} item${count === 1 ? '' : 's'}</div>
           </div>`;
         }).join('')}</div>`;
+        tilesHTML = `<div class="browse-toggle-row">
+            <div class="browse-toggle" role="tablist" aria-label="Browse mode">
+              <button class="${topicView ? '' : 'on'}" role="tab" aria-selected="${!topicView}" onclick="setLandingView('type')">Browse by type</button>
+              <button class="${topicView ? 'on' : ''}" role="tab" aria-selected="${topicView}" onclick="setLandingView('topic')">Browse by topic</button>
+            </div>
+            <span class="browse-toggle-hint">${topicView ? 'Pick a unit. Each page lists every kind of material for that unit.' : 'Pick a kind of material.'}</span>
+          </div>
+          ${topicView ? topicListHTML(state.course) : typeTilesHTML}`;
       } else {
         // v17: this branch (course tiles reached "by type") is no longer reachable through normal
         // navigation — enterType() now always sends users to the typeBrowse course-carousel page
@@ -1924,6 +2141,15 @@
       // Aligns the "Download Everything" box to .course-info on entry === 'course'; on the dead
       // type-entry branch there's no sidebar shown at all (see showSidebar above), so this just
       // clears any marginTop left over from whichever page the sidebar was last aligned on.
+      realignSidebar();
+      return;
+    }
+
+    if (state.level === 'unit') {
+      page.innerHTML = `
+        ${crumbHTML()}
+        ${unitPageHTML(state.course, state.unit)}
+      `;
       realignSidebar();
       return;
     }
@@ -2040,8 +2266,18 @@
     if (h === '/lecture-guides-notes') return { level: 'typeBrowse', type: 'LectureGuideNotes' };
     if (h === '/course-materials' || h === '') return { level: 'courseMaterials' };
 
+    // /course-materials/<courseSlug>/topics | resources | unit-<n> — browse-by-topic list and unit pages.
+    // <n> is the unit number students see (Calc I's Unit 1 is Chapter 2 internally), not the raw chapter.
+    let m = h.match(/^\/course-materials\/([^/]+)\/(topics|resources|unit-[^/]+)$/);
+    if (m) {
+      const course = courseOrder.find(c => slug(c) === m[1]);
+      if (course && m[2] === 'topics') return { level: 'tier2', entry: 'course', course, view: 'topic' };
+      if (course && m[2] === 'resources' && items.some(i => i.course === course && i.resource)) return { level: 'unit', course, unit: 'resources' };
+      const unit = course && m[2].startsWith('unit-') ? unitFromLabel(course, m[2].slice(5)) : null;
+      if (unit) return { level: 'unit', course, unit };
+    }
     // /course-materials/<courseSlug>/<type>[/unit-<n>] — a course's type-browse (tier3) page
-    let m = h.match(/^\/course-materials\/([^/]+)\/([^/]+?)(?:\/unit-([^/]+))?$/);
+    m = h.match(/^\/course-materials\/([^/]+)\/([^/]+?)(?:\/unit-([^/]+))?$/);
     if (m) {
       const course = courseOrder.find(c => slug(c) === m[1]);
       const type = typeOrder.includes(m[2]) ? m[2] : null;
