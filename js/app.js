@@ -13,7 +13,7 @@
   const bioText = "Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.";
 
   const videosSidebarText = "All of Kyle's recorded lecture walkthroughs live on one YouTube channel, organized into a playlist per course. Section-level links throughout this site jump straight to the relevant playlist — visit the full channel to browse everything in one place.";
-  const youtubeChannelUrl = "https://www.youtube.com/@kneedmath5234";
+  const youtubeChannelUrl = "https://www.youtube.com/@profKyleKnee";
 
   // ---------- v17: sidebar copy for the Worksheets and Lecture Guides/Notes browse pages ----------
   const worksheetsOrgText = "Worksheets are grouped by course and unit. Blended/Honors versions are marked with a badge and appear alongside the Standard version for the same section.";
@@ -1619,6 +1619,7 @@
     if (type === 'LectureVideo') {
       return `
         <div class="sidebar-header-row"><div class="sidebar-icon-inline">${typeIconSVG.LectureVideo}</div><h3>Lecture Videos on YouTube</h3></div>
+        <a class="sidebar-channel-avatar" href="${youtubeChannelUrl}" target="_blank" rel="noopener" aria-label="Visit Professor Kyle Knee's YouTube channel"><img src="assets/youtube-avatar-800.png" alt="Professor Mathematics K² channel logo"></a>
         <p>${videosSidebarText}</p>
         ${fileLinkHTML(youtubeChannelUrl, 'Visit full channel', { newTab: true, tooltip: 'Channel link not yet added' })}
       `;
@@ -1781,7 +1782,10 @@
   // its "Download Everything" box (courseDownloadSidebarHTML) aligns to that instead, so it reads
   // as paired with the course description rather than starting level with the page title above it.
   function realignSidebar() {
-    if (state.level === 'typeBrowse' || state.level === 'tier3') alignSidebarToJumpRow();
+    // The top-level typeBrowse page has no .jump-row (course chips were removed), so its sidebar
+    // aligns to the "N video sections across M courses" count line instead.
+    if (state.level === 'typeBrowse') alignSidebarTo('.result-count');
+    else if (state.level === 'tier3') alignSidebarToJumpRow();
     else if (state.level === 'tier2' && state.entry === 'course') alignSidebarTo('.course-info');
   }
   window.addEventListener('resize', realignSidebar);
