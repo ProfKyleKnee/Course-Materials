@@ -319,16 +319,6 @@
     return `<div class="jump-row">${courseList.map(c => `<span class="jump-link" onclick="jumpTo('${c}')">${c}</span>`).join('')}</div>`;
   }
 
-  function scrollCarousel(id, dir) {
-    const el = document.getElementById(id);
-    if (el) el.scrollBy({ left: dir * 460, behavior: 'smooth' });
-  }
-  function arrowBtnHTML(rowId, dir) {
-    const cls = dir < 0 ? 'left' : 'right';
-    const icon = dir < 0 ? chevronLeftSVG : chevronRightSVG;
-    return `<button class="carousel-arrow ${cls}" onclick="scrollCarousel('${rowId}', ${dir})" aria-label="Scroll ${cls}">${icon}</button>`;
-  }
-
   // ---------- v18: shared title-block markup for single-material-type pages (typeBrowse + tier3).
   // Applets (no sidebar) keeps a one-line tagline here; the other three drop it since their sidebar
   // already covers the same ground. ----------
@@ -1610,7 +1600,7 @@
   });
 
   // ---------- v18: unitColor is only ever passed from tier3BodyHTML (unit-grouped pages) —
-  // courseCarouselsHTML calls these with no second argument, so top-level pages get no accent bar ----------
+  // coursePreviewsHTML calls these with no second argument, so top-level pages get no accent bar ----------
   // v20: a real <a href> (not a <div onclick>) whenever the applet has a real launchUrl, so
   // right-click gives the browser's native "Open link in new tab/window" — a plain click still
   // navigates in the same tab exactly as launchApplet() always did, since that's just what
@@ -1861,7 +1851,7 @@
   }
 
   // ---------- v16: top-level course carousels (Applets / Lecture Videos overview pages) ----------
-  function courseCarouselsHTML(typeVal) {
+  function coursePreviewsHTML(typeVal) {
     const all = items.filter(i => i.type === typeVal);
     const coursesPresent = courseOrder.filter(c => all.some(a => a.course === c));
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
@@ -1880,7 +1870,7 @@
           <div class="empty-group-state">No ${typeLabel[typeVal].toLowerCase()} for this course yet.</div>
         </div>`;
       }
-      const rowId = `car-${typeVal}-${slug(c)}`;
+      const gridClass = typeVal === 'Applet' ? 'applet-grid' : 'grid';
       const countLabel = inCourse.length === 1 ? `1 ${typeLabel[typeVal].toLowerCase().replace(/s$/, '')}` : `${inCourse.length} ${typeLabel[typeVal].toLowerCase()}`;
       return `
         <div class="carousel-block" id="grp-${slug(c)}">
@@ -1891,11 +1881,7 @@
             </div>
             <div class="carousel-seeall" onclick="openTier3('type','${c}','${typeVal}')">See all (${inCourse.length}) →</div>
           </div>
-          <div class="carousel-wrap">
-            ${arrowBtnHTML(rowId, -1)}
-            <div class="carousel-track" id="${rowId}">${inCourse.map(a => cardFn(a)).join('')}</div>
-            ${arrowBtnHTML(rowId, 1)}
-          </div>
+          <div class="${gridClass} preview-row">${inCourse.map(a => cardFn(a)).join('')}</div>
         </div>`;
     }).join('')}</div>`;
   }
@@ -1914,56 +1900,84 @@
 
     if (!matches.length) return `${subtypeChipsHTML}<div class="empty-state">No items match this filter yet.</div>`;
 
-    // Resources (e.g. Calc 1's "Graphs To Know") aren't part of any unit -- pull them out before
-    // computing unit groupings, and pin them in their own block at the top of the page.
+    // Applets are few per course and cross units, so they skip the unit sections entirely and
+    // just list in one flat grid.
+    if (typeVal === 'Applet') {
+      return `<div class="result-count">${matches.length} applet${matches.length === 1 ? '' : 's'}</div>
+        <div class="applet-grid">${matches.map(i => appletCardHTML(i)).join('')}</div>`;
+    }
+
+    // v21: stacked, collapsible sections instead of carousels — one per unit (closed to start, since
+    // a course can have five units of a dozen items each), then Resources last. Resources (e.g.
+    // Calc 1's "Graphs To Know") aren't part of any unit, so they're pulled out before grouping.
     const resourceItems = matches.filter(i => i.resource);
     const unitMatches = matches.filter(i => !i.resource);
     const cardFn = typeVal === 'Applet' ? appletCardHTML : cardHTML;
     const gridClass = typeVal === 'Applet' ? 'applet-grid' : 'grid';
-    const isolated = state.isolatedUnit;
-    const resourcesHTML = (resourceItems.length && !isolated) ? `
-      <div class="carousel-block" id="grp-resources">
-        <div class="carousel-header"><div class="carousel-title" style="cursor:default;">Resources</div></div>
-        <div class="${gridClass}">${resourceItems.map(i => cardFn(i)).join('')}</div>
-      </div>` : '';
-
-    if (!unitMatches.length) return `${subtypeChipsHTML}${resourcesHTML}`;
-
     const units = [...new Set(unitMatches.map(unitOf))].sort((a, b) => Number(a) - Number(b));
-    const colorMap = unitColorMap(units);
+    // Colored by the course's full unit list (not just this type's), so Unit 5 is the same color
+    // here as on the topic-view unit page.
+    const colorMap = unitColorMap(courseUnitKeys(course));
+    const slugId = `${slug(course)}-${typeVal}`;
+    // A visit to .../unit-N (isolatedUnit) opens that unit and scrolls to it instead of hiding the rest.
+    if (state.isolatedUnit && units.includes(state.isolatedUnit)) unitSectionOpen.set(`${slugId}|${state.isolatedUnit}`, true);
 
-    const chipsHTML = `<div class="jump-row">
-      <span class="jump-link ${!isolated ? 'chip-active' : ''}" onclick="isolateUnit(null)">All Units</span>
-      ${units.map(u => `<span class="jump-link ${isolated === u ? 'chip-active' : ''}" onclick="isolateUnit('${u}')">Unit ${unitLabel(course, u)}</span>`).join('')}
-    </div>`;
-
-    if (isolated) {
-      const inUnit = unitMatches.filter(i => unitOf(i) === isolated);
-      const color = colorMap[isolated];
-      return `${subtypeChipsHTML}${chipsHTML}
-        <div class="result-count">${inUnit.length} item${inUnit.length === 1 ? '' : 's'} in Unit ${unitLabel(course, isolated)}</div>
-        <div class="${gridClass}">${inUnit.map(i => cardFn(i, color)).join('')}</div>`;
+    const sectionHTML = (key, id, color, numHTML, titleText, list, defaultOpen) => {
+      const open = unitSectionOpen.has(key) ? unitSectionOpen.get(key) : defaultOpen;
+      return `
+        <details class="unit-section" id="${id}" data-key="${key}" style="--unit-color:${color};"${open ? ' open' : ''} ontoggle="onUnitSectionToggle(this)">
+          <summary>
+            <span class="us-chev">${chevronRightSVG}</span>
+            ${numHTML}<span class="us-title">${titleText}</span>
+            <span class="us-count">${list.length} item${list.length === 1 ? '' : 's'}</span>
+          </summary>
+          <div class="${gridClass}">${list.map(i => cardFn(i, color)).join('')}</div>
+        </details>`;
+    };
+    const sections = units.map(u => {
+      const inUnit = unitMatches.filter(i => unitOf(i) === u);
+      return sectionHTML(`${slugId}|${u}`, `grp-unit-${u}`, colorMap[u], `<span class="us-num">Unit ${unitLabel(course, u)}</span>`, unitTitle(course, u), inUnit, false);
+    });
+    if (resourceItems.length) {
+      sections.push(sectionHTML(`${slugId}|resources`, 'grp-resources', 'var(--border)', '', 'Resources', resourceItems, true));
     }
 
-    const slugId = `${slug(course)}-${typeVal}`;
-    const rows = units.map(u => {
-      const inUnit = unitMatches.filter(i => unitOf(i) === u);
-      const rowId = `car-unit-${slugId}-${u}`;
-      const color = colorMap[u];
-      return `
-        <div class="carousel-block unit-carousel-header" id="grp-unit-${u}" style="--unit-color:${color};">
-          <div class="carousel-header">
-            <div class="carousel-title" onclick="isolateUnit('${u}')">Unit ${unitLabel(course, u)}</div>
-            ${inUnit.length > 1 ? `<div class="carousel-seeall" onclick="isolateUnit('${u}')">See all (${inUnit.length}) →</div>` : ''}
-          </div>
-          <div class="carousel-wrap">
-            ${arrowBtnHTML(rowId, -1)}
-            <div class="carousel-track" id="${rowId}">${inUnit.map(i => cardFn(i, color)).join('')}</div>
-            ${arrowBtnHTML(rowId, 1)}
-          </div>
-        </div>`;
-    }).join('');
-    return subtypeChipsHTML + chipsHTML + rows + resourcesHTML;
+    // The jump links open their section and scroll to it; the toggle is only worth showing once
+    // there's more than one section to collapse.
+    const jumpTargets = [...units.map(u => ({ id: `grp-unit-${u}`, label: `Unit ${unitLabel(course, u)}` })),
+      ...(resourceItems.length ? [{ id: 'grp-resources', label: 'Resources' }] : [])];
+    const toolbarHTML = `<div class="jump-row unit-toolbar">
+      <span class="jump-label">Jump to</span>
+      ${jumpTargets.map(t => `<span class="jump-link" onclick="jumpToUnitSection('${t.id}')">${t.label}</span>`).join('')}
+      ${jumpTargets.length > 1 ? `<button class="expand-all-btn" id="unit-toggle-all" onclick="toggleAllUnitSections()">Expand all</button>` : ''}
+    </div>`;
+    return subtypeChipsHTML + toolbarHTML + `<div class="unit-section-list">${sections.join('')}</div>`;
+  }
+
+  // Open/closed state of the type page's unit sections, keyed `<course>-<type>|<unit>`. Kept outside
+  // the DOM so changing the worksheet Standard/Blended filter (which re-renders the page) doesn't
+  // snap every section shut again.
+  const unitSectionOpen = new Map();
+  function syncUnitToggleLabel() {
+    const btn = document.getElementById('unit-toggle-all');
+    if (!btn) return;
+    const all = [...document.querySelectorAll('.unit-section')];
+    btn.textContent = all.every(d => d.open) ? 'Collapse all' : 'Expand all';
+  }
+  function onUnitSectionToggle(el) {
+    unitSectionOpen.set(el.dataset.key, el.open);
+    syncUnitToggleLabel();
+  }
+  function toggleAllUnitSections() {
+    const all = [...document.querySelectorAll('.unit-section')];
+    const open = !all.every(d => d.open);
+    all.forEach(d => { d.open = open; });
+  }
+  function jumpToUnitSection(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.open = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   // Lines the sidebar card's resting position up with a landmark in the main column (the jump row
@@ -2073,7 +2087,7 @@
         ${crumbHTML()}
         ${titleBlockHTML(t, pageTitle)}
         <div class="result-count">${countText}</div>
-        ${courseCarouselsHTML(t)}
+        ${coursePreviewsHTML(t)}
       `;
       realignSidebar();
       return;
@@ -2163,6 +2177,8 @@
         ${tier3BodyHTML(matches, state.course, state.type)}
       `;
       realignSidebar();
+      syncUnitToggleLabel();
+      if (state.isolatedUnit) jumpToUnitSection(`grp-unit-${state.isolatedUnit}`);
       return;
     }
 
