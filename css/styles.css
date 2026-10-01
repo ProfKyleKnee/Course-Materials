@@ -150,9 +150,8 @@
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
   .item-card { background: var(--card); border-radius: 18px; padding: 18px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; border-top: 4px solid var(--unit-color, transparent); }
 
-  /* ---------- v18: per-unit accent bar (Tier 3 pages only — courseCarouselsHTML never sets
+  /* ---------- v18: per-unit accent bar (Tier 3 pages only — coursePreviewsHTML never sets
      --unit-color, so this is a no-op transparent border everywhere else) ---------- */
-  .unit-carousel-header .carousel-title { border-left: 4px solid var(--unit-color, transparent); padding-left: 10px; }
   .item-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
   .item-eyebrow { text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; color: var(--eyebrow); font-weight: 600; }
   .item-title { font-size: 15.5px; font-weight: 600; margin: 6px 0 4px; }
@@ -341,7 +340,7 @@
 
   /* ---------- v16: carousel rows (top-level course carousels + tier-3 unit carousels) ---------- */
   .carousel-block { margin-bottom: 30px; scroll-margin-top: 10px; }
-  /* v19: hairline divider between course sections, scoped to courseCarouselsHTML's own
+  /* v19: hairline divider between course sections, scoped to coursePreviewsHTML's own
      .course-carousel-list wrapper so it doesn't also apply to tier3's unit carousels. */
   .course-carousel-list > .carousel-block + .carousel-block { border-top: 1px solid var(--border); padding-top: 26px; }
   .carousel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
@@ -350,7 +349,7 @@
   .carousel-seeall { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; white-space: nowrap; }
   .carousel-seeall:hover { color: var(--accent); }
   /* v19: course glyph badge + inline item count on the top-level course carousels (Applets and
-     Lecture Videos overview pages, courseCarouselsHTML) -- reuses the same courseSymbol glyphs as
+     Lecture Videos overview pages, coursePreviewsHTML) -- reuses the same courseSymbol glyphs as
      the course-directory-card badge instead of introducing per-course color, since color there is
      already spoken for by --unit-color on the course's own tier3 page. */
   .carousel-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -361,26 +360,31 @@
   }
   .carousel-title-row { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex-wrap: wrap; }
   .carousel-count { font-size: 11.5px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-  /* Dedicated gutter for the arrow buttons, sized to the button itself so it never overlaps the
-     track's cards — the old gradient-overlay arrows sat directly on top of the edge card's face. */
-  .carousel-wrap { position: relative; padding: 0 40px; }
-  .carousel-track { display: flex; gap: 14px; overflow-x: auto; scroll-behavior: smooth; scroll-snap-type: x proximity; padding: 2px 2px 8px; scrollbar-width: none; }
-  .carousel-track::-webkit-scrollbar { display: none; }
-  .carousel-track > * { scroll-snap-align: start; }
-  .carousel-track .item-card { width: 208px; flex: 0 0 208px; }
-  .carousel-track .applet-card { width: 258px; flex: 0 0 258px; }
-  /* Floating circular buttons in that gutter, rather than a gradient scrim over the cards. */
-  .carousel-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--card); border: 1px solid var(--border); box-shadow: 0 1px 4px rgba(60,60,90,0.18);
-    cursor: pointer; opacity: 0; transition: opacity 0.15s, box-shadow 0.15s; z-index: 4;
-  }
-  .carousel-arrow:hover { box-shadow: 0 4px 10px rgba(60,60,90,0.22); }
-  .carousel-arrow.left { left: 0; }
-  .carousel-arrow.right { right: 0; }
-  .carousel-arrow svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  .carousel-wrap:hover .carousel-arrow { opacity: 1; }
+  /* v21: one-row preview on the top-level Applets/Lecture Videos/Worksheets/Guides pages. The grid
+     keeps its normal auto-fill columns (so it wraps to the page width), but every row after the
+     first is sized to 0 and clipped by overflow:hidden, leaving exactly one row of tiles with a
+     "See all" link above it. The top/side padding and matching negative margin give the hover lift
+     and shadow room inside the clip. There is deliberately no bottom padding: the first hidden row
+     starts exactly where the visible row ends, so any padding there would show a sliver of the
+     next row's cards. The cost is a faint shadow clipped along the visible row's bottom edge. */
+  .preview-row { grid-template-rows: auto; grid-auto-rows: 0; row-gap: 0; overflow: hidden; padding: 4px 4px 0; margin: -4px -4px 0; }
+
+  /* ---------- v21: course+type pages — one collapsible section per unit ---------- */
+  .jump-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--eyebrow); font-weight: 700; align-self: center; }
+  .unit-toolbar { align-items: center; margin-bottom: 18px; }
+  .expand-all-btn { margin-left: auto; border: 1px solid var(--border); background: var(--card); color: var(--accent); border-radius: 18px; padding: 6px 14px; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+  .expand-all-btn:hover { background: var(--soft); }
+  .unit-section-list { display: flex; flex-direction: column; gap: 12px; }
+  .unit-section { background: var(--card); border-radius: 16px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); border-left: 6px solid var(--unit-color, var(--border)); scroll-margin-top: 12px; }
+  .unit-section > summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; }
+  .unit-section > summary::-webkit-details-marker { display: none; }
+  .unit-section > summary:hover .us-title { color: var(--accent); }
+  .us-chev svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; transition: transform 0.15s; }
+  .unit-section[open] .us-chev svg { transform: rotate(90deg); }
+  .us-num { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .us-title { font-size: 15.5px; font-weight: 700; min-width: 0; }
+  .us-count { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+  .unit-section > .grid, .unit-section > .applet-grid { padding: 4px 18px 18px; }
 
   .course-directory-grid { display: flex; flex-direction: column; gap: 14px; }
   .course-directory-card {
@@ -455,6 +459,51 @@
      column (just drop grid-template-columns) if these ever grow past a line or two each. */
   .course-info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
   @media (max-width: 700px) { .course-info-cols { grid-template-columns: 1fr; } }
+
+  /* ---------- v21: course landing page "Browse by type / Browse by topic" toggle ---------- */
+  .browse-toggle-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .browse-toggle { display: inline-flex; background: var(--soft); border-radius: 22px; padding: 4px; }
+  .browse-toggle button { border: 0; background: transparent; padding: 7px 18px; border-radius: 18px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .browse-toggle button.on { background: var(--card); color: var(--accent); box-shadow: 0 1px 3px rgba(60,60,90,0.12); }
+  .browse-toggle-hint { font-size: 12.5px; color: var(--muted); }
+
+  /* ---------- v21: topic view — one row per unit, colored by the same per-unit palette tier3 uses ---------- */
+  .unit-list { display: flex; flex-direction: column; gap: 12px; }
+  .unit-row { display: grid; grid-template-columns: 6px minmax(0, 1fr) auto; background: var(--card); border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); transition: transform 0.15s, box-shadow 0.15s; }
+  .unit-row:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .unit-row-bar { background: var(--unit-color, var(--border)); }
+  .unit-row-resources .unit-row-bar { background: repeating-linear-gradient(45deg, var(--border) 0 6px, transparent 6px 12px); }
+  .unit-row-body { padding: 16px 18px; min-width: 0; }
+  .unit-row-title { font-size: 16px; font-weight: 700; }
+  .unit-row-num { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-right: 10px; }
+  .unit-row-sub { font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+  .unit-row-go { display: flex; align-items: center; padding-right: 16px; }
+  .unit-row-go svg { width: 20px; height: 20px; stroke: var(--muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- v21: unit page — header, then one band per section with a wrapping tile grid ---------- */
+  .unit-head { border-left: 6px solid var(--unit-color, var(--accent-2)); padding-left: 16px; margin-bottom: 22px; }
+  .unit-eyebrow { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--eyebrow); font-weight: 700; margin-bottom: 4px; }
+  .unit-title { font-size: 26px; font-weight: 700; line-height: 1.2; }
+  .unit-band + .unit-band { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
+  .unit-band-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 0 2px 10px; }
+  .unit-band-num { font-size: 13px; font-weight: 700; color: var(--accent); background: var(--soft); padding: 2px 9px; border-radius: 8px; font-variant-numeric: tabular-nums; }
+  .unit-band-title { font-size: 16px; font-weight: 700; }
+  .unit-band-count { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .unit-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .unit-item { background: var(--card); border-radius: 16px; padding: 14px 16px; cursor: pointer; box-shadow: 0 1px 3px rgba(60,60,90,0.07); border-top: 4px solid var(--unit-color, transparent); transition: transform 0.15s, box-shadow 0.15s; }
+  .unit-item:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(60,60,90,0.14); }
+  .ui-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .ui-icon { width: 34px; height: 34px; border-radius: 50%; background: var(--soft); display: flex; align-items: center; justify-content: center; flex: none; }
+  .ui-icon svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .ui-type { font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
+  .ui-title { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+
+  /* sidebar "Jump to section" list on unit pages */
+  .unit-jump { border-top: 1px solid var(--border); margin-top: 18px; padding-top: 16px; text-align: left; }
+  .unit-jump-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--eyebrow); font-weight: 700; margin-bottom: 8px; }
+  .unit-jump-link { display: block; font-size: 13px; line-height: 1.35; padding: 5px 8px; border-radius: 8px; cursor: pointer; }
+  .unit-jump-link:hover { background: var(--soft); color: var(--accent); }
+  .unit-jump-link b { color: var(--accent); margin-right: 6px; font-variant-numeric: tabular-nums; }
 
   .detail-card { background: var(--card); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); }
   .detail-title { font-size: 22px; font-weight: 700; margin: 6px 0 6px; }

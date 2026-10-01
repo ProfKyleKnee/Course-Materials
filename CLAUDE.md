@@ -132,7 +132,13 @@ silently drops `<textPath>` text when rasterizing `logo-seal-white.svg` directly
 curved ring text just doesn't appear) — the seal was instead rasterized through a real browser
 (canvas `drawImage` over the SVG, circularly clipped) and only that PNG composited onto the QR
 code, rather than rendering the SVG straight through the Node toolchain — added on the `QR-Code`
-branch (not yet merged to `main`).
+branch (not yet merged to `main`), plus a navigation redesign on the `Navigation-Redesign` branch
+(branched from `main`, not yet merged): every carousel is gone — course landing pages get a "Browse
+by type / Browse by topic" toggle with new unit pages (`#/course-materials/<course>/topics`,
+`/unit-<n>`, `/resources`), type pages show collapsible per-unit sections (Applets a flat grid), and
+the top-level type pages show a one-row preview per course. Calc I's `Notes/Ch. N` folders were
+renamed to carry unit titles (`Ch. 2 (Limits)`, ...) like Calc II/III's, with `data.js` paths updated
+to match — see `.claude/rules/wiring.md` ("Course landing page toggle, unit pages, and type pages").
 
 ---
 

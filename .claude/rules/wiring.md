@@ -85,27 +85,56 @@ instead of sitting beside it, at which point the margin is cleared). `typeBrowse
 a `.jump-row` at all (the course chip filter row was removed from the top-level Applets/Lecture
 Videos pages — see "Course-carousel headers" below), so on that page the function's `if (!jumpRow ...)
 { sidebar.style.marginTop = ''; return; }` branch always fires and the sidebar just sits at the top
-of the main column; the function still does real work on `tier3`, where the Standard/Blended/unit
-chip rows still exist.
+of the main column; the function still does real work on `tier3` (except Applets, which has no jump row), where the
+Standard/Blended and "Jump to" rows still exist. Unit pages align it to `.unit-head`.
 
-## Course-carousel headers (`typeBrowse` pages)
-`courseCarouselsHTML()` (`js/app.js:764`) drives the per-course sections on the top-level Applets and
-Lecture Videos pages (both share this one function via the `typeVal` param). Each course section's
+## Course-preview blocks (`typeBrowse` pages)
+There are no carousels anywhere on the site anymore (removed on the `Navigation-Redesign` branch,
+along with `scrollCarousel()`/`arrowBtnHTML()` and the `.carousel-track`/`.carousel-arrow` CSS).
+`coursePreviewsHTML()` (`js/app.js`, formerly `courseCarouselsHTML()`) drives the per-course sections
+on the top-level Applets / Lecture Videos / Worksheets / Guides pages: the header below, then a
+one-row preview of tiles (`.preview-row` — a normal auto-fill grid whose extra rows are sized 0 and
+clipped by `overflow: hidden`, see its CSS comment for why there's no bottom padding) with a "See all
+(N) →" link into the course's `tier3` page. The "carousel" class names (`.carousel-block`,
+`.carousel-header`, `.carousel-title`, `.cc-glyph`) survive on those blocks; only the scrolling is gone.
+Each course section's
 header is now a `courseSymbol` glyph in a `.cc-glyph` badge (44×44px — the same glyphs the course-
 directory-card badge uses, reused here deliberately instead of introducing per-course color, since
 color already means something specific via `--unit-color` on a course's own `tier3` page) next to the
 course name and an inline item count (`"N applets"` / `"N worksheets"` etc., singularized for count
 1). The whole per-course block list is wrapped in a `.course-carousel-list` container specifically so
 a hairline divider (`.course-carousel-list > .carousel-block + .carousel-block`) can separate course
-sections from each other without also affecting `tier3`'s own unit carousels, which share the same
-`.carousel-block` class but aren't wrapped in that container. The old `.jump-row` course-chip filter
+sections from each other. The old `.jump-row` course-chip filter
 row above this list (rendered via `jumpRowHTML()`) was removed from `typeBrowse` entirely — see
 "Sidebar alignment" above for the knock-on effect on sidebar positioning.
 
+## Course landing page toggle, unit pages, and type pages
+All added on the `Navigation-Redesign` branch.
+- **Toggle.** The course landing page (`tier2`, `entry: 'course'`) has a "Browse by type / Browse by
+  topic" toggle driven by `state.view` (`'type'` default, `'topic'`). `setLandingView()` also saves the
+  choice to `localStorage` (try/catch-wrapped) and `enterCourse()` reads it back. Topic view is
+  `topicListHTML()`: one row per unit plus a Resources row.
+- **Unit page** (`state.level === 'unit'`, `state.unit` = raw `unitOf()` key or `'resources'`).
+  `unitBands()` builds one band per section; sub-sections (5.2.1, 5.2.2) fold into their parent band,
+  the `X.0` Skills Check placeholder keeps its own un-numbered band, and an item that lists several
+  sections appears in every band it covers (`itemBandKeysInUnit()`) — this also drives the counts in
+  the topic list. Band titles come from `sectionLabel` (`bandTitleOf()`). The sidebar keeps the course
+  Download Everything box and adds a "Jump to section" list.
+- **Routes** (`stateFromHash()` / `statePath()`): `#/course-materials/<course>/topics`, `/unit-<n>`,
+  `/resources`. `<n>` is the unit number students see (`unitLabel()`), mapped back to the raw key by
+  `unitFromLabel()`, so Calc I's Unit 1 is `unit-1` though it's Chapter 2 internally.
+- **Unit titles** come from `unitTitles` in `js/app.js`, which mirrors the chapter folder names under
+  `Course Materials/<Course>/Notes/` — rename a folder and this map and the `data.js` paths together.
+- **Type pages** (`tier3`): `tier3BodyHTML()` renders one `<details class="unit-section">` per unit
+  (closed by default; Resources last, open) with a "Jump to" row and an Expand all/Collapse all
+  button. Open state lives in the `unitSectionOpen` map so the Standard/Blended filter's re-render
+  doesn't reset it. Applets are the exception: a flat `.applet-grid` with no units. A visit to
+  `.../unit-N` (`isolatedUnit`) opens and scrolls to that unit rather than hiding the others.
+
 ## Unit grouping and labeling overrides
 `unitOf(item)` (`js/app.js`) derives an item's unit purely from `sections[0]`'s leading chapter
-number — every `tier3`/`typeBrowse` unit carousel, the `jump-row` chip filter, and `isolateUnit()`
-state all key off its raw return value, so a course whose textbook chapters don't line up 1:1 with
+number — every `tier3` unit section, the "Jump to" row, and `isolateUnit()`
+state all key off its raw return value (the unit pages use `unitOfSection()` per section instead), so a course whose textbook chapters don't line up 1:1 with
 its taught units needs one of two different override mechanisms depending on *what* is misaligned:
 
 - **Relabel only** (`unitLabelOverrides`, keyed by course): the chapter numbers already group
