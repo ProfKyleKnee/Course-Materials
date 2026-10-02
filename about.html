@@ -48,7 +48,7 @@
   <div class="mobile-link" style="font-weight:700;">About</div>
 </div>
 
-<div class="page-shell no-sidebar">
+<div class="page-shell about-shell">
   <div class="main-col">
     <div class="breadcrumb"><span class="crumb" onclick="location.href='index.html'">Home</span><span class="sep">/</span><span class="current-crumb">About</span></div>
     <div class="page-title">About</div>
@@ -61,22 +61,37 @@
           <div class="about-role">Mathematics Department, Harper College</div>
         </div>
       </div>
+      <!-- ORIGINAL single-paragraph bio, kept so the split version below can be reverted easily.
+           To switch back, delete the three <p class="detail-desc"> paragraphs below and uncomment this one.
       <p class="detail-desc">Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics. He holds a Master's in the Teaching of Mathematics from the University of Illinois and built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.</p>
+      -->
+      <p class="detail-desc">Kyle Knee is a mathematics professor in the Mathematics Department at Harper College in Palatine, IL, where he has taught for over a decade. He holds a Master's in the Teaching of Mathematics from the University of Illinois.</p>
+      <p class="detail-desc">He teaches primarily across the Calculus sequence, along with Statistics, Precalculus, Linear Algebra, and Discrete Mathematics.</p>
+      <p class="detail-desc">He built this site to bring his interactive applets, lecture materials, and practice worksheets together in one place — for his own students and anyone else who finds them useful.</p>
 
       <!-- static list, mirrors courseOrder in js/data.js — this page is intentionally not
-           data-driven, so this is duplicated by hand rather than loaded from data.js -->
+           data-driven, so this is duplicated by hand rather than loaded from data.js.
+           Courses with real materials link into browse.html (slug = course name minus spaces, same as
+           slug() in js/app.js); courses still in coursesInDevelopment stay plain, non-clickable pills. -->
       <div class="about-courses">
         <span class="item-pill">Precalculus</span>
-        <span class="item-pill">Calculus I</span>
-        <span class="item-pill">Calculus II</span>
-        <span class="item-pill">Calculus III</span>
+        <a class="item-pill" href="browse.html#/course-materials/CalculusI">Calculus I</a>
+        <a class="item-pill" href="browse.html#/course-materials/CalculusII">Calculus II</a>
+        <a class="item-pill" href="browse.html#/course-materials/CalculusIII">Calculus III</a>
         <span class="item-pill">Linear Algebra</span>
         <span class="item-pill">Discrete</span>
         <span class="item-pill">Statistics</span>
       </div>
-
-      <div class="detail-links">
+    </div>
+  </div>
+  <div class="sidebar-col">
+    <div class="sidebar-card about-contact">
+      <div class="about-contact-title">Contact</div>
+      <p class="about-contact-blurb">Questions about the course materials or this site? Send a message, or copy the address into any email app.</p>
+      <div class="about-email-text" id="about-email-text">kknee1@harpercollege.edu</div>
+      <div class="about-contact-actions">
         <a class="file-link" href="mailto:kknee1@harpercollege.edu">Email Professor Knee</a>
+        <button class="file-link about-copy-btn" id="about-copy-btn" type="button" onclick="copyEmail()">Copy address</button>
       </div>
     </div>
   </div>
