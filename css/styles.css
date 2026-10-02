@@ -455,10 +455,9 @@
   .course-info p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
   .course-info .topics { font-size: 13px; color: var(--text); }
   .course-info .topics b { color: var(--accent); }
-  /* Trying two columns for Topics/Who it's for instead of stacking — easy to revert to a single
-     column (just drop grid-template-columns) if these ever grow past a line or two each. */
-  .course-info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
-  @media (max-width: 700px) { .course-info-cols { grid-template-columns: 1fr; } }
+  /* Topics and Who it's for are stacked and left-aligned, one block per line. */
+  .course-info-cols { display: block; }
+  .course-info-cols .topics + .topics { margin-top: 6px; }
 
   /* ---------- v21: course landing page "Browse by type / Browse by topic" toggle ---------- */
   .browse-toggle-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
