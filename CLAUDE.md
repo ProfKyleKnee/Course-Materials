@@ -353,7 +353,7 @@ Calculus I/II/III's `items[]` entries are hand-written, real data — not genera
 | Course | LectureGuideNotes | Worksheet | LectureVideo | Applet | Total |
 |---|---|---|---|---|---|
 | Calculus I | 38 | 62 | 36 | 1 | 137 |
-| Calculus II | 40 | 65 | 36 | 1 | 142 |
+| Calculus II | 40 | 62 | 36 | 3 | 141 |
 | Calculus III | 45 | 45 | 40 (11 real, 29 `inProgress`) | 1 | 131 |
 
 Calc I's chapters (2-5) don't align with its pedagogical unit numbers (1-4), since Chapter 1 has no
@@ -371,7 +371,7 @@ override — its textbook chapter numbers and pedagogical unit numbers already a
 
 Both Calc II and Calc III also carry a handful of `resource: true` items beyond the "reference
 sheet" pattern described above — cumulative review packets and exam-practice worksheets (e.g. Calc
-II's "Course Review", "Series Review 1/2"; Calc III's "Exam 5 Review") and, for Calc III, a
+II's "Course Review" only, after the `calc2cleanup` branch moved Series Review and Exam 1 Practice Problems into Units 3 and 1 and dropped the Standard review packets; Calc III's "Exam 5 Review") and, for Calc III, a
 "Recommended Book Problems" `LectureGuideNotes` reference item per chapter.
 
 ### Consumers
