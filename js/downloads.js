@@ -96,6 +96,7 @@
       return;
     }
 
+    if (window.trackDownload) window.trackDownload('zip/' + zipFileName(course, kind, subtype, format));
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
