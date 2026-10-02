@@ -108,11 +108,36 @@
     if (push) {
       try { history.pushState(state, '', '#' + statePath(state)); } catch (e) { /* ignore in restricted contexts */ }
     }
+    trackPageview();
     render();
   }
   window.addEventListener('popstate', function (e) {
     state = e.state || { level: 'courseMaterials' };
+    trackPageview();
     render();
+  });
+
+  // ---------- Analytics (GoatCounter, loaded by a <script> tag in each HTML file) ----------
+  // GoatCounter only counts the real page load on its own, so in-app route changes are reported
+  // by hand. Every call is guarded so the site works normally if the script is blocked or offline.
+  function gcCount(data) {
+    try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count(data); } catch (e) { /* analytics must never break the site */ }
+  }
+  function trackPageview() {
+    gcCount({ path: 'browse' + statePath(state), title: document.title });
+  }
+  window.trackDownload = function (path) {
+    gcCount({ path: 'download/' + path, title: 'Download: ' + path, event: true });
+  };
+  // One delegated listener covers every file/playlist link and applet card, however they were rendered.
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest && e.target.closest('a.file-link, a.applet-card');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || href === '#') return;
+    let path = decodeURI(href);
+    if (a.classList.contains('applet-card')) path = 'applet/' + path;
+    window.trackDownload(path.replace(/^Course Materials\//, ''));
   });
 
   function sectionCompare(a, b) {
