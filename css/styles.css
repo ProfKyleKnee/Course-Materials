@@ -451,10 +451,9 @@
   .course-info p { font-size: 14px; color: var(--muted); line-height: 1.55; margin: 0 0 12px; }
   .course-info .topics { font-size: 13px; color: var(--text); }
   .course-info .topics b { color: var(--accent); }
-  /* Trying two columns for Topics/Who it's for instead of stacking — easy to revert to a single
-     column (just drop grid-template-columns) if these ever grow past a line or two each. */
-  .course-info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
-  @media (max-width: 700px) { .course-info-cols { grid-template-columns: 1fr; } }
+  /* Topics and Who it's for are stacked and left-aligned, one block per line. */
+  .course-info-cols { display: block; }
+  .course-info-cols .topics + .topics { margin-top: 6px; }
 
   .detail-card { background: var(--card); border-radius: 20px; padding: 26px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(60,60,90,0.07); }
   .detail-title { font-size: 22px; font-weight: 700; margin: 6px 0 6px; }
