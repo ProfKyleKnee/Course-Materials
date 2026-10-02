@@ -34,13 +34,13 @@
         <a class="nav-pill" href="browse.html#/lecture-videos">Lecture Videos</a>
         <div class="nav-pill current">About</div>
       </div>
-      <div class="search-wrap"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+      <div class="search-wrap"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" id="search-input" placeholder="Search..." oninput="doSearch(this.value)"><button class="search-clear" id="search-clear" onclick="clearSearch()">✕</button><div class="search-results" id="search-results"></div></div>
     </div>
   </div>
 </div>
 
 <div class="mobile-menu" id="mobile-menu">
-  <div class="mobile-search"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" placeholder="Search..."></div>
+  <div class="mobile-search"><svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg><input class="search-box" id="search-input-mobile" placeholder="Search..." oninput="doSearch(this.value, true)"><div class="search-results" id="search-results-mobile"></div></div>
   <a class="mobile-link" href="index.html">Home</a>
   <a class="mobile-link" href="browse.html">Browse by Course</a>
   <a class="mobile-link" href="browse.html#/applets">Applets</a>
@@ -125,6 +125,8 @@
   </div>
 </div>
 
+<script src="js/data.js"></script>
+<script src="js/search.js"></script>
 <script src="js/about.js"></script>
 
 <!-- GoatCounter analytics: cookieless visit counts; download clicks are reported from js/app.js -->
