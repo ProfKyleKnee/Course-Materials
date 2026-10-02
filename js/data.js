@@ -1299,6 +1299,14 @@
   // its real catalog replaces the placeholder items. ----------
   const coursesInDevelopment = ["Precalculus", "Linear Algebra", "Discrete", "Statistics"];
 
+  // ---------- Word versions: every linked PDF has a same-named .docx beside it, so the item
+  // detail page derives the Word path from the PDF path instead of storing a second field per
+  // item. List here any linked PDF that has no .docx sibling, so its Word button renders as a
+  // disabled "not available" pill instead of a dead link. ----------
+  const noWordFiles = [
+    'Course Materials/Calc 3/Notes/Ch. 5 (Topics In Vector Calculus)/Worksheets/5.2 Worksheet_Solutions.pdf'
+  ];
+
   // ---------- indefinite lockdown (2026-09-30): every Applet item id except Quadric Surfaces
   // Explorer ('a-c3-41'), temporarily taken out of circulation site-wide. Shared between
   // js/app.js (same caution-tape + "In Development" treatment as coursesInDevelopment above,

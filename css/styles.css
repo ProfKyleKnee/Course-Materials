@@ -511,6 +511,16 @@
   .file-link { display: inline-flex; align-items: center; gap: 6px; background: var(--soft); color: var(--accent); font-weight: 600; font-size: 13.5px; padding: 10px 16px; border-radius: 12px; transition: background 0.15s; }
   .file-link:hover { background: var(--border); }
 
+  /* ---------- Word downloads on the item detail card: a labeled PDF row above a labeled Word
+     row, with the Word pills in Word blue so the two formats read as different things. The icon
+     is inline SVG, so it needs an explicit stroke here (the global svg rule lives in home.css,
+     which browse.html doesn't load). ---------- */
+  .links-stack { display: flex; flex-direction: column; gap: 14px; }
+  .row-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--eyebrow); font-weight: 600; margin-bottom: 8px; }
+  .file-link.word { background: #E6EEF9; color: #2B579A; }
+  .file-link.word:hover { background: #D3E1F4; }
+  .file-link.word svg { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
   /* ---------- v17: disabled/placeholder file links + tooltip ---------- */
   .file-link.disabled { background: var(--bg); color: var(--eyebrow); cursor: not-allowed; border: 1px dashed var(--border); }
   .file-link.disabled:hover { background: var(--bg); }
