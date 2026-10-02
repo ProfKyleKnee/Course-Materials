@@ -1788,7 +1788,9 @@
     return Object.keys(byKey).sort(bandKeyCompare).map(key => {
       const bandItems = byKey[key].sort(unitBandItemCompare);
       const isSkillCheck = key.split('.')[1] === '0';
-      return { id: 'sec-' + key.replace(/\./g, '-'), key, num: isSkillCheck ? '' : key, title: bandTitleOf(bandItems, key) || (isSkillCheck ? 'Skills Check' : ''), items: bandItems };
+      // X.999 is the sort-last placeholder for a unit's review/exam-practice packet: no section number to show.
+      const isUnnumbered = isSkillCheck || key.split('.')[1] === '999';
+      return { id: 'sec-' + key.replace(/\./g, '-'), key, num: isUnnumbered ? '' : key, title: bandTitleOf(bandItems, key) || (isSkillCheck ? 'Skills Check' : ''), items: bandItems };
     });
   }
 
