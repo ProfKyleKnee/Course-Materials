@@ -9,8 +9,8 @@
   .c-topline { background: #2E3A8C; color: #D6DBF7; font-size: 12.5px; padding: 6px 32px; text-align: center; }
 
   /* ---------- shared site header: slim gradient banner + pill nav (matches the home page) ---------- */
-  .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; overflow: hidden; }
-  .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; }
+  .c-banner { position: relative; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; }
+  .c-banner-decor { position: absolute; inset: 0; opacity: 0.16; pointer-events: none; overflow: hidden; }
   .c-banner-decor svg { width: 100%; height: 100%; display: block; stroke: white; }
   .banner-row { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; flex-wrap: wrap; gap: 14px; }
   /* The whole title block is one link back to the home page. The negative margin cancels the
