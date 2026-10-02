@@ -284,6 +284,8 @@
     window.location.href = item.launchUrl; // same tab, so the browser back button returns here
   }
 
+  const wordIconSVG = `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M8.5 12.5l1.2 5 1.3-4 1.3 4 1.2-5"/></svg>`;
+
   // Renders a file/playlist link. Real URLs render as a normal working link.
   // Placeholder URLs ('#' or empty) render as a grayed-out, inert control with a tooltip
   // instead of a live link — so clicking genuinely does nothing rather than misbehaving.
@@ -296,8 +298,17 @@
         <span class="tooltip-bubble">${opts.tooltip || 'File not yet uploaded'}</span>
       </span>`;
     }
-    const targetAttr = opts.newTab ? ` target="_blank" rel="noopener"` : '';
-    return `<a class="file-link" href="${url}"${targetAttr}>${label}</a>`;
+    const targetAttr = opts.download ? ' download' : (opts.newTab ? ` target="_blank" rel="noopener"` : '');
+    return `<a class="file-link${opts.word ? ' word' : ''}" href="${url}"${targetAttr}>${opts.word ? wordIconSVG : ''}${label}</a>`;
+  }
+
+  // Word twin of a linked PDF: same path with a .docx extension (see noWordFiles in js/data.js).
+  // Returns '' when the item has no PDF to pair with, so callers can skip the label entirely;
+  // returns '#' for a PDF with no Word sibling, which fileLinkHTML() renders as a disabled pill.
+  function wordLinkHTML(pdfUrl, label) {
+    if (!pdfUrl || pdfUrl === '#' || !/\.pdf$/i.test(pdfUrl)) return '';
+    const url = noWordFiles.includes(pdfUrl) ? '#' : pdfUrl.replace(/\.pdf$/i, '.docx');
+    return fileLinkHTML(url, label, { download: true, word: true, tooltip: 'Word version not available' });
   }
 
   function relatedItems(item) {
@@ -2188,12 +2199,16 @@
       if (item.type === 'Applet') { launchApplet(item.id); goToCourseMaterials(); return; }
 
       let linksHTML = '';
+      let wordHTML = '';
       if (item.type === 'Worksheet') {
         linksHTML = fileLinkHTML(item.worksheetFile, 'Worksheet (PDF)', { newTab: true })
           + (item.hasSolutions !== false ? fileLinkHTML(item.solutionsFile, 'Solutions (PDF)', { newTab: true }) : '');
+        wordHTML = wordLinkHTML(item.worksheetFile, 'Worksheet (Word)')
+          + (item.hasSolutions !== false ? wordLinkHTML(item.solutionsFile, 'Solutions (Word)') : '');
       } else if (item.type === 'LectureGuideNotes') {
         linksHTML = (item.guideFile ? fileLinkHTML(item.guideFile, 'Lecture Guide (PDF)', { newTab: true }) : '')
           + (item.notesFile ? fileLinkHTML(item.notesFile, 'Lecture Notes (PDF)', { newTab: true }) : '');
+        wordHTML = wordLinkHTML(item.guideFile, 'Lecture Guide (Word)') + wordLinkHTML(item.notesFile, 'Lecture Notes (Word)');
       } else if (item.type === 'LectureVideo') {
         linksHTML = fileLinkHTML(item.playlistUrl, 'Watch on YouTube (playlist)', { newTab: true, tooltip: item.inProgress ? 'Video in progress — check back soon' : 'Playlist not yet linked' });
       }
@@ -2211,13 +2226,16 @@
           <div class="title-row" style="margin-bottom:14px;">
             <div class="title-icon-badge">${typeIconSVG[item.type]}</div>
             <div>
-              <div class="item-eyebrow">${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
+              <div class="item-eyebrow">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''} · ${typeLabel[item.type]}${sectionText ? ' · ' + sectionText : ''}</div>
               <div class="detail-title" style="margin:2px 0 0;">${item.title}</div>
             </div>
           </div>
-          <div class="item-tag">${item.course}${item.subtype === 'Blended' ? ' · Blended/Honors' : ''}</div>
           <p class="detail-desc">${item.desc}</p>
-          <div class="detail-links">${linksHTML}</div>
+          ${wordHTML ? `
+          <div class="links-stack">
+            <div><div class="row-label">PDF</div><div class="detail-links">${linksHTML}</div></div>
+            <div><div class="row-label">Editable Word versions</div><div class="detail-links">${wordHTML}</div></div>
+          </div>` : `<div class="detail-links">${linksHTML}</div>`}
         </div>
         ${relatedHTML}
       `;
