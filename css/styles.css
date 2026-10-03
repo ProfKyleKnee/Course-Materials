@@ -123,14 +123,114 @@
     box-shadow: 0 1px 2px rgba(0,0,0,0.35);
   }
   .in-dev-pill { display: inline-block; font-size: 10.5px; font-weight: 700; color: #8A5A00; background: #FCEBB6; padding: 2px 8px; border-radius: 8px; margin-left: 8px; vertical-align: middle; letter-spacing: 0.02em; }
-  .page-tagline { font-size: 13.5px; color: var(--muted); margin: 8px 0 0 56px; }
+  .page-tagline { font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+
+  /* ---------- v22: shared page header (pageHeaderHTML() in js/app.js) — a full-width tinted band
+     with the breadcrumb, a large title, tagline and count chips inside it. It renders into
+     #page-header, which sits above .page-shell in browse.html (not inside the content column), so
+     it runs edge to edge and reads as the title of the page rather than as one more card. Its
+     side padding matches .page-shell's 32px so the title lines up with the content below. ---------- */
+  .page-header { --title-fs: 32px; background: #E8E9F7; border-bottom: 1px solid #CDD0EE; padding: 18px 32px 24px; }
+  .page-header .breadcrumb { margin-bottom: 14px; }
+  /* The top of the badge circle lines up with the top of the title's capital letters, not with the
+     top of the title's line box. The row top-aligns, and the badge's margin-top drops it by the gap
+     between a line box (line-height 1.15) and its cap height — about 0.2em, measured from the
+     font's ascent/descent/cap-height — so it scales with --title-fs. (The row was vertically
+     centered on the whole title + tagline + chips block for one round before this.) */
+  .page-header .title-row { gap: 16px; align-items: flex-start; }
+  .page-header .title-icon-badge { width: 56px; height: 56px; background: #FFFFFF; margin-top: calc(var(--title-fs) * 0.2); }
+  .page-header .title-icon-badge svg { width: 28px; height: 28px; }
+  /* Course pages: the badge is centered on the title itself, however many lines it wraps to. The
+     row becomes a two-column grid with .page-header-text dissolved (display: contents) so the
+     title, tagline and chips are direct grid items in column 2; the badge and title share row 1
+     and both center in it, and the tagline/chips fall into the rows below. */
+  .page-header-centered .title-row { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 16px; row-gap: 0; align-items: start; }
+  .page-header-centered .page-header-text { display: contents; }
+  /* The badge (56px) is taller than a one-line title (1.15 x --title-fs), which would stretch row 1
+     and open a gap between the title and the chips below it. Negative vertical margins shrink the
+     badge's margin box down to the title's line height, so row 1 is sized by the title alone while
+     the badge still paints at 56px, centered on it. (A title that wraps is taller than that line
+     height, so the row grows with the title and the badge centers within it.) */
+  .page-header-centered .title-icon-badge { margin: calc((var(--title-fs) * 1.15 - 56px) / 2) 0; grid-column: 1; grid-row: 1; align-self: center; }
+  .page-header-centered .title-row { padding-top: 6px; }
+  .page-header-centered .page-title { grid-column: 2; grid-row: 1; align-self: center; }
+  .page-header-centered .page-tagline, .page-header-centered .page-chips { grid-column: 2; }
+  .page-header-text { min-width: 0; }
+  .page-header .page-title { margin: 0; font-size: var(--title-fs); line-height: 1.15; }
+  .page-header .page-tagline { font-size: 15px; }
+  .page-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .page-chip { font-size: 12px; font-weight: 600; color: var(--accent); background: #FFFFFF; border-radius: 12px; padding: 3px 10px; }
+  /* The Course Materials stack badge brings its own 60px rounded-square ground, so its holder
+     drops the circular badge styling to avoid a ground-on-ground double background. */
+  .page-header .title-stack-holder { width: auto; height: auto; background: none; border-radius: 0; }
+  .page-header .title-stack-badge { width: 56px; height: 56px; background: #FFFFFF; }
+  @media (max-width: 480px) {
+    .page-header { --title-fs: 26px; padding: 14px 16px 20px; }
+  }
+
+  /* ---------- v22: one-time intro for the title badge (playBadgeIntro() in js/app.js), run each time
+     a page header renders. Where the home page has an animation for that badge, it's the same one,
+     played once: the Course Materials stack shuffles (course-card-cycle above), the Applets badge
+     ripples (ripple-pulse) and the Lecture Videos badge runs its play/scribble/progress cycle
+     (video-*-cycle). The badges with no home equivalent get a plain intro instead: other type icons
+     draw themselves in — js/app.js sets pathLength="1" on each shape so one dasharray/dashoffset
+     pair works for every path, line, circle and rect — and course glyphs (lim, Σ, ...) pop in.
+     The class is removed once it finishes so the resting badge is plain. ---------- */
+  @keyframes badge-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  .badge-intro-draw svg :is(path, line, circle, rect, polyline, polygon, ellipse) { stroke-dasharray: 1; animation: badge-draw 0.9s ease-out 0.25s both; }
+  @keyframes badge-pop { 0% { transform: scale(0.55); opacity: 0; } 60% { transform: scale(1.14); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+  .badge-intro-pop > span:not(.caution-tape) { animation: badge-pop 0.6s ease-out 0.25s both; }
+
+  /* Applets badge — css/home.css's ripple, once. Same artwork as the home Applets spotlight (see
+     homeBadgeSVG in js/app.js). The ripple grows past the 56px circle, so the circle clips it, as the
+     round spotlight badge does on the home page. Both rings use `forwards` only (no backwards fill)
+     so the delayed ring stays invisible until it starts. Colors are --decor from home.css (#5063C9),
+     spelled out since home.css isn't loaded on this page. */
+  @keyframes ripple-pulse { 0% { r: 3; opacity: 0.65; } 70% { r: 15; opacity: 0; } 100% { r: 15; opacity: 0; } }
+  .page-header .title-icon-badge .ripple-dot { fill: #5063C9; stroke: none; }
+  .page-header .title-icon-badge .ripple-halo { fill: #5063C9; stroke: none; opacity: 0.16; }
+  .page-header .title-icon-badge .ripple-halo-outer { opacity: 0.08; }
+  .page-header .title-icon-badge .ripple-ring { fill: none; stroke: #5063C9; stroke-width: 1.4; opacity: 0; transform-origin: center; }
+  .page-header .title-icon-badge svg:has(.ripple-ring) { overflow: visible; }
+  .badge-intro-ripple { overflow: hidden; }
+  .badge-intro-ripple .ripple-ring { animation: ripple-pulse 2.6s ease-out 0.25s 1 forwards; }
+  .badge-intro-ripple .ripple-ring.delay1 { animation-delay: 0.9s; }
+
+  /* Lecture Videos badge — css/home.css's play -> scribble + progress bar -> back to play cycle,
+     once (4s). Same artwork as the home Lecture Videos spotlight (homeBadgeSVG). The resting state
+     is the play icon, which is also what the cycle ends on, so there's no snap when it finishes. */
+  @keyframes video-play-cycle { 0%, 8% { opacity: 1; } 12%, 90% { opacity: 0; } 94%, 100% { opacity: 1; } }
+  @keyframes video-scribble-cycle { 0%, 10% { opacity: 0; stroke-dashoffset: 44; } 14% { opacity: 1; } 45%, 85% { opacity: 1; stroke-dashoffset: 0; } 90%, 100% { opacity: 0; stroke-dashoffset: 0; } }
+  @keyframes video-track-cycle { 0%, 12% { opacity: 0; } 16%, 85% { opacity: 1; } 90%, 100% { opacity: 0; } }
+  @keyframes video-bar-cycle { 0%, 12% { opacity: 0; width: 0; } 16% { opacity: 1; width: 0; } 82%, 85% { opacity: 1; width: 15; } 90%, 100% { opacity: 0; width: 0; } }
+  .page-header .title-icon-badge .video-play { opacity: 1; }
+  .page-header .title-icon-badge .video-scribble { opacity: 0; stroke-dasharray: 44; stroke-dashoffset: 44; }
+  .page-header .title-icon-badge .video-progress-track, .page-header .title-icon-badge .video-progress-bar { opacity: 0; }
+  .badge-intro-video .video-play { animation: video-play-cycle 4s ease-in-out 0.25s 1; }
+  .badge-intro-video .video-scribble { animation: video-scribble-cycle 4s ease-in-out 0.25s 1; }
+  .badge-intro-video .video-progress-track { animation: video-track-cycle 4s ease-in-out 0.25s 1; }
+  .badge-intro-video .video-progress-bar { animation: video-bar-cycle 4s ease-in-out 0.25s 1; }
 
   /* ---------- Course Materials title badge: a static (non-shuffling) reuse of the home page's
      3-card course-stack motif (css/home.css / js/home.js), since there's no hoverable spotlight
      card here to trigger the shuffle animation against — just the resting fanned-stack look. ---------- */
   .title-stack-badge { width: 60px; height: 60px; border-radius: 16px; background: var(--soft); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: visible; }
   .title-stack-badge .course-stack-svg { width: 30px; height: 30px; overflow: visible; }
-  .course-card { transform-origin: 13px 9.75px; }
+  .course-card { transform-origin: 13px 9.75px; transition: transform 0.45s ease; }
+  .course-card rect { transition: fill 0.3s ease, stroke-width 0.3s ease; }
+  .course-card text { transition: opacity 0.3s ease; }
+  /* One-time shuffle on page load (playStackShuffle() in js/app.js) — the same swing-out,
+     recede, wipe-left-to-the-back step as css/home.css's course-card-cycle, duplicated here
+     because browse.html doesn't load home.css. Keep the two keyframes in step by hand. */
+  @keyframes course-card-cycle {
+    0%   { transform: none; animation-timing-function: ease-in-out; }
+    34%  { transform: translate(13px, -3.5px) rotate(14deg); animation-timing-function: ease-in; }
+    48%  { transform: translate(7px, -2px) rotate(9deg) scale(0.94); animation-timing-function: ease-out; }
+    100% { transform: translate(-7px, 5px) rotate(-15deg) scale(1); }
+  }
+  .course-card.cycling { animation: course-card-cycle 0.9s ease-in-out; }
+  .course-card.cycling.on-top rect { fill: #fff; stroke-width: 1.3; }
+  .course-card.cycling.on-top text { opacity: 1; }
   .course-card.pos-front { transform: none; }
   .course-card.pos-mid { transform: translate(-3.5px, 2.5px) rotate(-7deg); }
   .course-card.pos-back { transform: translate(-7px, 5px) rotate(-15deg); }
@@ -340,22 +440,35 @@
 
   /* ---------- v16: carousel rows (top-level course carousels + tier-3 unit carousels) ---------- */
   .carousel-block { margin-bottom: 30px; scroll-margin-top: 10px; }
-  /* v19: hairline divider between course sections, scoped to coursePreviewsHTML's own
-     .course-carousel-list wrapper so it doesn't also apply to tier3's unit carousels. */
-  .course-carousel-list > .carousel-block + .carousel-block { border-top: 1px solid var(--border); padding-top: 26px; }
-  .carousel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-  .carousel-title { font-size: 15.5px; font-weight: 700; cursor: pointer; }
+  /* v22: each course on the top-level pages is a bold headline row — glyph, large course name with
+     its count stacked underneath, and a "See all" pill — closed off by a 2px accent rule, with the
+     tiles sitting directly on the page background below it. The rule plus generous spacing between
+     courses is what separates them, replacing the old hairline divider. */
+  .course-carousel-list > .carousel-block + .carousel-block { margin-top: 44px; }
+  .course-section .carousel-header { padding-bottom: 12px; border-bottom: 2px solid var(--accent); margin-bottom: 16px; }
+  .course-section .carousel-title { white-space: nowrap; font-size: 22px; }
+  .course-section .carousel-title-row { flex-direction: column; align-items: flex-start; gap: 2px; flex-wrap: nowrap; }
+  .course-section .carousel-title-group { gap: 14px; }
+  .carousel-seeall { flex-shrink: 0; }
+  @media (max-width: 480px) {
+    .course-section .carousel-header { gap: 8px; }
+    .course-section .carousel-title-group { gap: 10px; }
+    .course-section .carousel-title { font-size: 19px; }
+    .carousel-seeall { padding: 5px 10px; font-size: 12px; }
+  }
+  .carousel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+  .carousel-title { font-size: 18px; font-weight: 700; cursor: pointer; }
   .carousel-title:hover { color: var(--accent); text-decoration: underline; }
-  .carousel-seeall { font-size: 12.5px; font-weight: 600; color: var(--accent-2); cursor: pointer; white-space: nowrap; }
-  .carousel-seeall:hover { color: var(--accent); }
+  .carousel-seeall { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--soft); border-radius: 16px; padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+  .carousel-seeall:hover { background: var(--accent); color: #FFFFFF; }
   /* v19: course glyph badge + inline item count on the top-level course carousels (Applets and
      Lecture Videos overview pages, coursePreviewsHTML) -- reuses the same courseSymbol glyphs as
      the course-directory-card badge instead of introducing per-course color, since color there is
      already spoken for by --unit-color on the course's own tier3 page. */
   .carousel-title-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .cc-glyph {
-    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-    background: linear-gradient(160deg, #F5F5FA, #EDEEFA); border: 1px solid var(--border);
+    width: 52px; height: 52px; border-radius: 12px; flex-shrink: 0;
+    background: #FFFFFF; border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700;
   }
   .carousel-title-row { display: flex; align-items: baseline; gap: 8px; min-width: 0; flex-wrap: wrap; }
@@ -456,6 +569,9 @@
   .course-info .topics { font-size: 13px; color: var(--text); }
   .course-info .topics b { color: var(--accent); }
   /* Topics and Who it's for are stacked and left-aligned, one block per line. */
+  /* Inside the page-header band the blurb box drops its own card chrome and sits under a divider,
+     capped in width so the paragraph stays readable on a full-width band. */
+  .page-header .course-info { background: none; box-shadow: none; border-radius: 0; border-top: 1px solid #CDD0EE; padding: 12px 0 0; margin: 14px 0 0; max-width: 760px; }
   .course-info-cols { display: block; }
   .course-info-cols .topics + .topics { margin-top: 6px; }
 

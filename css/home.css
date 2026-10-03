@@ -19,6 +19,11 @@
   .hero-text .h-title { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; margin: 0 0 14px; color: var(--accent); }
   .hero-text .h-desc { font-size: 13.5px; line-height: 1.65; color: var(--text); max-width: 640px; margin: 0 auto; }
   .hero-text .h-desc b { color: var(--accent); }
+  /* On screens wide enough to hold it, the blurb stays on a single line (the 640px cap above
+     wrapped it onto two). Narrower screens fall back to the capped, wrapping version. */
+  @media (min-width: 781px) {
+    .hero-text .h-desc { max-width: none; white-space: nowrap; }
+  }
 
   /* ---------- hero stats: full-width row, spread evenly across the freed hero width ---------- */
   .hero-stats-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; margin-top: 22px; }

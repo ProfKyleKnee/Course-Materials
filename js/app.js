@@ -104,6 +104,10 @@
   }
   function navigate(newState, push) {
     if (push === undefined) push = true;
+    // Arriving at a different page starts with every unit/resource section on a type page
+    // collapsed. The same page re-navigating (e.g. the worksheet Standard/Blended filter, which has
+    // the same path) keeps whatever the visitor had open.
+    if (statePath(newState) !== statePath(state)) { unitSectionOpen.clear(); delete newState.openUnits; }
     state = newState;
     if (push) {
       try { history.pushState(state, '', '#' + statePath(state)); } catch (e) { /* ignore in restricted contexts */ }
@@ -111,8 +115,12 @@
     trackPageview();
     render();
   }
+  // Back/forward restores the open/closed sections that history entry had (saved onto the entry by
+  // persistUnitSections() whenever a section is toggled), instead of starting collapsed.
   window.addEventListener('popstate', function (e) {
     state = e.state || { level: 'courseMaterials' };
+    unitSectionOpen.clear();
+    Object.entries(state.openUnits || {}).forEach(([k, v]) => unitSectionOpen.set(k, v));
     trackPageview();
     render();
   });
@@ -359,23 +367,125 @@
   // Applets (no sidebar) keeps a one-line tagline here; the other three drop it since their sidebar
   // already covers the same ground. ----------
   const appletTagline = "Interactive tools to drag, adjust, and explore.";
+  const videoTagline = "Recorded walkthroughs of each section, organized by course.";
   // courseVal is only passed on the course+type (tier3) page: it swaps the badge from the
   // material-type icon to the course symbol, since the type icon is already shown in the sidebar
   // (sidebarContentForType) right next to this title — showing it twice was redundant. The
   // top-level typeBrowse page (no single course) keeps the type icon, since there's no sidebar
   // redundancy there — its sidebar covers the type, not a specific course.
-  function titleBlockHTML(type, titleText, courseVal) {
-    const tagline = type === 'Applet' ? `<div class="page-tagline">${appletTagline}</div>` : '';
-    const sym = courseVal && courseSymbol[courseVal];
-    const badgeContent = sym ? `<span style="font-size:${sym.size};">${sym.text}</span>` : typeIconSVG[type];
-    const devWrapClass = courseVal ? ' badge-dev-wrap' : '';
-    return `<div class="title-block">
+  // v22: every page title (Course Materials, typeBrowse, course landing, tier3) is now the same white
+  // header card — badge, title, an optional one-line tagline, and optional count chips — built by
+  // pageHeaderHTML() so the pages can't drift apart. chips is an array of short strings.
+  // extra is optional HTML shown inside the same card under a hairline divider (the course
+  // landing page puts its blurb/topics/audience there so title and description read as one block).
+  // centered: the badge is vertically centered on the title itself (course pages) instead of its top
+  // lining up with the top of the title's capitals (every other page) — see .page-header-centered.
+  function pageHeaderHTML({ badge, badgeClass = '', title, tagline = '', chips = [], extra = '', centered = false }) {
+    return `<div class="page-header${centered ? ' page-header-centered' : ''}">
+      ${crumbHTML()}
       <div class="title-row">
-        <div class="title-icon-badge${devWrapClass}">${badgeContent}${courseVal ? devTapeHTML(courseVal) : ''}</div>
-        <div class="page-title">${titleText}${courseVal ? devPillHTML(courseVal) : ''}</div>
+        <div class="title-icon-badge${badgeClass}">${badge}</div>
+        <div class="page-header-text">
+          <div class="page-title">${title}</div>
+          ${tagline ? `<div class="page-tagline">${tagline}</div>` : ''}
+          ${chips.length ? `<div class="page-chips">${chips.map(c => `<span class="page-chip">${c}</span>`).join('')}</div>` : ''}
+        </div>
       </div>
-      ${tagline}
+      ${extra}
     </div>`;
+  }
+  // The header lives in #page-header (above .page-shell in browse.html), not in #page, so it can run
+  // full width. render() clears it first, so pages without a header (unit, detail) get none.
+  // A re-render of the same page (the worksheet Standard/Blended filter navigates to the same path)
+  // leaves the header alone — no DOM rewrite and no badge intro replay, since nothing about the
+  // title area changed. Only arriving at a different page (or after a page with no header) plays it.
+  let lastHeaderPath = null;
+  let lastHeaderHTML = '';
+  function setPageHeader(html) {
+    const el = document.getElementById('page-header');
+    if (!html) { el.innerHTML = ''; lastHeaderPath = null; lastHeaderHTML = ''; return; }
+    const path = statePath(state);
+    if (path === lastHeaderPath) {
+      if (html !== lastHeaderHTML) { el.innerHTML = html; lastHeaderHTML = html; }  // changed content, no replay
+      return;
+    }
+    el.innerHTML = html;
+    lastHeaderPath = path;
+    lastHeaderHTML = html;
+    playBadgeIntro();
+  }
+  // Every title badge plays one short intro each time its page header renders: the Course Materials
+  // stack shuffles, other type icons draw themselves in, and course glyphs pop in. Skipped for
+  // prefers-reduced-motion. See the badge-draw / badge-pop keyframes in css/styles.css.
+  function playBadgeIntro() {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const badge = document.querySelector('#page-header .title-icon-badge');
+    if (!badge) return;
+    const stack = badge.querySelector('.course-stack-svg');
+    if (stack) { playStackShuffle(stack); return; }
+    const svg = badge.querySelector('svg');
+    let cls = svg ? 'badge-intro-draw' : 'badge-intro-pop';
+    let ms = 1500;
+    if (svg && svg.querySelector('.ripple-ring')) { cls = 'badge-intro-ripple'; ms = 4000; }       // home Applets ripple
+    else if (svg && svg.querySelector('.video-play')) { cls = 'badge-intro-video'; ms = 4500; }    // home Lecture Videos cycle
+    else if (svg) svg.querySelectorAll('path, line, circle, rect, polyline, polygon, ellipse').forEach(el => el.setAttribute('pathLength', '1'));
+    badge.classList.add(cls);
+    setTimeout(() => badge.classList.remove(cls), ms);
+  }
+  // One-time shuffle of the Course Materials title badge's 3-card stack: the same single step
+  // js/home.js runs on hover (front card swings out, recedes behind the stack, wipes left into the
+  // back slot), a moment after the page renders. The 432/960 timers mirror the course-card-cycle
+  // animation in css/styles.css, same as home.js mirrors home.css.
+  function playStackShuffle(svg) {
+    setTimeout(() => {
+      const leaving = svg.querySelector('.pos-front');
+      const mid = svg.querySelector('.pos-mid');
+      const back = svg.querySelector('.pos-back');
+      if (!leaving || !mid || !back) return;
+      leaving.classList.replace('pos-front', 'pos-back');
+      mid.classList.replace('pos-mid', 'pos-front');
+      back.classList.replace('pos-back', 'pos-mid');
+      // leaving card painted last so its swing reads as the top card moving...
+      svg.appendChild(back); svg.appendChild(mid); svg.appendChild(leaving);
+      leaving.classList.add('cycling', 'on-top');
+      // ...then lifted back under the other two at the "moves back" beat (moving the idle cards
+      // up rather than the leaving card down, so its running animation isn't cancelled)
+      setTimeout(() => { leaving.classList.remove('on-top'); svg.appendChild(back); svg.appendChild(mid); }, 432);
+      setTimeout(() => { leaving.classList.remove('cycling', 'on-top'); }, 960);
+    }, 500);
+  }
+  // The Applets and Lecture Videos page badges use the same artwork as their home-page spotlight
+  // cards (index.html), so the intro animation in css/styles.css can be the home page's own
+  // ripple / play-scribble cycle. Other types fall back to typeIconSVG.
+  const homeBadgeSVG = {
+    Applet: `<svg viewBox="-1 -1 27 26">
+      <line x1="4" y1="21" x2="4" y2="3"/><line x1="2" y1="19" x2="22" y2="19"/><path d="M4.5 17.5C6 11 8 8.5 9.5 8.5S13 11 13.5 13.5 16 18.5 17.5 18.5 20 15 21 9.5"/>
+      <circle class="ripple-halo" cx="21" cy="9.5" r="4.5"/>
+      <circle class="ripple-halo ripple-halo-outer" cx="21" cy="9.5" r="7"/>
+      <circle class="ripple-dot" cx="21" cy="9.5" r="0.9"/>
+      <circle class="ripple-ring" cx="21" cy="9.5" r="3"/>
+      <circle class="ripple-ring delay1" cx="21" cy="9.5" r="3"/>
+    </svg>`,
+    LectureVideo: `<svg viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="13" rx="2"/>
+      <path d="M8 20h8M12 17v3"/>
+      <path class="video-play" d="M10 8l5 2.5L10 13z" fill="var(--accent)" stroke="none"/>
+      <path class="video-scribble" d="M5.5 14 Q 7 8.5 9 11.5 T 12.5 8.5 T 16 9 T 19 12.5" fill="none" stroke="var(--accent)" stroke-width="1.1"/>
+      <rect class="video-progress-track" x="4.5" y="15.3" width="15" height="1.3" rx="0.65" fill="var(--soft)" stroke="none"/>
+      <rect class="video-progress-bar" x="4.5" y="15.3" width="0" height="1.3" rx="0.65" fill="var(--accent)" stroke="none"/>
+    </svg>`
+  };
+  function titleBlockHTML(type, titleText, courseVal, chips) {
+    const sym = courseVal && courseSymbol[courseVal];
+    const badgeContent = sym ? `<span style="font-size:${sym.size};">${sym.text}</span>` : (homeBadgeSVG[type] || typeIconSVG[type]);
+    return pageHeaderHTML({
+      badge: badgeContent + (courseVal ? devTapeHTML(courseVal) : ''),
+      badgeClass: courseVal ? ' badge-dev-wrap' : '',
+      centered: !!courseVal,
+      title: titleText + (courseVal ? devPillHTML(courseVal) : ''),
+      tagline: type === 'Applet' ? appletTagline : (type === 'LectureVideo' ? videoTagline : ''),
+      chips
+    });
   }
 
   // ---------- v18: cycling accent palette for per-unit card/header color on Tier 3 pages ----------
@@ -1898,20 +2008,20 @@
       const sym = courseSymbol[c] || { text: '', size: '18px' };
       const glyphHTML = `<div class="cc-glyph">${sym.text ? `<span style="font-size:${sym.size};">${sym.text}</span>` : ''}</div>`;
       if (!inCourse.length) {
-        return `<div class="carousel-block" id="grp-${slug(c)}">
+        return `<div class="carousel-block" id="grp-${slug(c)}"><div class="course-section">
           <div class="carousel-header">
             <div class="carousel-title-group">
               ${glyphHTML}
               <div class="carousel-title-row"><span class="carousel-title" style="cursor:default;color:var(--muted);">${c}</span><span class="carousel-count">No ${typeLabel[typeVal].toLowerCase()} yet</span></div>
             </div>
           </div>
-          <div class="empty-group-state">No ${typeLabel[typeVal].toLowerCase()} for this course yet.</div>
-        </div>`;
+          <div class="course-panel"><div class="empty-group-state">No ${typeLabel[typeVal].toLowerCase()} for this course yet.</div></div>
+        </div></div>`;
       }
       const gridClass = typeVal === 'Applet' ? 'applet-grid' : 'grid';
       const countLabel = inCourse.length === 1 ? `1 ${typeLabel[typeVal].toLowerCase().replace(/s$/, '')}` : `${inCourse.length} ${typeLabel[typeVal].toLowerCase()}`;
       return `
-        <div class="carousel-block" id="grp-${slug(c)}">
+        <div class="carousel-block" id="grp-${slug(c)}"><div class="course-section">
           <div class="carousel-header">
             <div class="carousel-title-group">
               ${glyphHTML}
@@ -1919,19 +2029,24 @@
             </div>
             <div class="carousel-seeall" onclick="openTier3('type','${c}','${typeVal}')">See all (${inCourse.length}) →</div>
           </div>
-          <div class="${gridClass} preview-row">${inCourse.map(a => cardFn(a)).join('')}</div>
-        </div>`;
+          <div class="course-panel"><div class="${gridClass} preview-row">${inCourse.map(a => cardFn(a)).join('')}</div></div>
+        </div></div>`;
     }).join('')}</div>`;
   }
 
   // ---------- v16/v18: tier 3 — unit chip filter row + unit carousels, with isolate-to-full-grid.
   // v18 adds a per-unit accent color, cycling through unitAccentPalette by unit position. ----------
   function tier3BodyHTML(matchesAll, course, typeVal) {
-    const subtypeChipsHTML = typeVal === 'Worksheet' ? `<div class="jump-row">
+    // The worksheet filter chips; when an Expand/Collapse all button is passed in it rides at the
+    // right end of this same row (the button's own margin-left:auto pushes it there), so it sits
+    // level with the other controls instead of on a row of its own.
+    const subtypeChipsRow = btn => `<div class="jump-row${btn ? ' unit-toolbar' : ''}">
       <span class="jump-link ${!state.subtypeFilter ? 'chip-active' : ''}" onclick="setSubtypeFilter(null)">All Worksheets</span>
       <span class="jump-link ${state.subtypeFilter === 'Standard' ? 'chip-active' : ''}" onclick="setSubtypeFilter('Standard')">Standard</span>
       <span class="jump-link ${state.subtypeFilter === 'Blended' ? 'chip-active' : ''}" onclick="setSubtypeFilter('Blended')">Blended/Honors</span>
-    </div>` : '';
+      ${btn || ''}
+    </div>`;
+    const subtypeChipsHTML = typeVal === 'Worksheet' ? subtypeChipsRow('') : '';
     const matches = (typeVal === 'Worksheet' && state.subtypeFilter)
       ? matchesAll.filter(i => i.subtype === state.subtypeFilter)
       : matchesAll;
@@ -1941,8 +2056,7 @@
     // Applets are few per course and cross units, so they skip the unit sections entirely and
     // just list in one flat grid.
     if (typeVal === 'Applet') {
-      return `<div class="result-count">${matches.length} applet${matches.length === 1 ? '' : 's'}</div>
-        <div class="applet-grid">${matches.map(i => appletCardHTML(i)).join('')}</div>`;
+      return `<div class="applet-grid">${matches.map(i => appletCardHTML(i)).join('')}</div>`;
     }
 
     // v21: stacked, collapsible sections instead of carousels — one per unit (closed to start, since
@@ -1977,19 +2091,20 @@
       return sectionHTML(`${slugId}|${u}`, `grp-unit-${u}`, colorMap[u], `<span class="us-num">Unit ${unitLabel(course, u)}</span>`, unitTitle(course, u), inUnit, false);
     });
     if (resourceItems.length) {
-      sections.push(sectionHTML(`${slugId}|resources`, 'grp-resources', 'var(--border)', '', 'Resources', resourceItems, true));
+      sections.push(sectionHTML(`${slugId}|resources`, 'grp-resources', 'var(--border)', '', 'Resources', resourceItems, false));
     }
 
-    // The jump links open their section and scroll to it; the toggle is only worth showing once
-    // there's more than one section to collapse.
-    const jumpTargets = [...units.map(u => ({ id: `grp-unit-${u}`, label: `Unit ${unitLabel(course, u)}` })),
-      ...(resourceItems.length ? [{ id: 'grp-resources', label: 'Resources' }] : [])];
-    const toolbarHTML = `<div class="jump-row unit-toolbar">
-      <span class="jump-label">Jump to</span>
-      ${jumpTargets.map(t => `<span class="jump-link" onclick="jumpToUnitSection('${t.id}')">${t.label}</span>`).join('')}
-      ${jumpTargets.length > 1 ? `<button class="expand-all-btn" id="unit-toggle-all" onclick="toggleAllUnitSections()">Expand all</button>` : ''}
-    </div>`;
-    return subtypeChipsHTML + toolbarHTML + `<div class="unit-section-list">${sections.join('')}</div>`;
+    // The "Jump to" link row was removed — a course only has a handful of units, so it was just
+    // more chrome. The Expand/Collapse all toggle stays, shown only when there's more than one
+    // section to collapse: on the worksheet page it joins the Standard/Blended chips row, and on the
+    // other types (no chips) it gets a row to itself.
+    const toggleBtn = (units.length + (resourceItems.length ? 1 : 0)) > 1
+      ? `<button class="expand-all-btn" id="unit-toggle-all" onclick="toggleAllUnitSections()">Expand all</button>`
+      : '';
+    const headRow = typeVal === 'Worksheet'
+      ? subtypeChipsRow(toggleBtn)
+      : (toggleBtn ? `<div class="jump-row unit-toolbar">${toggleBtn}</div>` : '');
+    return headRow + `<div class="unit-section-list">${sections.join('')}</div>`;
   }
 
   // Open/closed state of the type page's unit sections, keyed `<course>-<type>|<unit>`. Kept outside
@@ -2005,6 +2120,14 @@
   function onUnitSectionToggle(el) {
     unitSectionOpen.set(el.dataset.key, el.open);
     syncUnitToggleLabel();
+    persistUnitSections();
+  }
+  // Saves the open/closed map onto the current history entry so a later back/forward to it can
+  // restore it (see the popstate listener). It's the entry's own state object, so it never leaks
+  // into other entries.
+  function persistUnitSections() {
+    state.openUnits = Object.fromEntries(unitSectionOpen);
+    try { history.replaceState(state, '', '#' + statePath(state)); } catch (e) { /* ignore in restricted contexts */ }
   }
   function toggleAllUnitSections() {
     const all = [...document.querySelectorAll('.unit-section')];
@@ -2042,9 +2165,14 @@
   function realignSidebar() {
     // The top-level typeBrowse page has no .jump-row (course chips were removed), so its sidebar
     // aligns to the "N video sections across M courses" count line instead.
-    if (state.level === 'typeBrowse') alignSidebarTo('.result-count');
+    if (state.level === 'typeBrowse') alignSidebarTo('.course-carousel-list');
     else if (state.level === 'tier3') alignSidebarToJumpRow();
-    else if (state.level === 'tier2' && state.entry === 'course') alignSidebarTo('.course-info');
+    else if (state.level === 'tier2' && state.entry === 'course') {
+      // The header band now sits above the page shell, so the sidebar already starts level with the
+      // content; just clear any offset left over from the previous page.
+      const sb = document.getElementById('sidebar-card');
+      if (sb) sb.style.marginTop = '';
+    }
     else if (state.level === 'unit') alignSidebarTo('.unit-head');
   }
   window.addEventListener('resize', realignSidebar);
@@ -2054,6 +2182,9 @@
 
     const page = document.getElementById('page');
     const shell = document.querySelector('.page-shell');
+    // Pages with a header set it themselves below (setPageHeader leaves an unchanged one alone);
+    // the rest clear it here.
+    if (!['courseMaterials', 'typeBrowse', 'tier2', 'tier3'].includes(state.level)) setPageHeader('');
     // v18: sidebar now applies on both the top-level typeBrowse page AND the course-specific tier3
     // page, for the same three types; Applets stays sidebar-less on both.
     // v20: also applies on the tier2 course landing page, for its new "Download Everything" box —
@@ -2101,13 +2232,13 @@
           </g>
         </svg>
       </div>`;
+      setPageHeader(pageHeaderHTML({
+        badge: stackBadgeHTML,
+        badgeClass: ' title-stack-holder',
+        title: 'Course Materials',
+        tagline: 'Pick a course below to see everything for it — worksheets, lecture guides and notes, applets, and videos, organized by unit.'
+      }));
       page.innerHTML = `
-        ${crumbHTML()}
-        <div class="title-row" style="margin-bottom:6px;">
-          ${stackBadgeHTML}
-          <div class="page-title" style="margin:0;">Course Materials</div>
-        </div>
-        <div class="page-tagline" style="margin:0 0 24px 72px;">Pick a course below to see everything for it — worksheets, lecture guides and notes, applets, and videos, organized by unit.</div>
         <div class="course-directory-grid">${body}</div>
       `;
       return;
@@ -2120,11 +2251,10 @@
       const all = items.filter(i => i.type === t);
       const pageTitle = t === 'Applet' ? 'All Applets' : typeLabel[t];
       const unitLabel = t === 'Applet' ? 'applet' : (t === 'LectureVideo' ? 'video section' : 'item');
-      const countText = `${all.length} ${unitLabel}${all.length === 1 ? '' : 's'} across ${courseOrder.filter(c => all.some(a => a.course === c)).length} courses`;
+      const courseCount = courseOrder.filter(c => all.some(a => a.course === c)).length;
+      const chips = [`${all.length} ${unitLabel}${all.length === 1 ? '' : 's'}`, `${courseCount} course${courseCount === 1 ? '' : 's'}`];
+      setPageHeader(titleBlockHTML(t, pageTitle, null, chips));
       page.innerHTML = `
-        ${crumbHTML()}
-        ${titleBlockHTML(t, pageTitle)}
-        <div class="result-count">${countText}</div>
         ${coursePreviewsHTML(t)}
       `;
       realignSidebar();
@@ -2143,7 +2273,7 @@
               <div class="topics"><b>Topics:</b> ${info.topics}</div>
               <div class="topics"><b>Who it's for:</b> ${info.audience}</div>
             </div>
-          </div>`;
+          </div>`;  // rendered inside the page-header card below, under a divider
         }
         const availableTypes = typeOrder.filter(t => items.some(i => i.course === state.course && i.type === t));
         const topicView = state.view === 'topic';
@@ -2179,18 +2309,22 @@
       }
       const tier2CourseSym = state.entry === 'course' ? courseSymbol[state.course] : null;
       const tier2TitleHTML = tier2CourseSym
-        ? `<div class="title-row" style="margin-bottom:6px;">
-            <div class="title-icon-badge badge-dev-wrap"><span style="font-size:${tier2CourseSym.size};">${tier2CourseSym.text}</span>${devTapeHTML(state.course)}</div>
-            <div class="page-title" style="margin:0;">${state.course}${devPillHTML(state.course)}</div>
-          </div>`
+        ? pageHeaderHTML({
+            badge: `<span style="font-size:${tier2CourseSym.size};">${tier2CourseSym.text}</span>${devTapeHTML(state.course)}`,
+            badgeClass: ' badge-dev-wrap',
+            centered: true,
+            title: state.course + devPillHTML(state.course),
+            extra: infoHTML
+          })
         : `<div class="page-title" style="margin-top:0;">${state.entry === 'course' ? state.course : typeLabel[state.type]}</div>`;
+      // The course landing page's header goes in the full-width band; the dead type-entry branch
+      // (no course symbol) keeps its old plain title and breadcrumb inside the content column.
+      setPageHeader(tier2CourseSym ? tier2TitleHTML : '');
       page.innerHTML = `
-        ${crumbHTML()}
-        ${tier2TitleHTML}
-        ${infoHTML}
+        ${tier2CourseSym ? '' : crumbHTML() + tier2TitleHTML}
         ${tilesHTML}
       `;
-      // Aligns the "Download Everything" box to .course-info on entry === 'course'; on the dead
+      // Aligns the "Download Everything" box to the top of the page content; on the dead
       // type-entry branch there's no sidebar shown at all (see showSidebar above), so this just
       // clears any marginTop left over from whichever page the sidebar was last aligned on.
       realignSidebar();
@@ -2209,9 +2343,8 @@
     if (state.level === 'tier3') {
       const matches = items.filter(i => i.course === state.course && i.type === state.type).sort(sectionCompare);
       const titleSuffix = (state.type === 'Worksheet') ? 'Worksheets (Standard & Blended/Honors)' : typeLabel[state.type];
+      setPageHeader(titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`, state.course, [`${matches.length} item${matches.length === 1 ? '' : 's'}`]));
       page.innerHTML = `
-        ${crumbHTML()}
-        ${titleBlockHTML(state.type, `${state.course} — ${titleSuffix}`, state.course)}
         ${tier3BodyHTML(matches, state.course, state.type)}
       `;
       realignSidebar();
@@ -2376,6 +2509,10 @@
   // doesn't fire popstate either, so without this listener the route above only ever gets
   // parsed once, on the page's very first load.
   window.addEventListener('hashchange', function () {
+    // Back/forward also fires hashchange, right after popstate has already restored the entry's
+    // state (including its open sections) and rendered — don't rebuild it from the bare hash.
+    if (history.state && history.state.level && statePath(history.state) === location.hash.slice(1)) return;
+    unitSectionOpen.clear();
     state = stateFromHash();
     try { history.replaceState(state, '', '#' + statePath(state)); } catch (e) { /* ignore */ }
     render();
