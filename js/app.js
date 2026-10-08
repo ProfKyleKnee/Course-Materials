@@ -54,11 +54,6 @@
   function devTapeHTML(course) { return isInDevelopment(course) ? '<span class="caution-tape"></span>' : ''; }
   function devPillHTML(course) { return isInDevelopment(course) ? '<span class="in-dev-pill">In Development</span>' : ''; }
 
-  // ---------- disabledApplets lives in js/data.js (shared with js/home.js's hero stat count).
-  // Same caution-tape + "In Development" pill treatment as coursesInDevelopment above, but keyed
-  // per applet item id instead of per course — see appletCardHTML below. ----------
-  function isAppletDisabled(id) { return disabledApplets.includes(id); }
-
   const typeIconSVG = {
     Applet: `<svg viewBox="-1 -1 27 26">
       <line x1="4" y1="21" x2="4" y2="3"/><line x1="4" y1="21" x2="4" y2="23" stroke-width="1.3"/>
@@ -313,7 +308,6 @@
     const item = items.find(i => i.id === id);
     if (!item) return;
     if (!item.launchUrl || item.launchUrl === '#') return; // no-op: applet not yet linked
-    if (isAppletDisabled(id)) return; // no-op: temporarily disabled, see disabledApplets in js/data.js
     window.location.href = item.launchUrl; // same tab, so the browser back button returns here
   }
 
@@ -1755,16 +1749,14 @@
   // rather than giving them a dead link to right-click.
   function appletCardHTML(a, unitColor) {
     const styleAttr = unitColor ? ` style="--unit-color:${unitColor};"` : '';
-    const disabled = isAppletDisabled(a.id);
-    const isPlaceholder = !a.launchUrl || a.launchUrl === '#' || disabled;
+    const isPlaceholder = !a.launchUrl || a.launchUrl === '#';
     const tag = isPlaceholder ? 'div' : 'a';
     const hrefAttr = isPlaceholder ? '' : ` href="${a.launchUrl}"`;
-    const cardClass = disabled ? 'applet-card applet-card-disabled' : 'applet-card';
-    return `<${tag} class="${cardClass}"${styleAttr}${hrefAttr}>
+    return `<${tag} class="applet-card"${styleAttr}${hrefAttr}>
       <div class="ac-eyebrow">Applet</div>
-      <div class="ac-title">${a.title}${disabled ? '<span class="in-dev-pill">In Development</span>' : ''}</div>
+      <div class="ac-title">${a.title}</div>
       <div class="ac-body">
-        <div class="ac-tile">${tileSVG(a)}${disabled ? '<span class="caution-tape"></span>' : ''}</div>
+        <div class="ac-tile">${tileSVG(a)}</div>
         <div class="ac-desc">${a.desc}<span class="course-tag">${a.course}</span>${recentBadgeHTML(a.updated)}</div>
       </div>
     </${tag}>`;
