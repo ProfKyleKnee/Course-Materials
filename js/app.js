@@ -552,6 +552,7 @@
     if (a.tileType === 'newtonTangent') return nmTileSVG();
     if (a.tileType === 'riemannSum') return rsTileSVG();
     if (a.tileType === 'secantTangent') return stTileSVG();
+    if (a.tileType === 'lagrangeLevel') return lgTileSVG();
     if (a.tileType === 'relatedRates') return rrTileSVG();
     const curve = a.curve || 'M14,50 C34,20 56,45 74,25 S 100,45 118,20';
     return `<svg viewBox="0 0 130 66">
@@ -1653,6 +1654,67 @@
     if (!card || card.contains(e.relatedTarget)) return;
     const svg = card.querySelector('svg.st-tile');
     if (svg) stStopSpin(svg);
+  });
+
+  // ---------- Lagrange Multipliers Explorer card tile (tileType: 'lagrangeLevel' in js/data.js) ----------
+  // A level curve (circle) growing from small, past the exact moment it just touches the fixed
+  // constraint line, into a visible crossing, and back -- not the generic curve+dot tile, since the
+  // real applet's whole point is a closed level set brushing a fixed curve, not a point traveling
+  // along an open path. LG_TANGENT_R is computed as the real perpendicular distance from the
+  // circle's center to the line (point-to-line distance formula), so the green flip below lines up
+  // with an exact, computed tangency rather than a hand-eyeballed radius.
+  var LG_LINE_P0 = { x: 12, y: 82 }, LG_LINE_P1 = { x: 88, y: 15 };
+  var LG_CENTER = { x: 20, y: 20 };
+  var LG_R_MIN = 4, LG_R_MAX = 58;
+  var LG_TANGENT_R = (function () {
+    const dx = LG_LINE_P1.x - LG_LINE_P0.x, dy = LG_LINE_P1.y - LG_LINE_P0.y;
+    const cx = LG_CENTER.x - LG_LINE_P0.x, cy = LG_CENTER.y - LG_LINE_P0.y;
+    return Math.abs(dx * cy - dy * cx) / Math.sqrt(dx * dx + dy * dy);
+  })();
+  var LG_TANGENT_TOL = 1.4;
+  var LG_LOOP_MS = 2800;
+  function lgEase(t) { return t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t); }
+  function lgRadiusAt(cyclePos) {
+    const tri = cyclePos < 0.5 ? cyclePos * 2 : 2 - cyclePos * 2;
+    return LG_R_MIN + (LG_R_MAX - LG_R_MIN) * lgEase(tri);
+  }
+  function lgTileSVG() {
+    return `<svg class="lg-tile" viewBox="0 0 100 100">
+      <line class="lg-constraint" x1="${LG_LINE_P0.x}" y1="${LG_LINE_P0.y}" x2="${LG_LINE_P1.x}" y2="${LG_LINE_P1.y}"/>
+      <circle class="lg-level" cx="${LG_CENTER.x}" cy="${LG_CENTER.y}" r="${LG_R_MIN}"/>
+    </svg>`;
+  }
+  var lgSpins = new Map();
+  function lgStartSpin(svg) {
+    if (lgSpins.has(svg)) return;
+    const circleEl = svg.querySelector('.lg-level');
+    const start = performance.now();
+    function frame(now) {
+      const cyclePos = ((now - start) % LG_LOOP_MS) / LG_LOOP_MS;
+      const r = lgRadiusAt(cyclePos);
+      circleEl.setAttribute('r', r.toFixed(1));
+      circleEl.classList.toggle('lg-level-tangent', Math.abs(r - LG_TANGENT_R) < LG_TANGENT_TOL);
+      lgSpins.set(svg, requestAnimationFrame(frame));
+    }
+    lgSpins.set(svg, requestAnimationFrame(frame));
+  }
+  function lgStopSpin(svg) {
+    const id = lgSpins.get(svg);
+    if (id) cancelAnimationFrame(id);
+    lgSpins.delete(svg);
+    const circleEl = svg.querySelector('.lg-level');
+    if (circleEl) { circleEl.setAttribute('r', LG_R_MIN); circleEl.classList.remove('lg-level-tangent'); }
+  }
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    const svg = card && card.querySelector('svg.lg-tile');
+    if (svg) lgStartSpin(svg);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest && e.target.closest('.applet-card');
+    if (!card || card.contains(e.relatedTarget)) return;
+    const svg = card.querySelector('svg.lg-tile');
+    if (svg) lgStopSpin(svg);
   });
 
   // ---------- Related Rates Studio card tile (tileType: 'relatedRates' in js/data.js) ----------
