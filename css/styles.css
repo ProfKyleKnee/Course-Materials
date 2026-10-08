@@ -405,6 +405,19 @@
   .st-dotP { fill: var(--accent); }
   .st-dotQ { fill: #C1556B; }
 
+  /* ---------- Lagrange Multipliers Explorer card tile (tileType: 'lagrangeLevel' in
+     js/data.js) ----------
+     A level curve (circle) growing past a fixed constraint line, not the generic curve+dot tile --
+     the real applet's whole point is a closed level set brushing a fixed curve, not a point
+     traveling along an open path. .lg-constraint is the always-visible fixed reference line (same
+     role as .axis-line); js/app.js's lgStartSpin rewrites .lg-level's own `r` every frame while
+     hovered between a real computed min/max, toggling .lg-level-tangent on exactly when `r` crosses
+     the real perpendicular-distance-to-the-line value, so the green flip lines up with an actual
+     tangency rather than a hand-eyeballed radius. Reuses the applet's own tangent-green (#4E9E7C). */
+  .lg-constraint { fill: none; stroke: var(--eyebrow); stroke-width: 2.2; }
+  .lg-level { fill: none; stroke: var(--accent); stroke-width: 3; }
+  .lg-level-tangent { stroke: #4E9E7C; }
+
   /* ---------- Related Rates Studio card tile (tileType: 'relatedRates' in js/data.js) ----------
      Matches the real applet's own 3D-perspective tank convention (flattened rim/water ellipses, not
      a flat-topped triangle) rather than the generic curve+dot tile. .rr-water-fill/.rr-water-surf

@@ -52,12 +52,17 @@ Applets/
     ├── Partial Derivatives/        Migrated — partial-derivatives-standalone_3.html is the shipped
     │                                 bundle, partial-derivatives.jsx the source; has its own
     │                                 spec_2_1_1_1.md
-    └── Lagrange Multipliers/       Mockup stage only — mockup-3.html + jsx + spec_4.md, no shipped bundle yet
+    └── Lagrange Multipliers/       Migrated — lagrange-multipliers-explorer.html is the shipped
+                                      bundle, LagrangeMultipliersApplet.jsx the source (still also
+                                      carries mockup-3.html, the pre-React single-file HTML build that
+                                      predates the JSX port and was not kept in sync with it — see
+                                      spec_4.md); has its own spec_4.md
 ```
-**Quadric Surfaces, Partial Derivatives, Polar Graphing & Integration, Taylor Series & Remainder
-Explorer, Curve Sketching Studio, Newton's Method Explorer, and the Riemann Sum Explorer have been
-migrated** to the full-viewport layout described below; Calc 3's other two applets and the rest of Calc 1 still use
-their own one-off header (or none at all) and haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
+**Quadric Surfaces, Partial Derivatives, Lagrange Multipliers, Polar Graphing & Integration, Taylor
+Series & Remainder Explorer, Curve Sketching Studio, Newton's Method Explorer, and the Riemann Sum
+Explorer have been migrated** to the full-viewport layout described below; Calc 3's one other
+unmigrated applet and the rest of Calc 1 still use their own one-off header (or none at all) and
+haven't been touched. Migrating one means: hand-matching its own JSX gradient banner and
 page-level credit row to the canonical spec (see "Header pattern" below) and rebuilding its bundle.
 None of the migrated applets use the old shared-topline HTML/JS wiring anymore — see "Header
 pattern" for why.
@@ -178,6 +183,35 @@ treated as done — the general "verify, don't just assert" standard `spec_5.md`
 this applet, extended to structural HTML edits, not just math-logic bugs. Prefer this script-assisted
 splice approach (or a real esbuild rebuild, if a toolchain happens to be available for a given
 applet) over hand-counting parens on any future compiled-output-only migration.
+
+**Lagrange Multipliers** is built like Quadric Surfaces/Curve Sketching/Newton's Method
+(`import`-based source, real ES module imports for React/react-dom/three), but — unlike those three,
+and unlike Partial Derivatives' pinned-for-a-different-reason `three@0.128.0` — its own three.js
+version pin is a continuation of a *working, visually-verified* build rather than an unverified
+default: the file's own header comment already named `three@0.128.0` as "the version this was
+actually tested against" before the header migration, and that exact version was kept for the
+shipped bundle specifically because a scratch build against it was rendered and screenshotted
+(surface lighting/color ramp, gradient arrows, live level curve, all confirmed correct) before
+shipping — not because of a known r150+ regression the way Partial Derivatives' pin is. Built via
+`npm install react@19 react-dom@19 three@0.128.0` in a scratch dir, then
+`npx esbuild entry.jsx --bundle --jsx=automatic --format=iife --minify
+--define:process.env.NODE_ENV='"production"' --outfile=bundle.js` (the `--minify`/`NODE_ENV` flags
+matter — a first pass without them produced an unminified ~2.2MB development-mode bundle with React's
+dev warnings baked in; the production flags brought the shipped file down to a three.js-dominated
+~760KB with no dev-only code), with `entry.jsx` a one-line `createRoot(...).render(<App/>)` wrapper
+around the default export, spliced into the canonical `<head>`/`<body>` shell by hand (same shell as
+every other `import`-based applet, see "Header pattern" below) rather than by any splice script, since
+there was no existing compiled HTML to splice into — this was the applet's first shipped bundle.
+Verified both as a standalone scratch build and, after wiring (see
+[wiring.md](wiring.md#wiring-an-applet-into-the-main-site)), served from its real repo path through a
+full local static server rooted at the repo so every relative path (`../../shared/applet-header.css`,
+`../../../browse.html#/applets`, `../../../assets/favicon.svg`) was exercised exactly as it will be
+on GitHub Pages, not just in an isolated scratch folder. One real bug surfaced and fixed during that
+verification pass, not just mocked: the first version of the banner's own two-tab switcher
+("Explore"/"Gradient as Motion") overflowed the banner at normal page widths — long button text plus
+the fixed-width title left no room, and the overflow was silently clipped by the card's own
+`overflow: hidden` rounding rather than wrapping or erroring — fixed by shortening the tab label
+("Motion") rather than shrinking the title or kicker, which are both at their canonical spec sizes.
 
 **Five full-viewport gotchas worth checking on any migrated applet** — the first three caught (and
 fixed) on Taylor Series Explorer, the fourth on Curve Sketching Studio, the fifth on Newton's Method
