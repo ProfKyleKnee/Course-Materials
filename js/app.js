@@ -398,7 +398,9 @@
   function setPageHeader(html) {
     const el = document.getElementById('page-header');
     if (!html) { el.innerHTML = ''; lastHeaderPath = null; lastHeaderHTML = ''; return; }
-    const path = statePath(state);
+    // The course landing page's Browse by type / Browse by topic toggle only adds or drops a
+    // trailing /topics, and the title area is the same either way, so it counts as the same page.
+    const path = statePath(state).replace(/\/topics$/, '');
     if (path === lastHeaderPath) {
       if (html !== lastHeaderHTML) { el.innerHTML = html; lastHeaderHTML = html; }  // changed content, no replay
       return;
