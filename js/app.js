@@ -1821,7 +1821,7 @@
       <div class="ac-title">${a.title}</div>
       <div class="ac-body">
         <div class="ac-tile">${tileSVG(a)}</div>
-        <div class="ac-desc">${a.desc}<span class="course-tag">${a.course}</span>${recentBadgeHTML(a.updated)}</div>
+        <div class="ac-desc">${a.desc}<span class="course-tag">${a.course}</span>${a.underConstruction ? `<span class="item-pill in-progress-pill uc-pill">Under Construction</span>` : ''}${recentBadgeHTML(a.updated)}</div>
       </div>
     </${tag}>`;
   }
