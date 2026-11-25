@@ -1,0 +1,526 @@
+<title>Density Accumulator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  /* Layout: one gradient banner, then a card with a 3D view on the left and controls on the right. */
+  :root {
+    --bg: #F5F5FA; --card: #FFFFFF; --text: #3A3A3C; --muted: #6E6E86; --eyebrow: #8A8AA3;
+    --border: #DCDCF0; --accent: #3B4FC2; --accent-2: #6478D6; --soft: #EFEFFA;
+    --ghost: rgba(110,110,134,0.16); --warn: #C77B94; --shadow: 0 1px 3px rgba(60,60,90,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151F; --card: #1D1F2E; --text: #E6E7F2; --muted: #9A9CB8; --eyebrow: #8284A3;
+      --border: #34374F; --accent: #8C9BFF; --accent-2: #6F80E6; --soft: #262940;
+      --ghost: rgba(154,156,184,0.18); --warn: #E59AB2; --shadow: none; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14151F; --card: #1D1F2E; --text: #E6E7F2; --muted: #9A9CB8; --eyebrow: #8284A3;
+    --border: #34374F; --accent: #8C9BFF; --accent-2: #6F80E6; --soft: #262940;
+    --ghost: rgba(154,156,184,0.18); --warn: #E59AB2; --shadow: none; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif; font-size: 14px; margin: 0; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); overflow: hidden; }
+  .banner { background: linear-gradient(135deg, #3B4FC2, #4A5CD6); color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .banner .kicker { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; opacity: .8; }
+  .banner h1 { margin: 2px 0 0; font-size: 24px; font-weight: 700; }
+  .banner .tag { margin-left: auto; font-size: 12px; background: rgba(255,255,255,.18); padding: 4px 12px; border-radius: 20px; }
+  .body { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; padding: 20px; }
+  @media (max-width: 860px) { .body { grid-template-columns: minmax(0, 1fr); padding: 14px; } }
+  .stage { position: relative; background: var(--soft); border-radius: 16px; overflow: hidden; height: 440px; touch-action: none; }
+  @media (max-width: 860px) { .stage { height: 340px; } }
+  canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  .hint { position: absolute; left: 12px; bottom: 10px; font-size: 11px; color: var(--eyebrow); pointer-events: none; }
+  .legend { position: absolute; right: 12px; bottom: 10px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--eyebrow); pointer-events: none; }
+  .legend i { width: 90px; height: 8px; border-radius: 4px; display: block; }
+  .eyebrow { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--eyebrow); font-weight: 600; margin-bottom: 8px; }
+  .col { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  button, select, input[type=text] { font: inherit; }
+  .pill { border: 1px solid var(--border); background: var(--card); color: var(--muted); border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+  .pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  :root[data-theme="dark"] .pill.on { color: #14151F; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.on { color: #14151F; } }
+  .pill:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .modes { display: flex; background: var(--soft); border-radius: 20px; padding: 3px; gap: 2px; }
+  .modes button { flex: 1; border: 0; background: transparent; color: var(--muted); border-radius: 18px; padding: 7px 8px; font-size: 12.5px; cursor: pointer; font-weight: 600; }
+  .modes button.on { background: var(--accent); color: #fff; }
+  :root[data-theme="dark"] .modes button.on { color: #14151F; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .modes button.on { color: #14151F; } }
+  .fn { display: flex; align-items: stretch; }
+  .fn span { background: var(--soft); border: 1px solid var(--border); border-right: none; border-radius: 20px 0 0 20px; color: var(--accent); padding: 0 12px; font-weight: 600; display: flex; align-items: center; white-space: nowrap; }
+  .fn input { flex: 1; min-width: 0; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 0 20px 20px 0; padding: 9px 14px; }
+  select { width: 100%; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 20px; padding: 8px 14px; }
+  .err { color: var(--warn); font-size: 12px; min-height: 16px; margin-top: 6px; }
+  .note { color: var(--muted); font-size: 12px; margin-top: 6px; line-height: 1.45; }
+  .reads { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .read { background: var(--soft); border-radius: 14px; padding: 10px 14px; min-width: 0; }
+  .read .l { font-size: 10.5px; letter-spacing: .8px; text-transform: uppercase; color: var(--eyebrow); }
+  .read .v { font-size: 20px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .notation { font-size: 17px; line-height: 1.7; background: var(--soft); border-radius: 14px; padding: 10px 14px; overflow-x: auto; white-space: nowrap; }
+  .d { padding: 1px 4px; border-radius: 6px; color: var(--muted); }
+  .d.cur { background: var(--accent); color: #fff; font-weight: 700; }
+  :root[data-theme="dark"] .d.cur { color: #14151F; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .d.cur { color: #14151F; } }
+  .d.done { color: var(--accent); font-weight: 600; }
+  .status { font-size: 13px; line-height: 1.5; min-height: 40px; }
+  .transport { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .scrub { display: flex; align-items: center; gap: 12px; }
+  .scrub input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+  .play { background: var(--accent); color: #fff; border: 0; border-radius: 20px; padding: 8px 18px; font-weight: 600; cursor: pointer; min-width: 84px; }
+  :root[data-theme="dark"] .play { color: #14151F; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .play { color: #14151F; } }
+  .bounds { display: grid; grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr) ; gap: 8px 10px; align-items: center; margin-top: 14px; }
+  .bounds label { font-weight: 700; color: var(--accent); }
+  .bounds .bv { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bounds input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+  .bounds .bv b { min-width: 34px; text-align: right; color: var(--text); font-weight: 600; }
+  .mock { font-size: 12px; color: var(--muted); padding: 0 20px 18px; line-height: 1.5; }
+  .mock b { color: var(--text); }
+</style>
+
+<div class="wrap">
+  <div class="card">
+    <div class="banner">
+      <div>
+        <div class="kicker">Calculus III · Triple Integrals</div>
+        <h1>Density Accumulator</h1>
+      </div>
+      <div class="tag">Draft mockup</div>
+    </div>
+
+    <div class="body">
+      <div>
+        <div class="stage" id="stage">
+          <canvas id="cv" aria-label="3D view of the solid and its accumulated density"></canvas>
+          <div class="hint">Drag to rotate</div>
+          <div class="legend"><span>low</span><i id="legbar"></i><span>high</span></div>
+        </div>
+
+        <div id="transport" class="transport">
+          <div class="row" id="chips"></div>
+          <div class="scrub">
+            <button class="play" id="play">Play</button>
+            <button class="pill" id="loop" aria-pressed="false">Loop</button>
+            <input type="range" id="scrub" min="0" max="3" step="0.001" value="0" aria-label="Integration progress">
+          </div>
+        </div>
+
+        <div id="boundsBox" class="bounds" hidden></div>
+      </div>
+
+      <div class="col">
+        <div>
+          <div class="eyebrow">Visualization</div>
+          <div class="modes" id="modes">
+            <button data-m="sweep" class="on">Sweep</button>
+            <button data-m="cloud">Point cloud</button>
+            <button data-m="bounds">Bounds</button>
+          </div>
+          <div class="note" id="modeNote"></div>
+        </div>
+
+        <div>
+          <div class="eyebrow">Solid</div>
+          <div class="row" id="solids"></div>
+          <div class="note" id="solidDesc"></div>
+        </div>
+
+        <div>
+          <div class="eyebrow">Density</div>
+          <div class="fn"><span>ρ(x,y,z) =</span><input type="text" id="rho" value="z" spellcheck="false" autocomplete="off"></div>
+          <div class="row" id="rhos" style="margin-top:10px"></div>
+          <div class="err" id="err"></div>
+        </div>
+
+        <div>
+          <div class="eyebrow">Order of integration</div>
+          <select id="order" aria-label="Order of integration"></select>
+          <div class="note">Written like the integral: the first differential is integrated first.</div>
+        </div>
+
+        <div>
+          <div class="eyebrow">Integral</div>
+          <div class="notation" id="notation"></div>
+          <div class="status" id="status" style="margin-top:10px"></div>
+        </div>
+
+        <div class="reads">
+          <div class="read"><div class="l">Total mass M</div><div class="v" id="rM">–</div></div>
+          <div class="read"><div class="l" id="rPl">Peak value</div><div class="v" id="rP">–</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mock">
+      <b>Draft notes.</b> Sweep, Point cloud and Bounds are three competing takes on the same idea, so you can compare them. Values are computed on a coarse voxel grid for speed; M uses a finer grid. Symbolic bounds for each order are not built yet. Densities that go negative are drawn as the lowest color but still count toward mass.
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const AX = ['x', 'y', 'z'];
+
+const SOLIDS = {
+  box:   { name: 'Box',        bb: [[0,3],[0,2],[0,1]],    inside: () => true,                              desc: '0 ≤ x ≤ 3, 0 ≤ y ≤ 2, 0 ≤ z ≤ 1' },
+  tetra: { name: 'Tetrahedron', bb: [[0,2],[0,2],[0,2]],   inside: (x,y,z) => x+y+z <= 2,                  desc: 'x, y, z ≥ 0 and x + y + z ≤ 2' },
+  cyl:   { name: 'Cylinder',   bb: [[-1,1],[-1,1],[0,2]],  inside: (x,y) => x*x+y*y <= 1,                  desc: 'x² + y² ≤ 1, 0 ≤ z ≤ 2' },
+  ball:  { name: 'Half ball',  bb: [[-2,2],[-2,2],[0,2]],  inside: (x,y,z) => x*x+y*y+z*z <= 4,           desc: 'x² + y² + z² ≤ 4, z ≥ 0' }
+};
+const RHOS = [['1','1'],['z','z'],['x²+y²+z²','x^2+y^2+z^2'],['√(x²+y²)','sqrt(x^2+y^2)'],['e^(−r²)','exp(-(x^2+y^2+z^2))']];
+const ORDERS = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+const MODE_NOTES = {
+  sweep: 'A slab sweeps through the solid. Each voxel shows the running total so far. When a sweep finishes, the solid collapses onto the face, then the edge, then the point where the sums live.',
+  cloud: 'Dots are sampled in proportion to density. Each integration squashes the dots along that axis, so the density piles up on the face, then the edge, then a point.',
+  bounds: 'No animation. Drag the six bounds to carve a box out of the solid and read off the mass inside it.'
+};
+
+const S = { solid: 'tetra', fn: null, ord: 0, mode: 'sweep', prog: 0, playing: false, az: -0.9, el: 0.5, region: null };
+let grid, voxels, nv, stages, pts, rhoMax, fineM, totalCoarse;
+
+/* ---------- density parsing ---------- */
+const ALLOWED = ['x','y','z','sin','cos','tan','exp','log','ln','sqrt','abs','pi','e'];
+function compileRho(src) {
+  let s = src.trim();
+  if (!s) throw new Error('Type a density, for example x^2 + z.');
+  if (/[^0-9a-zA-Z+\-*\/().,\s^]/.test(s)) throw new Error('Use only numbers, x, y, z and + - * / ^ ( ).');
+  const ids = s.match(/[A-Za-z_]+/g) || [];
+  for (const id of ids) if (!ALLOWED.includes(id.toLowerCase()) && !ALLOWED.includes(id)) throw new Error('Unknown name "' + id + '". Try sin, cos, exp, sqrt, abs, ln.');
+  s = s.replace(/\^/g, '**').replace(/\bln\b/g, 'log').replace(/\bpi\b/gi, 'PI').replace(/\be\b/g, 'E');
+  s = s.replace(/(\d)\s*([xyz(])/g, '$1*$2').replace(/([xyz)])\s*(\d)/g, '$1*$2').replace(/\)\s*\(/g, ')*(').replace(/([xyz])\s*([xyz(])/g, '$1*$2');
+  let f;
+  try { f = new Function('x','y','z','sin','cos','tan','exp','log','sqrt','abs','PI','E', 'return (' + s + ');'); }
+  catch (e) { throw new Error('That expression does not parse. Check parentheses and operators.'); }
+  const fn = (x,y,z) => { const v = f(x,y,z,Math.sin,Math.cos,Math.tan,Math.exp,Math.log,Math.sqrt,Math.abs,Math.PI,Math.E); return isFinite(v) ? v : 0; };
+  const t = f(1,1,1,Math.sin,Math.cos,Math.tan,Math.exp,Math.log,Math.sqrt,Math.abs,Math.PI,Math.E);
+  if (typeof t !== 'number' || isNaN(t)) throw new Error('That does not evaluate to a number.');
+  return fn;
+}
+
+/* ---------- grid, stages, samples ---------- */
+function build() {
+  const sol = SOLIDS[S.solid], bb = sol.bb, N = 18;
+  const ext = bb.map(b => b[1] - b[0]), h = Math.max(...ext) / N;
+  const n = ext.map(e => Math.max(1, Math.round(e / h)));
+  const d = ext.map((e, i) => e / n[i]);
+  grid = { bb, n, d, ext, id: new Int32Array(n[0] * n[1] * n[2]).fill(-1) };
+  voxels = [];
+  for (let i = 0; i < n[0]; i++) for (let j = 0; j < n[1]; j++) for (let k = 0; k < n[2]; k++) {
+    const c = [bb[0][0] + (i + .5) * d[0], bb[1][0] + (j + .5) * d[1], bb[2][0] + (k + .5) * d[2]];
+    if (!sol.inside(c[0], c[1], c[2])) continue;
+    grid.id[(i * n[1] + j) * n[2] + k] = voxels.length;
+    voxels.push({ ij: [i, j, k], c, w: S.fn(c[0], c[1], c[2]) * d[0] * d[1] * d[2] });
+  }
+  nv = voxels.length;
+  totalCoarse = voxels.reduce((s, v) => s + v.w, 0);
+  rhoMax = Math.max(1e-12, ...voxels.map(v => v.w / (d[0] * d[1] * d[2])));
+  // finer midpoint sum for the headline mass
+  const M = 36; let tot = 0;
+  const dx = ext.map(e => e / M), dv = dx[0] * dx[1] * dx[2];
+  for (let i = 0; i < M; i++) for (let j = 0; j < M; j++) for (let k = 0; k < M; k++) {
+    const x = bb[0][0] + (i + .5) * dx[0], y = bb[1][0] + (j + .5) * dx[1], z = bb[2][0] + (k + .5) * dx[2];
+    if (sol.inside(x, y, z)) tot += S.fn(x, y, z) * dv;
+  }
+  fineM = tot;
+  computeStages();
+  makePoints();
+}
+
+function computeStages() {
+  const ord = ORDERS[S.ord];
+  let R = voxels.map((_, i) => i), val = voxels.map(v => v.w);
+  stages = [];
+  for (let c = 0; c < 3; c++) {
+    const a = ord[c], keyAx = ord.slice(c + 1), groups = new Map();
+    for (const id of R) {
+      const key = keyAx.map(t => voxels[id].ij[t]).join(',');
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(id);
+    }
+    const C = new Float64Array(nv), last = new Int32Array(nv).fill(-1), next = [];
+    for (const arr of groups.values()) {
+      arr.sort((p, q) => voxels[p].ij[a] - voxels[q].ij[a]);
+      let s = 0;
+      for (const id of arr) { s += val[id]; C[id] = s; }
+      const L = arr[arr.length - 1];
+      next.push(L);
+      for (const id of arr) last[id] = L;
+    }
+    let mx = 1e-12; for (const id of R) mx = Math.max(mx, C[id]);
+    stages.push({ a, members: R, C, last, next, max: mx });
+    val = C; R = next;
+  }
+}
+
+function makePoints() {
+  const ord = ORDERS[S.ord], bb = grid.bb, sol = SOLIDS[S.solid];
+  pts = [];
+  let tries = 0;
+  while (pts.length < 2600 && tries < 400000) {
+    tries++;
+    const x = bb[0][0] + Math.random() * grid.ext[0], y = bb[1][0] + Math.random() * grid.ext[1], z = bb[2][0] + Math.random() * grid.ext[2];
+    if (!sol.inside(x, y, z)) continue;
+    if (Math.random() * rhoMax > S.fn(x, y, z)) continue;
+    const i = Math.min(grid.n[0] - 1, Math.floor((x - bb[0][0]) / grid.d[0])), j = Math.min(grid.n[1] - 1, Math.floor((y - bb[1][0]) / grid.d[1])), k = Math.min(grid.n[2] - 1, Math.floor((z - bb[2][0]) / grid.d[2]));
+    let cur = grid.id[(i * grid.n[1] + j) * grid.n[2] + k];
+    if (cur < 0) continue;
+    const tgt = [];
+    for (let c = 0; c < 3; c++) { cur = stages[c].last[cur]; tgt.push(voxels[cur].c[ord[c]]); }
+    pts.push({ p: [x, y, z], tgt });
+  }
+  // recompute targets are tied to order, so keep raw ids implicit by rebuilding on order change
+}
+
+/* ---------- projection and color ---------- */
+let W = 0, H = 0, dpr = 1;
+const cv = $('cv'), ctx = cv.getContext('2d');
+function isDark() {
+  const t = document.documentElement.getAttribute('data-theme');
+  return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function lerp3(a, b, t) { return a.map((v, i) => Math.round(v + (b[i] - v) * t)); }
+const RAMP_L = [[201,205,240],[100,120,214],[59,79,194],[22,30,102]];
+const RAMP_D = [[58,65,112],[96,112,205],[140,155,255],[225,230,255]];
+function ramp(t) {
+  const R = isDark() ? RAMP_D : RAMP_L; t = Math.max(0, Math.min(1, t)) * 3;
+  const i = Math.min(2, Math.floor(t)), c = lerp3(R[i], R[i + 1], t - i);
+  return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+}
+function resize() {
+  const r = $('stage').getBoundingClientRect(); dpr = window.devicePixelRatio || 1;
+  W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); dirty = true;
+}
+function makeProj() {
+  const bb = grid.bb, m = Math.max(...grid.ext);
+  const cen = bb.map(b => (b[0] + b[1]) / 2), ca = Math.cos(S.az), sa = Math.sin(S.az), ce = Math.cos(S.el), se = Math.sin(S.el);
+  const sc = Math.min(W, H) * 0.62 / m;
+  return (x, y, z) => {
+    const X = (x - cen[0]) * ca - (y - cen[1]) * sa, Y = (x - cen[0]) * sa + (y - cen[1]) * ca, Z = z - cen[2];
+    return [W / 2 + X * sc, H / 2 - (Z * ce + Y * se) * sc, Y * ce - Z * se, sc];
+  };
+}
+function wire(P, lo, hi, color, lw) {
+  const c = [];
+  for (let i = 0; i < 8; i++) c.push(P(i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]));
+  ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath();
+  for (let i = 0; i < 8; i++) for (const b of [1, 2, 4]) if (!(i & b)) { ctx.moveTo(c[i][0], c[i][1]); ctx.lineTo(c[i | b][0], c[i | b][1]); }
+  ctx.stroke();
+}
+
+/* ---------- drawing ---------- */
+let dirty = true;
+function draw() {
+  dirty = false;
+  ctx.clearRect(0, 0, W, H);
+  if (!voxels) return;
+  const P = makeProj(), bb = grid.bb, ord = ORDERS[S.ord];
+  const lo = bb.map(b => b[0]), hi = bb.map(b => b[1]);
+  wire(P, lo, hi, cssv('--border'), 1);
+  // axes from the minimum corner
+  ctx.font = '600 13px -apple-system, Inter, sans-serif'; ctx.fillStyle = cssv('--accent'); ctx.strokeStyle = cssv('--accent'); ctx.lineWidth = 1.5;
+  const o = P(lo[0], lo[1], lo[2]);
+  for (let a = 0; a < 3; a++) {
+    const e = [lo[0], lo[1], lo[2]]; e[a] = hi[a] + grid.ext[a] * 0.12;
+    const q = P(e[0], e[1], e[2]);
+    ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+    ctx.fillText(AX[a], q[0] + 4, q[1] - 4);
+  }
+  const rad = P(0, 0, 0)[3] * Math.min(...grid.d) * 0.62;
+  const items = [];
+  const ghost = cssv('--ghost');
+  const m = Math.min(3, Math.floor(S.prog + 1e-9)), f = m >= 3 ? 0 : S.prog - m;
+  let peak = 0, peakLabel = 'Peak value';
+
+  if (S.mode === 'sweep') {
+    if (f > 1e-6) {
+      const st = stages[m], a = st.a, lim = f * (grid.n[a] - 1) + 1e-9;
+      for (const id of st.members) {
+        const v = voxels[id], q = P(v.c[0], v.c[1], v.c[2]);
+        if (v.ij[a] <= lim) { items.push([q, ramp(st.C[id] / st.max), 1]); peak = Math.max(peak, st.C[id]); }
+        else items.push([q, ghost, 0]);
+      }
+      peakLabel = 'Running total';
+    } else if (m === 0) {
+      let mx = 1e-12; for (const v of voxels) mx = Math.max(mx, v.w);
+      for (const v of voxels) { const q = P(v.c[0], v.c[1], v.c[2]); items.push([q, ramp(v.w / mx), 1]); peak = Math.max(peak, v.w / (grid.d[0] * grid.d[1] * grid.d[2])); }
+      peakLabel = 'Peak density ρ';
+    } else {
+      const st = stages[m - 1];
+      for (const id of st.next) { const v = voxels[id], q = P(v.c[0], v.c[1], v.c[2]); items.push([q, ramp(st.C[id] / st.max), 1]); peak = Math.max(peak, st.C[id]); }
+      peakLabel = m === 3 ? 'Total mass' : 'Peak value';
+    }
+    items.sort((p, q) => q[0][2] - p[0][2]);
+    for (const it of items) { ctx.fillStyle = it[1]; ctx.beginPath(); ctx.arc(it[0][0], it[0][1], it[2] ? rad : rad * 0.55, 0, 6.2832); ctx.fill(); }
+  } else if (S.mode === 'cloud') {
+    const t = [0, 1, 2].map(c => { const u = Math.max(0, Math.min(1, S.prog - c)); return u * u * (3 - 2 * u); });
+    const arr = pts.map(pt => {
+      const p = pt.p.slice();
+      for (let c = 0; c < 3; c++) p[ord[c]] = p[ord[c]] + (pt.tgt[c] - p[ord[c]]) * t[c];
+      return P(p[0], p[1], p[2]);
+    });
+    arr.sort((p, q) => q[2] - p[2]);
+    ctx.fillStyle = cssv('--accent'); ctx.globalAlpha = 0.45;
+    const r = Math.max(1.4, rad * 0.32);
+    for (const q of arr) { ctx.beginPath(); ctx.arc(q[0], q[1], r, 0, 6.2832); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    peakLabel = m >= 3 ? 'Total mass' : 'Dots shown'; peak = m >= 3 ? NaN : pts.length;
+  } else {
+    const R = S.region; let mass = 0;
+    for (const v of voxels) {
+      const inR = [0, 1, 2].every(a => v.c[a] >= R[a][0] && v.c[a] <= R[a][1]);
+      if (inR) mass += v.w;
+    }
+    let mx = 1e-12; for (const v of voxels) mx = Math.max(mx, v.w);
+    for (const v of voxels) {
+      const inR = [0, 1, 2].every(a => v.c[a] >= R[a][0] && v.c[a] <= R[a][1]);
+      items.push([P(v.c[0], v.c[1], v.c[2]), inR ? ramp(v.w / mx) : ghost, inR]);
+    }
+    items.sort((p, q) => q[0][2] - p[0][2]);
+    for (const it of items) { ctx.fillStyle = it[1]; ctx.beginPath(); ctx.arc(it[0][0], it[0][1], it[2] ? rad : rad * 0.55, 0, 6.2832); ctx.fill(); }
+    wire(P, R.map(r => r[0]), R.map(r => r[1]), cssv('--accent'), 2);
+    peak = totalCoarse !== 0 ? mass / totalCoarse * fineM : 0; peakLabel = 'Mass in box';
+  }
+  $('rPl').textContent = peakLabel;
+  if (S.mode === 'sweep' && f <= 1e-6 && m === 3) $('rP').textContent = fmt(fineM);
+  else if (S.mode === 'sweep' && m >= 1) $('rP').textContent = fmt(peak / totalCoarse * fineM);
+  else $('rP').textContent = isNaN(peak) ? fmt(fineM) : (S.mode === 'cloud' ? String(peak) : fmt(peak));
+  $('rM').textContent = fmt(fineM);
+  renderText(m, f);
+}
+const fmt = v => (Math.abs(v) < 1e-9 ? 0 : v).toFixed(3);
+
+function renderText(m, f) {
+  const ord = ORDERS[S.ord], a = ord.map(t => AX[t]);
+  if (S.mode === 'bounds') {
+    const R = S.region, b = t => '<sub>' + R[t][0].toFixed(2) + '</sub><sup>' + R[t][1].toFixed(2) + '</sup>';
+    let h = '';
+    for (let c = 2; c >= 0; c--) h += '∫' + b(ord[c]) + ' ';
+    $('notation').innerHTML = h + 'ρ ' + ord.map(t => '<span class="d">d' + AX[t] + '</span>').join(' ');
+    $('status').textContent = 'Points outside the solid contribute nothing, so the box can overhang it.';
+    return;
+  }
+  const cur = f > 1e-6 ? m : m - 1;
+  $('notation').innerHTML = '∫∫∫ ρ ' + ord.map((t, c) => '<span class="d ' + (c === cur && (f > 1e-6 || m < 3 || c === 2) ? 'cur' : (c < cur || (f <= 1e-6 && c < m) ? 'done' : '')) + '">d' + AX[t] + '</span>').join(' ');
+  const rem = ord.slice(f > 1e-6 ? m + 1 : m).map(t => AX[t]);
+  let t;
+  if (f > 1e-6) t = 'Adding up ρ along ' + a[m] + '. Each voxel shows the sum from the start of its ' + a[m] + '-line to that point.';
+  else if (m === 0) t = 'Start: ρ(x, y, z) is mass per unit volume at each point. Press Play or drag the slider.';
+  else if (m === 1) t = 'After d' + a[0] + ': a function of ' + rem.join(' and ') + ', mass per unit area. The solid has collapsed onto a face.';
+  else if (m === 2) t = 'After d' + a[1] + ': a function of ' + rem[0] + ' alone, mass per unit length. Now a curve.';
+  else t = 'After d' + a[2] + ': one number, the total mass.';
+  $('status').textContent = t;
+}
+
+/* ---------- controls ---------- */
+function setProg(p) { S.prog = Math.max(0, Math.min(3, p)); $('scrub').value = S.prog; dirty = true; syncChips(); }
+function syncChips() {
+  document.querySelectorAll('#chips .pill').forEach((b, i) => b.classList.toggle('on', Math.abs(S.prog - i) < 0.001));
+}
+function buildChips() {
+  const ord = ORDERS[S.ord], el = $('chips'); el.innerHTML = '';
+  ['Start'].concat(ord.map((t, c) => (c + 1) + ' · d' + AX[t])).forEach((lab, i) => {
+    const b = document.createElement('button'); b.className = 'pill'; b.textContent = lab;
+    b.onclick = () => { S.playing = false; $('play').textContent = 'Play'; setProg(i); }; el.appendChild(b);
+  });
+  syncChips();
+}
+function buildBounds() {
+  const bb = grid.bb; S.region = bb.map(b => [b[0], b[1]]);
+  const box = $('boundsBox'); box.innerHTML = '';
+  for (let a = 0; a < 3; a++) {
+    const lab = document.createElement('label'); lab.textContent = AX[a]; box.appendChild(lab);
+    ['lo', 'hi'].forEach((w, wi) => {
+      const d = document.createElement('div'); d.className = 'bv';
+      const r = document.createElement('input'); r.type = 'range'; r.min = bb[a][0]; r.max = bb[a][1]; r.step = 0.05; r.value = S.region[a][wi];
+      r.setAttribute('aria-label', AX[a] + (wi ? ' upper' : ' lower') + ' bound');
+      const out = document.createElement('b'); out.textContent = (+r.value).toFixed(2);
+      r.oninput = () => {
+        let v = +r.value;
+        if (wi === 0) v = Math.min(v, S.region[a][1]); else v = Math.max(v, S.region[a][0]);
+        r.value = v; S.region[a][wi] = v; out.textContent = v.toFixed(2); dirty = true;
+      };
+      d.append(wi ? 'to' : 'from', r, out); box.appendChild(d);
+    });
+  }
+}
+function rebuild() { build(); buildChips(); buildBounds(); dirty = true; }
+function setMode(m) {
+  S.mode = m; S.playing = false; $('play').textContent = 'Play';
+  document.querySelectorAll('#modes button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('transport').hidden = m === 'bounds'; $('boundsBox').hidden = m !== 'bounds';
+  $('modeNote').textContent = MODE_NOTES[m]; dirty = true;
+}
+
+// solids
+Object.entries(SOLIDS).forEach(([k, s]) => {
+  const b = document.createElement('button'); b.className = 'pill' + (k === S.solid ? ' on' : ''); b.textContent = s.name;
+  b.onclick = () => { S.solid = k; document.querySelectorAll('#solids .pill').forEach(x => x.classList.toggle('on', x === b)); $('solidDesc').textContent = s.desc; S.prog = 0; $('scrub').value = 0; rebuild(); };
+  $('solids').appendChild(b);
+});
+$('solidDesc').textContent = SOLIDS[S.solid].desc;
+// densities
+RHOS.forEach(([lab, src]) => {
+  const b = document.createElement('button'); b.className = 'pill'; b.textContent = lab;
+  b.onclick = () => { $('rho').value = src; onRho(); }; $('rhos').appendChild(b);
+});
+function onRho() {
+  try { S.fn = compileRho($('rho').value); $('err').textContent = ''; rebuild(); }
+  catch (e) { $('err').textContent = e.message; }
+  const v = $('rho').value.trim();
+  document.querySelectorAll('#rhos .pill').forEach((b, i) => b.classList.toggle('on', RHOS[i][1] === v));
+}
+$('rho').addEventListener('input', onRho);
+// order
+ORDERS.forEach((o, i) => { const op = document.createElement('option'); op.value = i; op.textContent = o.map(t => 'd' + AX[t]).join('  '); $('order').appendChild(op); });
+$('order').onchange = e => { S.ord = +e.target.value; rebuild(); };
+// modes, scrubber, play
+document.querySelectorAll('#modes button').forEach(b => b.onclick = () => setMode(b.dataset.m));
+$('scrub').oninput = e => { S.playing = false; $('play').textContent = 'Play'; setProg(+e.target.value); };
+let tPrev = 0, hold = 0;
+$('loop').onclick = () => {
+  S.loop = !S.loop; hold = 0;
+  $('loop').classList.toggle('on', S.loop); $('loop').setAttribute('aria-pressed', S.loop);
+  // Turning loop on after a finished run restarts playback right away.
+  if (S.loop && !S.playing && S.prog >= 2.999) { setProg(0); S.playing = true; $('play').textContent = 'Pause'; }
+};
+$('play').onclick = () => {
+  if (S.playing) { S.playing = false; $('play').textContent = 'Play'; return; }
+  if (S.prog >= 2.999) setProg(0);
+  S.playing = true; $('play').textContent = 'Pause';
+};
+// rotate
+let drag = null;
+cv.addEventListener('pointerdown', e => { drag = [e.clientX, e.clientY]; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; });
+cv.addEventListener('pointermove', e => {
+  if (!drag) return;
+  S.az += (e.clientX - drag[0]) * 0.01; S.el = Math.max(-0.2, Math.min(1.5, S.el + (e.clientY - drag[1]) * 0.01));
+  drag = [e.clientX, e.clientY]; dirty = true;
+});
+cv.addEventListener('pointerup', () => { drag = null; cv.style.cursor = 'grab'; });
+
+function tick(t) {
+  const dt = Math.min(0.05, (t - tPrev) / 1000); tPrev = t;
+  if (S.playing) {
+    if (S.prog >= 3) {
+      // Hold on the finished state for a moment, then restart if looping.
+      if (S.loop) { hold += dt; if (hold > 1.2) { hold = 0; setProg(0); } }
+      else { S.playing = false; $('play').textContent = 'Replay'; }
+    } else setProg(S.prog + dt * 0.42);
+  }
+  if (dirty) draw();
+  requestAnimationFrame(tick);
+}
+window.addEventListener('resize', resize);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { setLegend(); dirty = true; });
+function setLegend() { const R = isDark() ? RAMP_D : RAMP_L; $('legbar').style.background = 'linear-gradient(90deg,' + [0, .33, .66, 1].map(ramp).join(',') + ')'; }
+
+S.fn = compileRho('z');
+setMode('sweep'); setLegend(); resize(); rebuild();
+document.querySelectorAll('#rhos .pill').forEach((b, i) => b.classList.toggle('on', RHOS[i][1] === 'z'));
+requestAnimationFrame(tick);
+</script>
